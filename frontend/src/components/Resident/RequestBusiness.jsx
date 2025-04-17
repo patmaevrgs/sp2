@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
-function AdminAccounts() {
+function RequestBusiness() {
   return (
     <>
     <div className='adminhome-container'> 
       <div className="adminhome-main">
-        <h2>Accounts</h2>
+        <h2>Brgy. Business Clearance</h2>
       </div>
     </div>
     </>
   );
 }
   
-export default AdminAccounts;
+export default RequestBusiness;

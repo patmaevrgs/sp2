@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
-function AdminAccounts() {
+function RequestID() {
   return (
     <>
     <div className='adminhome-container'> 
       <div className="adminhome-main">
-        <h2>Accounts</h2>
+        <h2>Brgy. ID</h2>
       </div>
     </div>
     </>
   );
 }
   
-export default AdminAccounts;
+export default RequestID;

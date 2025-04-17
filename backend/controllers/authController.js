@@ -40,7 +40,7 @@ const login = async (req, res) => {
   const token = jwt.sign(tokenPayload, "THIS_IS_A_SECRET_STRING");
 
   // return the token to the client
-  return res.send({ success: true, userType: user.userType, token, user: user._id, firstName: user.firstName, email: user.email});
+  return res.send({ success: true, userType: user.userType, token, user: user._id, firstName: user.firstName, lastName: user.lastName, email: user.email});
 };
 
 const checkIfLoggedIn = async (req, res) => {

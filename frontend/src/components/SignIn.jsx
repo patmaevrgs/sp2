@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import {
+  Container,
+  Box,
+  TextField,
+  Typography,
+  Button,
+  Divider,
+  Link as MuiLink,
+  Paper,
+  useMediaQuery,
+  useTheme,
+  CssBaseline
+} from '@mui/material';
+import { useNavigate, Link } from 'react-router-dom';
 import Cookies from 'universal-cookie';
 
 export default function SignIn() {
@@ -8,55 +21,39 @@ export default function SignIn() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const navigate = useNavigate();
-  var userType = localStorage.getItem('userType');
+  const userType = localStorage.getItem('userType');
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
-    console.log(`Effect to navigate, isLoggedIn: ${isLoggedIn}, userType: ${userType}`);
     if (isLoggedIn) {
-        console.log(`Navigating as ${userType}`);
-      if(userType === "admin") {
-        console.log("Redirecting to admin page.");
-        navigate("/admin");
-      }else if(userType === "resident") {
-        console.log("Redirecting to resident page.");
-        navigate("/resident");
-      }
+      if (userType === 'admin') navigate('/admin');
+      else if (userType === 'resident') navigate('/resident');
     }
   }, [isLoggedIn, navigate, userType]);
 
-  useEffect(() => {
-    console.log("isLoggedIn status changed to:", isLoggedIn); // To confirm state update
-  }, [isLoggedIn]);
-
-  const handleSubmit = async(event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("Submitting form");
     const success = await loginUser();
-    if (success) {
-        console.log("Login successful, updating isLoggedIn");
-      setIsLoggedIn(true);
-    }
+    if (success) setIsLoggedIn(true);
   };
 
   const loginUser = async () => {
     try {
       const response = await fetch('http://localhost:3002/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
       const body = await response.json();
       if (body.success) {
-        // Store token and user type in localStorage
         const cookies = new Cookies();
         cookies.set('authToken', body.token, { path: '/', age: 60 * 60, sameSite: false });
         localStorage.setItem('user', body.user);
         localStorage.setItem('userType', body.userType);
         localStorage.setItem('firstName', body.firstName);
+        localStorage.setItem('lastName', body.lastName);
         localStorage.setItem('email', body.email);
-        console.log("User authenticated, userType set in storage");
         return true;
       } else {
         alert('Invalid email or password');
@@ -69,37 +66,111 @@ export default function SignIn() {
   };
 
   return (
-    <div className='wholesignin'>
-    <div className='signin-container'>
-      <div className='signin-div'>
-        <h2>Login</h2>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="Email Address"
-            value={email}
-            onInput={e => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onInput={e => setPassword(e.target.value)} 
-            required
-          />
-          <button type="submit">Log in</button>
-        </form>
-        <div className="divider">
-          <hr className="line" />
-          <span className="or">or</span>
-          <hr className="line" />
-        </div>
-        <p>
-          Don't have an account?&nbsp;<Link to="/signup"> Sign Up</Link>
-        </p>
-      </div>
-    </div>
-    </div>
+    <Box
+      sx={{
+        height: '100vh',
+        backgroundImage: 'url(https://images.pexels.com/photos/531880/pexels-photo-531880.jpeg?cs=srgb&dl=pexels-pixabay-531880.jpg&fm=jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'column',
+        padding: 2,
+      }}
+    >
+      <CssBaseline />
+      <Container maxWidth="sm">
+        <Paper
+          elevation={10}
+          sx={{
+            p: 4,
+            borderRadius: 5,
+            boxShadow: '0 4px 30px rgba(0,0,0,0.2)',
+            background: 'rgba(255, 255, 255, 0.8)', // semi-transparent background
+          }}
+        >
+          <Typography variant="h4" fontWeight="bold" gutterBottom textAlign="center" color="primary">
+            Barangay B-Hub Login
+          </Typography>
+
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 2 }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              label="Email Address"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              sx={{
+                '& .MuiInputBase-root': {
+                  borderRadius: '8px',
+                },
+              }}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              sx={{
+                '& .MuiInputBase-root': {
+                  borderRadius: '8px',
+                },
+              }}
+            />
+
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              size="large"
+              sx={{
+                mt: 3,
+                mb: 2,
+                borderRadius: '25px',
+                '&:hover': {
+                  backgroundColor: '#0288d1',
+                  transform: 'scale(1.05)',
+                },
+              }}
+            >
+              Log In
+            </Button>
+
+            <Divider sx={{ my: 2 }}>or</Divider>
+
+            <Typography align="center">
+              Don’t have an account?&nbsp;
+              <MuiLink component={Link} to="/signup">
+                Sign Up
+              </MuiLink>
+            </Typography>
+
+            {/* "Back to Landing Page" button */}
+            <Button
+              onClick={() => navigate('/')}
+              variant="outlined"
+              fullWidth
+              sx={{
+                mt: 2,
+                borderRadius: '25px',
+                '&:hover': {
+                  backgroundColor: '#0288d1',
+                  transform: 'scale(1.05)',
+                  color: '#fff',
+                },
+              }}
+            >
+              Back to Landing Page
+            </Button>
+          </Box>
+        </Paper>
+      </Container>
+    </Box>
   );
 }
