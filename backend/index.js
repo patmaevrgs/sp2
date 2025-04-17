@@ -4,12 +4,28 @@ import cookieParser from 'cookie-parser';
 import router from './router.js';
 import { addAdmin } from './controllers/authController.js';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Get __dirname equivalent in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Create uploads directory if it doesn't exist
+import fs from 'fs';
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 mongoose.connect('mongodb://localhost:27017/BHUB', {
   useNewUrlParser: true,
