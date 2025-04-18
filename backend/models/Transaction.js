@@ -9,7 +9,7 @@ const transactionSchema = new mongoose.Schema({
   serviceType: {
     type: String,
     required: true,
-    enum: ['ambulance_booking', 'document_request', 'payment', 'other']
+    enum: ['ambulance_booking', 'document_request', 'payment', 'court_reservation', 'other']
   },
   status: {
     type: String,

@@ -12,6 +12,15 @@ import {
   checkBookingConflict,
   residentCancelBooking
 } from './controllers/ambulanceController.js';
+import {
+  createCourtReservation,
+  getCourtReservations,
+  getCourtReservationById,
+  updateCourtReservationStatus,
+  cancelCourtReservation,
+  getCourtReservationsCalendar,
+  checkReservationConflict
+} from './controllers/courtController.js';
 import multer from 'multer';
 
 const router = Router();
@@ -49,6 +58,15 @@ router.patch('/ambulance/:id/resident-response', residentResponse);
 router.get('/ambulance-calendar', getBookingsCalendar);
 router.get('/ambulance-conflict', checkBookingConflict);
 router.patch('/ambulance/:id/cancel', residentCancelBooking);
+
+// Court Reservation Routes
+router.post('/court', createCourtReservation);
+router.get('/court', getCourtReservations);
+router.get('/court/:id', getCourtReservationById);
+router.patch('/court/:id/status', updateCourtReservationStatus);
+router.patch('/court/:id/cancel', cancelCourtReservation);
+router.get('/court-calendar', getCourtReservationsCalendar);
+router.get('/court-conflict', checkReservationConflict); // This endpoint doesn't need auth
 
 // Serve static files
 import express from 'express';
