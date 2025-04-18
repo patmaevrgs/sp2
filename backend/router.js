@@ -2,6 +2,16 @@ import { Router } from 'express';
 import { signUp, login, checkIfLoggedIn, addAdmin } from './controllers/authController.js';
 import { createAnnouncement, getAnnouncements, deleteAnnouncement, updateAnnouncement } from './controllers/announcementController.js';
 import { createLog, getLogs, deleteOldLogs } from './controllers/userLogController.js';
+import { 
+  createBooking, 
+  getBookings, 
+  getBookingById, 
+  updateBookingStatus, 
+  residentResponse, 
+  getBookingsCalendar,
+  checkBookingConflict,
+  residentCancelBooking
+} from './controllers/ambulanceController.js';
 import multer from 'multer';
 
 const router = Router();
@@ -29,6 +39,16 @@ router.patch('/announcements/:id', upload.array('files'), updateAnnouncement);
 router.post('/logs', createLog);
 router.get('/logs', getLogs);
 router.delete('/logs', deleteOldLogs);
+
+// Ambulance Booking Routes
+router.post('/ambulance', createBooking);
+router.get('/ambulance', getBookings);
+router.get('/ambulance/:id', getBookingById);
+router.patch('/ambulance/:id/status', updateBookingStatus);
+router.patch('/ambulance/:id/resident-response', residentResponse);
+router.get('/ambulance-calendar', getBookingsCalendar);
+router.get('/ambulance-conflict', checkBookingConflict);
+router.patch('/ambulance/:id/cancel', residentCancelBooking);
 
 // Serve static files
 import express from 'express';
