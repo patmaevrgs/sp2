@@ -21,6 +21,12 @@ import {
   getCourtReservationsCalendar,
   checkReservationConflict
 } from './controllers/courtController.js';
+import {
+  createTransaction,
+  getTransactions,
+  getTransactionById,
+  updateTransactionStatus
+} from './controllers/transactionController.js';
 import multer from 'multer';
 
 const router = Router();
@@ -67,6 +73,12 @@ router.patch('/court/:id/status', updateCourtReservationStatus);
 router.patch('/court/:id/cancel', cancelCourtReservation);
 router.get('/court-calendar', getCourtReservationsCalendar);
 router.get('/court-conflict', checkReservationConflict); // This endpoint doesn't need auth
+
+// Transaction Routes
+router.post('/transactions', createTransaction);
+router.get('/transactions', getTransactions);
+router.get('/transactions/:id', getTransactionById);
+router.patch('/transactions/:id/status', updateTransactionStatus);
 
 // Serve static files
 import express from 'express';

@@ -152,6 +152,7 @@ export const updateTransactionStatus = async (req, res) => {
 };
 
 // Create a transaction from an ambulance booking
+// In transactionController.js - update createTransactionFromBooking
 export const createTransactionFromBooking = async (bookingId) => {
   try {
     const booking = await AmbulanceBooking.findById(bookingId);
@@ -167,10 +168,20 @@ export const createTransactionFromBooking = async (bookingId) => {
     });
     
     if (existingTransaction) {
-      // Update existing transaction
+      // Update existing transaction with current booking information
       existingTransaction.status = booking.status;
+      existingTransaction.details = {
+        patientName: booking.patientName,
+        pickupDate: booking.pickupDate,
+        pickupTime: booking.pickupTime,
+        destination: booking.destination,
+        dieselCost: booking.dieselCost
+      };
+      existingTransaction.adminComment = booking.adminComment;
+      existingTransaction.processedBy = booking.processedBy;
       existingTransaction.updatedAt = Date.now();
       await existingTransaction.save();
+      console.log('Updated existing transaction for booking:', bookingId);
       return existingTransaction;
     }
     
@@ -193,9 +204,10 @@ export const createTransactionFromBooking = async (bookingId) => {
     });
     
     await newTransaction.save();
+    console.log('Created new transaction for booking:', bookingId);
     return newTransaction;
   } catch (error) {
-    console.error('Error creating transaction from booking:', error);
+    console.error('Error creating/updating transaction from booking:', error);
     throw error;
   }
 };

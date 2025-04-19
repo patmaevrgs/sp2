@@ -200,13 +200,24 @@ export const getCourtReservationById = async (req, res) => {
 };
 
 // Update a court reservation's status (for admin use)
+// In courtController.js - update updateCourtReservationStatus
 export const updateCourtReservationStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, adminComment, adminId } = req.body; // Get adminId from request body too
+    const { status, adminComment, adminId } = req.body;
+    
+    console.log('Incoming update request:', { 
+      id, 
+      status, 
+      adminComment, 
+      adminId, 
+      reqUserId: req.userId 
+    });
     
     // Get admin ID from authenticated user or request body
     const processedBy = req.userId || adminId;
+    
+    console.log('Processed By:', processedBy);
     
     // Validate status
     const validStatuses = ['pending', 'approved', 'cancelled', 'rejected'];
@@ -215,6 +226,16 @@ export const updateCourtReservationStatus = async (req, res) => {
         success: false, 
         message: 'Invalid status value' 
       });
+    }
+    
+    // Additional validation for rejection
+    if (status === 'rejected') {
+      if (!adminComment || adminComment.trim().length < 3) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'Admin comment is required and must be at least 3 characters long for rejection' 
+        });
+      }
     }
     
     // Find the court reservation
@@ -227,17 +248,94 @@ export const updateCourtReservationStatus = async (req, res) => {
       });
     }
     
+    // Additional checks to prevent status manipulation
+    if (reservation.status === 'cancelled' || reservation.status === 'rejected') {
+      return res.status(400).json({ 
+        success: false, 
+        message: `Cannot change status of a ${reservation.status} reservation` 
+      });
+    }
+    
+    // Detailed logging of current reservation state
+    console.log('Current Reservation State:', {
+      currentStatus: reservation.status,
+      currentAdminComment: reservation.adminComment
+    });
+    
     // Update fields
     if (status) reservation.status = status;
-    if (adminComment !== undefined) reservation.adminComment = adminComment;
+    if (adminComment !== undefined) {
+      reservation.adminComment = adminComment;
+      console.log('Setting admin comment:', adminComment);
+    }
     
     // Set processed by admin
     if (processedBy) {
       reservation.processedBy = processedBy;
+      console.log('Setting processed by:', processedBy);
     }
     reservation.updatedAt = Date.now();
     
-    await reservation.save();
+    // Save with detailed error handling
+    try {
+      await reservation.save();
+      console.log('Reservation saved successfully');
+    } catch (saveError) {
+      console.error('Error saving reservation:', saveError);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Error saving reservation', 
+        error: saveError.message 
+      });
+    }
+    
+    // Update corresponding transaction
+    const transaction = await Transaction.findOne({
+      serviceType: 'court_reservation',
+      referenceId: id
+    });
+    
+    if (transaction) {
+      transaction.status = status;
+      if (adminComment !== undefined) transaction.adminComment = adminComment;
+      if (processedBy) transaction.processedBy = processedBy;
+      transaction.updatedAt = Date.now();
+      
+      try {
+        await transaction.save();
+        console.log('Transaction updated successfully');
+      } catch (transactionSaveError) {
+        console.error('Error saving transaction:', transactionSaveError);
+        // Non-critical error, so we'll continue
+      }
+    } else {
+      console.log('No transaction found for court reservation:', id);
+      // Create a new transaction if none exists
+      const newTransaction = new Transaction({
+        userId: reservation.bookedBy,
+        serviceType: 'court_reservation',
+        status: status,
+        amount: calculateAmount(reservation.startTime, reservation.duration),
+        details: {
+          representativeName: reservation.representativeName,
+          reservationDate: reservation.reservationDate,
+          startTime: reservation.startTime,
+          duration: reservation.duration,
+          purpose: reservation.purpose
+        },
+        referenceId: id,
+        adminComment: adminComment,
+        processedBy: processedBy
+      });
+      
+      try {
+        await newTransaction.save();
+        console.log('New transaction created successfully');
+      } catch (newTransactionError) {
+        console.error('Error creating new transaction:', newTransactionError);
+        // Non-critical error, so we'll continue
+      }
+    }
     
     const updatedReservation = await CourtReservation.findById(id)
       .populate('bookedBy', 'firstName lastName email')
@@ -245,11 +343,12 @@ export const updateCourtReservationStatus = async (req, res) => {
     
     res.status(200).json(updatedReservation);
   } catch (error) {
-    console.error('Error updating court reservation:', error);
+    console.error('Comprehensive error updating court reservation:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Error updating court reservation', 
-      error: error.message 
+      error: error.message,
+      errorStack: error.stack // Only for debugging
     });
   }
 };

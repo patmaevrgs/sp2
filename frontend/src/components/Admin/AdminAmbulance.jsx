@@ -77,7 +77,7 @@ function TabPanel(props) {
       {...other}
     >
       {value === index && (
-        <Box sx={{ py: 3 }}>
+        <Box sx={{ py: { xs: 1, sm: 2, md: 3 } }}>
           {children}
         </Box>
       )}
@@ -92,6 +92,17 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
     top: 13,
     border: `2px solid ${theme.palette.background.paper}`,
     padding: '0 4px',
+  },
+}));
+
+// Responsive Dialog wrapper
+const ResponsiveDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialog-paper': {
+    [theme.breakpoints.down('sm')]: {
+      margin: '16px',
+      width: 'calc(100% - 32px)',
+      maxHeight: 'calc(100% - 32px)',
+    },
   },
 }));
 
@@ -131,6 +142,14 @@ const AdminAmbulance = () => {
   
   // Admin info for logging
   const [adminName, setAdminName] = useState('');
+
+  // Handle calendar view change
+  const handleCalendarViewChange = (view) => {
+    setCalendarView(view);
+    if (calendarRef.current) {
+      calendarRef.current.getApi().changeView(view);
+    }
+  };
   
   // Get admin name from localStorage
   useEffect(() => {
@@ -496,17 +515,39 @@ const AdminAmbulance = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Paper elevation={3} sx={{ p: { xs: 2, sm: 3, md: 4 }, mb: 4 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <DirectionsCarIcon sx={{ fontSize: 32, mr: 2, color: 'primary.main' }} />
-              <Typography variant="h4" component="h1">
+      <Container maxWidth="lg" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
+        <Paper elevation={3} sx={{ p: { xs: 1.5, sm: 2, md: 4 }, mb: 4 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            mb: { xs: 2, sm: 3 }, 
+            flexDirection: { xs: 'column', sm: 'row' }, 
+            gap: { xs: 1.5, sm: 2 },
+          }}>
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              width: { xs: '100%', sm: 'auto' },
+              justifyContent: { xs: 'center', sm: 'flex-start' },
+              mb: { xs: 1, sm: 0 }
+            }}>
+              <DirectionsCarIcon sx={{ 
+                fontSize: { xs: 24, sm: 28, md: 32 }, 
+                mr: { xs: 1, sm: 1.5, md: 2 }, 
+                color: 'primary.main' 
+              }} />
+              <Typography variant={isMobile ? "h5" : "h4"} component="h1">
                 Ambulance Booking Management
               </Typography>
             </Box>
             
-            <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+            <Box sx={{ 
+              ml: { xs: 0, sm: 'auto' }, 
+              display: 'flex', 
+              gap: 1,
+              width: { xs: '100%', sm: 'auto' },
+              justifyContent: { xs: 'center', sm: 'flex-end' },
+            }}>
               <Tooltip title="Pending Requests">
                 <Chip
                   icon={<PendingIcon />}
@@ -514,6 +555,7 @@ const AdminAmbulance = () => {
                   color="warning"
                   variant={tabValue === 1 ? "filled" : "outlined"}
                   onClick={() => setTabValue(1)}
+                  size={isMobile ? "small" : "medium"}
                 />
               </Tooltip>
               
@@ -525,6 +567,7 @@ const AdminAmbulance = () => {
                   variant={tabValue === 3 ? "filled" : "outlined"}
                   onClick={() => setTabValue(3)}
                   sx={{ display: needsApprovalCount > 0 ? 'flex' : 'none' }}
+                  size={isMobile ? "small" : "medium"}
                 />
               </Tooltip>
             </Box>
@@ -549,7 +592,7 @@ const AdminAmbulance = () => {
                 </Box>
               </AccordionSummary>
               <AccordionDetails>
-                <Grid container spacing={2} alignItems="center">
+                <Grid container spacing={{ xs: 1, sm: 2 }} alignItems="center">
                   <Grid item xs={12} sm={6} md={4}>
                     <TextField
                       fullWidth
@@ -558,11 +601,12 @@ const AdminAmbulance = () => {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Patient name, address, etc."
                       size={isMobile ? "small" : "medium"}
+                      margin="dense"
                     />
                   </Grid>
                   
                   <Grid item xs={12} sm={6} md={3}>
-                    <FormControl fullWidth size={isMobile ? "small" : "medium"}>
+                    <FormControl fullWidth size={isMobile ? "small" : "medium"} margin="dense">
                       <InputLabel>Status</InputLabel>
                       <Select
                         value={statusFilter}
@@ -585,7 +629,12 @@ const AdminAmbulance = () => {
                       value={dateFilter}
                       onChange={setDateFilter}
                       renderInput={(params) => (
-                        <TextField {...params} fullWidth size={isMobile ? "small" : "medium"} />
+                        <TextField 
+                          {...params} 
+                          fullWidth 
+                          size={isMobile ? "small" : "medium"}
+                          margin="dense"
+                        />
                       )}
                       clearable
                     />
@@ -596,7 +645,7 @@ const AdminAmbulance = () => {
                       fullWidth
                       variant="outlined"
                       onClick={handleResetFilters}
-                      sx={{ height: isMobile ? 40 : 56 }}
+                      sx={{ height: { xs: 40, sm: 40, md: 56 } }}
                     >
                       Reset Filters
                     </Button>
@@ -611,19 +660,26 @@ const AdminAmbulance = () => {
               <Tabs 
                 value={tabValue} 
                 onChange={handleTabChange} 
-                variant={isMobile ? "scrollable" : "standard"}
+                variant="scrollable"
                 scrollButtons="auto"
                 allowScrollButtonsMobile
                 sx={{ mb: 2 }}
               >
-                <Tab icon={<DirectionsCarIcon />} label="All" />
+                <Tab 
+                  icon={<DirectionsCarIcon />} 
+                  label={isMobile ? "" : "All"} 
+                  aria-label="All Bookings"
+                  sx={{ minWidth: isMobile ? 'auto' : 'inherit' }}
+                />
                 <Tab 
                   icon={
                     <Badge badgeContent={pendingCount} color="warning">
                       <PendingIcon />
                     </Badge>
                   } 
-                  label="Pending" 
+                  label={isMobile ? "" : "Pending"} 
+                  aria-label="Pending Bookings"
+                  sx={{ minWidth: isMobile ? 'auto' : 'inherit' }}
                 />
                 <Tab 
                   icon={
@@ -631,7 +687,9 @@ const AdminAmbulance = () => {
                       <CheckCircleIcon />
                     </Badge>
                   } 
-                  label="Booked" 
+                  label={isMobile ? "" : "Booked"} 
+                  aria-label="Booked Appointments"
+                  sx={{ minWidth: isMobile ? 'auto' : 'inherit' }}
                 />
                 <Tab 
                   icon={
@@ -639,15 +697,21 @@ const AdminAmbulance = () => {
                       <WarningIcon />
                     </Badge>
                   } 
-                  label="Needs Approval" 
+                  label={isMobile ? "" : "Needs Approval"} 
+                  aria-label="Bookings Needing Approval"
+                  sx={{ minWidth: isMobile ? 'auto' : 'inherit' }}
                 />
                 <Tab 
                   icon={<DoneIcon />} 
-                  label="Completed/Cancelled" 
+                  label={isMobile ? "" : "Completed/Cancelled"} 
+                  aria-label="Completed or Cancelled Bookings"
+                  sx={{ minWidth: isMobile ? 'auto' : 'inherit' }}
                 />
                 <Tab 
                   icon={<CalendarMonthIcon />} 
-                  label="Calendar" 
+                  label={isMobile ? "" : "Calendar"} 
+                  aria-label="Calendar View"
+                  sx={{ minWidth: isMobile ? 'auto' : 'inherit' }}
                 />
               </Tabs>
             </Box>
@@ -663,7 +727,7 @@ const AdminAmbulance = () => {
                   {filteredBookings.length === 0 ? (
                     <Alert severity="info">No bookings found.</Alert>
                   ) : (
-                    <Grid container spacing={3}>
+                    <Grid container spacing={{ xs: 1, sm: 2, md: 3 }}>
                       {filteredBookings.map((booking) => (
                         <Grid item xs={12} sm={6} md={4} key={booking._id}>
                           <BookingCard 
@@ -692,6 +756,7 @@ const AdminAmbulance = () => {
                             getStatusColor={getStatusColor}
                             getStatusIcon={getStatusIcon}
                             formatStatus={formatStatus}
+                            isMobile={isMobile}
                           />
                         </Grid>
                       ))}
@@ -704,7 +769,7 @@ const AdminAmbulance = () => {
                   {filteredBookings.length === 0 ? (
                     <Alert severity="info">No pending bookings found.</Alert>
                   ) : (
-                    <Grid container spacing={3}>
+                    <Grid container spacing={{ xs: 1, sm: 2, md: 3 }}>
                       {filteredBookings.map((booking) => (
                         <Grid item xs={12} sm={6} md={4} key={booking._id}>
                           <BookingCard 
@@ -729,6 +794,7 @@ const AdminAmbulance = () => {
                             getStatusColor={getStatusColor}
                             getStatusIcon={getStatusIcon}
                             formatStatus={formatStatus}
+                            isMobile={isMobile}
                           />
                         </Grid>
                       ))}
@@ -741,7 +807,7 @@ const AdminAmbulance = () => {
                   {filteredBookings.length === 0 ? (
                     <Alert severity="info">No booked appointments found.</Alert>
                   ) : (
-                    <Grid container spacing={3}>
+                    <Grid container spacing={{ xs: 1, sm: 2, md: 3 }}>
                       {filteredBookings.map((booking) => (
                         <Grid item xs={12} sm={6} md={4} key={booking._id}>
                           <BookingCard 
@@ -762,19 +828,20 @@ const AdminAmbulance = () => {
                             getStatusColor={getStatusColor}
                             getStatusIcon={getStatusIcon}
                             formatStatus={formatStatus}
+                            isMobile={isMobile}
                           />
                         </Grid>
                       ))}
                     </Grid>
                   )}
                 </TabPanel>
-                
+
                 {/* Needs Approval Tab */}
                 <TabPanel value={tabValue} index={3}>
                   {filteredBookings.length === 0 ? (
                     <Alert severity="info">No bookings needing approval found.</Alert>
                   ) : (
-                    <Grid container spacing={3}>
+                    <Grid container spacing={{ xs: 1, sm: 2, md: 3 }}>
                       {filteredBookings.map((booking) => (
                         <Grid item xs={12} sm={6} md={4} key={booking._id}>
                           <BookingCard 
@@ -795,19 +862,20 @@ const AdminAmbulance = () => {
                             getStatusColor={getStatusColor}
                             getStatusIcon={getStatusIcon}
                             formatStatus={formatStatus}
+                            isMobile={isMobile}
                           />
                         </Grid>
                       ))}
                     </Grid>
                   )}
                 </TabPanel>
-                
+
                 {/* Completed/Cancelled Tab */}
                 <TabPanel value={tabValue} index={4}>
                   {filteredBookings.length === 0 ? (
                     <Alert severity="info">No completed or cancelled bookings found.</Alert>
                   ) : (
-                    <Grid container spacing={3}>
+                    <Grid container spacing={{ xs: 1, sm: 2, md: 3 }}>
                       {filteredBookings.map((booking) => (
                         <Grid item xs={12} sm={6} md={4} key={booking._id}>
                           <BookingCard 
@@ -820,24 +888,52 @@ const AdminAmbulance = () => {
                             getStatusColor={getStatusColor}
                             getStatusIcon={getStatusIcon}
                             formatStatus={formatStatus}
+                            isMobile={isMobile}
                           />
                         </Grid>
                       ))}
                     </Grid>
                   )}
                 </TabPanel>
+
                 {/* Calendar View Tab */}
                 <TabPanel value={tabValue} index={5}>
-                  <Box sx={{ height: '70vh' }}>
+                  <Box sx={{ height: { xs: '50vh', sm: '60vh', md: '70vh' } }}>
+                    {/* Calendar View Controls for Mobile */}
+                    {isMobile && (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2, gap: 1 }}>
+                        <Button 
+                          size="small" 
+                          variant={calendarView === 'dayGridMonth' ? 'contained' : 'outlined'}
+                          onClick={() => handleCalendarViewChange('dayGridMonth')}
+                        >
+                          Month
+                        </Button>
+                        <Button 
+                          size="small" 
+                          variant={calendarView === 'timeGridWeek' ? 'contained' : 'outlined'}
+                          onClick={() => handleCalendarViewChange('timeGridWeek')}
+                        >
+                          Week
+                        </Button>
+                        <Button 
+                          size="small" 
+                          variant={calendarView === 'timeGridDay' ? 'contained' : 'outlined'}
+                          onClick={() => handleCalendarViewChange('timeGridDay')}
+                        >
+                          Day
+                        </Button>
+                      </Box>
+                    )}
+                    
                     <FullCalendar
                       ref={calendarRef}
                       plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                       initialView={calendarView}
-                      view={calendarView}
                       headerToolbar={{
                         left: 'prev,next today',
                         center: 'title',
-                        right: isMobile ? 'timeGridDay,dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay'
+                        right: isMobile ? '' : 'dayGridMonth,timeGridWeek,timeGridDay'
                       }}
                       events={getCalendarEvents()}
                       eventClick={handleEventClick}
@@ -851,477 +947,551 @@ const AdminAmbulance = () => {
                     />
                   </Box>
                 </TabPanel>
-              </>
-            )}
-          </Box>
-        </Paper>
-        
-        {/* Details Dialog */}
-        <Dialog
-          open={detailsDialogOpen}
-          onClose={() => setDetailsDialogOpen(false)}
-          maxWidth="md"
-          fullWidth
-        >
-          {selectedBooking && (
-            <>
-              <DialogTitle>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="h6">
-                    Ambulance Booking Details
-                  </Typography>
-                  <Chip
-                    label={formatStatus(selectedBooking.status)}
-                    color={getStatusColor(selectedBooking.status)}
-                    icon={getStatusIcon(selectedBooking.status)}
-                    size="medium"
-                  />
+                </>
+                )}
                 </Box>
-              </DialogTitle>
-              <DialogContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                      Patient Information
-                    </Typography>
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body1">
-                        <strong>Patient Name:</strong> {selectedBooking.patientName}
-                      </Typography>
-                      <Typography variant="body1">
-                        <strong>Submitted By:</strong> {selectedBooking.bookedBy?.firstName} {selectedBooking.bookedBy?.lastName} ({selectedBooking.submitterRelation})
-                      </Typography>
-                      <Typography variant="body1">
-                        <strong>Contact Number:</strong> {selectedBooking.contactNumber}
-                      </Typography>
-                    </Box>
-                    
-                    <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                      Pickup Details
-                    </Typography>
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body1">
-                        <strong>Date:</strong> {format(new Date(selectedBooking.pickupDate), 'MMMM d, yyyy')} ({formatDate(selectedBooking.pickupDate)})
-                      </Typography>
-                      <Typography variant="body1">
-                        <strong>Time:</strong> {selectedBooking.pickupTime}
-                      </Typography>
-                      <Typography variant="body1">
-                        <strong>Duration:</strong> {selectedBooking.duration}
-                      </Typography>
-                      <Typography variant="body1">
-                        <strong>Pickup Address:</strong> {selectedBooking.pickupAddress}
-                      </Typography>
-                      <Typography variant="body1">
-                        <strong>Destination:</strong> {selectedBooking.destination}
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                      Emergency Details
-                    </Typography>
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body1" paragraph>
-                        {selectedBooking.emergencyDetails}
-                      </Typography>
-                    </Box>
-                    
-                    {selectedBooking.additionalNote && (
-                      <>
-                        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                          Additional Notes
-                        </Typography>
-                        <Box sx={{ mb: 2 }}>
-                          <Typography variant="body1" paragraph>
-                            {selectedBooking.additionalNote}
+                </Paper>
+
+                {/* Details Dialog */}
+                <ResponsiveDialog
+                  open={detailsDialogOpen}
+                  onClose={() => setDetailsDialogOpen(false)}
+                  maxWidth="md"
+                  fullWidth
+                  fullScreen={isMobile}
+                >
+                  {selectedBooking && (
+                    <>
+                      <DialogTitle>
+                        <Box sx={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center',
+                          flexDirection: isMobile ? 'column' : 'row',
+                          gap: isMobile ? 1 : 0
+                        }}>
+                          <Typography variant={isMobile ? "subtitle1" : "h6"}>
+                            Ambulance Booking Details
                           </Typography>
+                          <Chip
+                            label={formatStatus(selectedBooking.status)}
+                            color={getStatusColor(selectedBooking.status)}
+                            icon={getStatusIcon(selectedBooking.status)}
+                            size={isMobile ? "small" : "medium"}
+                          />
                         </Box>
-                      </>
-                    )}
+                      </DialogTitle>
+                      <DialogContent>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} md={6}>
+                            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
+                              Patient Information
+                            </Typography>
+                            <Box sx={{ mb: 2 }}>
+                              <Typography variant="body1">
+                                <strong>Patient Name:</strong> {selectedBooking.patientName}
+                              </Typography>
+                              <Typography variant="body1">
+                                <strong>Submitted By:</strong> {selectedBooking.bookedBy?.firstName} {selectedBooking.bookedBy?.lastName} ({selectedBooking.submitterRelation})
+                              </Typography>
+                              <Typography variant="body1">
+                                <strong>Contact Number:</strong> {selectedBooking.contactNumber}
+                              </Typography>
+                            </Box>
+                            
+                            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
+                              Pickup Details
+                            </Typography>
+                            <Box sx={{ mb: 2 }}>
+                              <Typography variant="body1">
+                                <strong>Date:</strong> {format(new Date(selectedBooking.pickupDate), 'MMMM d, yyyy')} ({formatDate(selectedBooking.pickupDate)})
+                              </Typography>
+                              <Typography variant="body1">
+                                <strong>Time:</strong> {selectedBooking.pickupTime}
+                              </Typography>
+                              <Typography variant="body1">
+                                <strong>Duration:</strong> {selectedBooking.duration}
+                              </Typography>
+                              <Typography variant="body1">
+                                <strong>Pickup Address:</strong> {selectedBooking.pickupAddress}
+                              </Typography>
+                              <Typography variant="body1">
+                                <strong>Destination:</strong> {selectedBooking.destination}
+                              </Typography>
+                            </Box>
+                          </Grid>
+                          
+                          <Grid item xs={12} md={6}>
+                            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
+                              Emergency Details
+                            </Typography>
+                            <Box sx={{ mb: 2 }}>
+                              <Typography variant="body1" paragraph>
+                                {selectedBooking.emergencyDetails}
+                              </Typography>
+                            </Box>
+                            
+                            {selectedBooking.additionalNote && (
+                              <>
+                                <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
+                                  Additional Notes
+                                </Typography>
+                                <Box sx={{ mb: 2 }}>
+                                  <Typography variant="body1" paragraph>
+                                    {selectedBooking.additionalNote}
+                                  </Typography>
+                                </Box>
+                              </>
+                            )}
+                            
+                            {selectedBooking.adminComment && (
+                              <>
+                                <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
+                                  Admin Comments
+                                </Typography>
+                                <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 1, mb: 2 }}>
+                                  <Typography variant="body1">
+                                    {selectedBooking.adminComment}
+                                  </Typography>
+                                </Box>
+                              </>
+                            )}
+                            
+                            <Box sx={{ mb: 2 }}>
+                              <Typography variant="body2" color="text.secondary">
+                                <strong>Diesel Cost Coverage:</strong> {selectedBooking.dieselCost ? 'Yes' : 'No'}
+                              </Typography>
+                              <Typography variant="body2" color="text.secondary">
+                                <strong>Created On:</strong> {format(new Date(selectedBooking.createdAt), 'MMM d, yyyy h:mm a')}
+                              </Typography>
+                              {selectedBooking.processedBy && (
+                                <Typography variant="body2" color="text.secondary">
+                                  <strong>Processed By:</strong> {selectedBooking.processedBy.firstName} {selectedBooking.processedBy.lastName}
+                                </Typography>
+                              )}
+                            </Box>
+                          </Grid>
+                        </Grid>
+                      </DialogContent>
+                      <DialogActions sx={{ 
+                        flexDirection: isMobile ? 'column' : 'row',
+                        alignItems: 'stretch',
+                        p: isMobile ? 2 : undefined,
+                        '& > button': {
+                          m: isMobile ? 0.5 : undefined
+                        }
+                      }}>
+                        <Button onClick={() => setDetailsDialogOpen(false)} color="primary" fullWidth={isMobile}>
+                          Close
+                        </Button>
+                        
+                        {selectedBooking.status === 'pending' && (
+                          <>
+                            <Button 
+                              onClick={() => {
+                                setDetailsDialogOpen(false);
+                                setDieselDialogOpen(true);
+                              }} 
+                              color="warning"
+                              startIcon={<LocalGasStationIcon />}
+                              fullWidth={isMobile}
+                            >
+                              Diesel Cost
+                            </Button>
+                            <Button 
+                              onClick={() => {
+                                setDetailsDialogOpen(false);
+                                setCancelDialogOpen(true);
+                              }} 
+                              color="error"
+                              fullWidth={isMobile}
+                            >
+                              Reject
+                            </Button>
+                            <Button 
+                              onClick={() => {
+                                setDetailsDialogOpen(false);
+                                setAcceptDialogOpen(true);
+                              }} 
+                              color="success"
+                              variant="contained"
+                              fullWidth={isMobile}
+                            >
+                              Accept
+                            </Button>
+                          </>
+                        )}
+                        
+                        {selectedBooking.status === 'needs_approval' && (
+                          <>
+                            <Button 
+                              onClick={() => {
+                                setDetailsDialogOpen(false);
+                                setCancelDialogOpen(true);
+                              }} 
+                              color="error"
+                              fullWidth={isMobile}
+                            >
+                              Reject
+                            </Button>
+                            <Button 
+                              onClick={() => {
+                                setDetailsDialogOpen(false);
+                                setAcceptDialogOpen(true);
+                              }} 
+                              color="success"
+                              variant="contained"
+                              fullWidth={isMobile}
+                            >
+                              Accept
+                            </Button>
+                          </>
+                        )}
+                        
+                        {selectedBooking.status === 'booked' && (
+                          <>
+                            <Button 
+                              onClick={() => {
+                                setDetailsDialogOpen(false);
+                                setCancelDialogOpen(true);
+                              }} 
+                              color="error"
+                              fullWidth={isMobile}
+                            >
+                              Cancel
+                            </Button>
+                            <Button 
+                              onClick={() => {
+                                setDetailsDialogOpen(false);
+                                setCompleteDialogOpen(true);
+                              }} 
+                              color="success"
+                              variant="contained"
+                              fullWidth={isMobile}
+                            >
+                              Mark Completed
+                            </Button>
+                          </>
+                        )}
+                      </DialogActions>
+                    </>
+                  )}
+                </ResponsiveDialog>
+
+                {/* Accept Dialog */}
+                <ResponsiveDialog
+                  open={acceptDialogOpen}
+                  onClose={() => setAcceptDialogOpen(false)}
+                  fullScreen={isMobile}
+                >
+                  <DialogTitle>Accept Ambulance Booking</DialogTitle>
+                  <DialogContent>
+                    <DialogContentText>
+                      Are you sure you want to accept this ambulance booking for {selectedBooking?.patientName}?
+                    </DialogContentText>
                     
-                    {selectedBooking.adminComment && (
-                      <>
-                        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
-                          Admin Comments
-                        </Typography>
-                        <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 1, mb: 2 }}>
-                          <Typography variant="body1">
-                            {selectedBooking.adminComment}
-                          </Typography>
-                        </Box>
-                      </>
+                    {selectedBooking?.status === 'needs_approval' && (
+                      <Alert severity="info" sx={{ mt: 2 }}>
+                        This booking has diesel cost approval from the resident.
+                      </Alert>
                     )}
-                    
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        <strong>Diesel Cost Coverage:</strong> {selectedBooking.dieselCost ? 'Yes' : 'No'}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        <strong>Created On:</strong> {format(new Date(selectedBooking.createdAt), 'MMM d, yyyy h:mm a')}
-                      </Typography>
-                      {selectedBooking.processedBy && (
-                        <Typography variant="body2" color="text.secondary">
-                          <strong>Processed By:</strong> {selectedBooking.processedBy.firstName} {selectedBooking.processedBy.lastName}
-                        </Typography>
-                      )}
-                    </Box>
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions>
-                <Button onClick={() => setDetailsDialogOpen(false)} color="primary">
-                  Close
-                </Button>
-                
-                {selectedBooking.status === 'pending' && (
-                  <>
+                  </DialogContent>
+                  <DialogActions sx={{ flexDirection: isMobile ? 'column' : 'row', p: isMobile ? 2 : undefined }}>
                     <Button 
-                      onClick={() => {
-                        setDetailsDialogOpen(false);
-                        setDieselDialogOpen(true);
-                      }} 
-                      color="warning"
-                      startIcon={<LocalGasStationIcon />}
-                    >
-                      Diesel Cost
-                    </Button>
-                    <Button 
-                      onClick={() => {
-                        setDetailsDialogOpen(false);
-                        setCancelDialogOpen(true);
-                      }} 
-                      color="error"
-                    >
-                      Reject
-                    </Button>
-                    <Button 
-                      onClick={() => {
-                        setDetailsDialogOpen(false);
-                        setAcceptDialogOpen(true);
-                      }} 
-                      color="success"
-                      variant="contained"
-                    >
-                      Accept
-                    </Button>
-                  </>
-                )}
-                
-                {selectedBooking.status === 'needs_approval' && (
-                  <>
-                    <Button 
-                      onClick={() => {
-                        setDetailsDialogOpen(false);
-                        setCancelDialogOpen(true);
-                      }} 
-                      color="error"
-                    >
-                      Reject
-                    </Button>
-                    <Button 
-                      onClick={() => {
-                        setDetailsDialogOpen(false);
-                        setAcceptDialogOpen(true);
-                      }} 
-                      color="success"
-                      variant="contained"
-                    >
-                      Accept
-                    </Button>
-                  </>
-                )}
-                
-                {selectedBooking.status === 'booked' && (
-                  <>
-                    <Button 
-                      onClick={() => {
-                        setDetailsDialogOpen(false);
-                        setCancelDialogOpen(true);
-                      }} 
-                      color="error"
+                      onClick={() => setAcceptDialogOpen(false)} 
+                      color="primary"
+                      fullWidth={isMobile}
+                      sx={{ mb: isMobile ? 1 : undefined }}
                     >
                       Cancel
                     </Button>
                     <Button 
-                      onClick={() => {
-                        setDetailsDialogOpen(false);
-                        setCompleteDialogOpen(true);
-                      }} 
-                      color="success"
+                      onClick={handleAcceptBooking} 
+                      color="primary" 
                       variant="contained"
+                      fullWidth={isMobile}
                     >
-                      Mark Completed
+                      Accept Booking
                     </Button>
-                  </>
-                )}
-              </DialogActions>
-            </>
-          )}
-        </Dialog>
-        
-        {/* Accept Dialog */}
-        <Dialog
-          open={acceptDialogOpen}
-          onClose={() => setAcceptDialogOpen(false)}
-        >
-          <DialogTitle>Accept Ambulance Booking</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Are you sure you want to accept this ambulance booking for {selectedBooking?.patientName}?
-            </DialogContentText>
-            
-            {selectedBooking?.status === 'needs_approval' && (
-              <Alert severity="info" sx={{ mt: 2 }}>
-                This booking has diesel cost approval from the resident.
-              </Alert>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setAcceptDialogOpen(false)} color="primary">
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleAcceptBooking} 
-              color="primary" 
-              variant="contained"
-            >
-              Accept Booking
-            </Button>
-          </DialogActions>
-        </Dialog>
-        
-        {/* Cancel Dialog */}
-        <Dialog
-          open={cancelDialogOpen}
-          onClose={() => setCancelDialogOpen(false)}
-        >
-          <DialogTitle>Cancel Ambulance Booking</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Are you sure you want to cancel this ambulance booking for {selectedBooking?.patientName}?
-            </DialogContentText>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Reason for Cancellation"
-              fullWidth
-              value={adminComment}
-              onChange={(e) => setAdminComment(e.target.value)}
-              multiline
-              rows={3}
-              sx={{ mt: 2 }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setCancelDialogOpen(false)} color="primary">
-              Back
-            </Button>
-            <Button 
-              onClick={handleCancelBooking} 
-              color="error" 
-              variant="contained"
-            >
-              Cancel Booking
-            </Button>
-          </DialogActions>
-        </Dialog>
-        
-        {/* Complete Dialog */}
-        <Dialog
-          open={completeDialogOpen}
-          onClose={() => setCompleteDialogOpen(false)}
-        >
-          <DialogTitle>Mark Booking as Completed</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Are you sure you want to mark this ambulance service for {selectedBooking?.patientName} as completed?
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setCompleteDialogOpen(false)} color="primary">
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleCompleteBooking} 
-              color="success" 
-              variant="contained"
-            >
-              Mark as Completed
-            </Button>
-          </DialogActions>
-        </Dialog>
-        
-        {/* Diesel Cost Dialog */}
-        <Dialog
-          open={dieselDialogOpen}
-          onClose={() => setDieselDialogOpen(false)}
-        >
-          <DialogTitle>Request Diesel Cost Coverage</DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Due to budget constraints, you need to ask the resident to cover the diesel cost for this ambulance service.
-            </DialogContentText>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Message to Resident"
-              fullWidth
-              value={adminComment}
-              onChange={(e) => setAdminComment(e.target.value)}
-              multiline
-              rows={3}
-              placeholder="Please confirm if you can cover the diesel cost for this ambulance service."
-              sx={{ mt: 2 }}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setDieselDialogOpen(false)} color="primary">
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleDieselCostRequest} 
-              color="primary" 
-              variant="contained"
-            >
-              Send Request
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Container>
-    </LocalizationProvider>
-  );
-};
+                  </DialogActions>
+                </ResponsiveDialog>
 
-// Booking Card Component
-const BookingCard = ({ 
-  booking, 
-  onViewDetails, 
-  onAccept, 
-  onCancel, 
-  onComplete,
-  onDieselRequest,
-  formatDate,
-  getStatusColor,
-  getStatusIcon,
-  formatStatus
-}) => {
-  return (
-    <Card 
-      sx={{ 
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        borderTop: `4px solid ${
-          booking.status === 'pending' ? 'warning.main' : 
-          booking.status === 'booked' ? 'success.main' : 
-          booking.status === 'cancelled' ? 'error.main' : 
-          booking.status === 'completed' ? 'primary.main' : 
-          booking.status === 'needs_approval' ? 'secondary.main' : 'grey.500'
-        }`
-      }}
-    >
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Typography variant="h6" noWrap title={booking.patientName}>
-            {booking.patientName}
-          </Typography>
-          <Chip
-            size="small"
-            label={formatStatus(booking.status)}
-            color={getStatusColor(booking.status)}
-            icon={getStatusIcon(booking.status)}
-          />
-        </Box>
-        
-        <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
-          <CalendarMonthIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-          <Typography variant="body2">
-            {formatDate(booking.pickupDate)}
-          </Typography>
-        </Box>
-        
-        <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
-          <AccessTimeIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-          <Typography variant="body2">
-            {booking.pickupTime} ({booking.duration})
-          </Typography>
-        </Box>
-        
-        <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
-          <LocationOnIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-          <Typography variant="body2" noWrap title={booking.destination}>
-            To: {booking.destination}
-          </Typography>
-        </Box>
-        
-        <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
-          <PhoneIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-          <Typography variant="body2">
-            {booking.contactNumber}
-          </Typography>
-        </Box>
-        
-        {booking.adminComment && (
-          <Box sx={{ mt: 1, display: 'flex', alignItems: 'flex-start' }}>
-            <CommentIcon fontSize="small" sx={{ mr: 1, mt: 0.5, color: 'text.secondary' }} />
-            <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-              {booking.adminComment}
-            </Typography>
-          </Box>
-        )}
-      </CardContent>
-      
-      <CardActions sx={{ justifyContent: 'space-between', flexWrap: 'wrap', gap: 1, p: 2, pt: 0 }}>
-        <Button 
-          size="small" 
-          startIcon={<VisibilityIcon />}
-          onClick={onViewDetails}
-        >
-          Details
-        </Button>
-        
-        {booking.status === 'pending' && (
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Tooltip title="Request Diesel Cost Coverage">
-              <IconButton size="small" color="warning" onClick={onDieselRequest}>
-                <LocalGasStationIcon />
-              </IconButton>
-            </Tooltip>
-            <Button size="small" color="error" onClick={onCancel}>
-              Reject
-            </Button>
-            <Button size="small" color="success" variant="contained" onClick={onAccept}>
-              Accept
-            </Button>
-          </Box>
-        )}
-        
-        {booking.status === 'booked' && (
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button size="small" color="error" onClick={onCancel}>
-              Cancel
-            </Button>
-            <Button size="small" color="success" variant="contained" onClick={onComplete}>
-              Complete
-            </Button>
-          </Box>
-        )}
-        
-        {booking.status === 'needs_approval' && (
-          <Box sx={{ display: 'flex', gap: 1 }}>
-            <Button size="small" color="error" onClick={onCancel}>
-              Reject
-            </Button>
-            <Button size="small" color="success" variant="contained" onClick={onAccept}>
-              Accept
-            </Button>
-          </Box>
-        )}
-      </CardActions>
-    </Card>
-  );
-};
+                {/* Cancel Dialog */}
+                <ResponsiveDialog
+                  open={cancelDialogOpen}
+                  onClose={() => setCancelDialogOpen(false)}
+                  fullScreen={isMobile}
+                >
+                  <DialogTitle>Cancel Ambulance Booking</DialogTitle>
+                  <DialogContent>
+                    <DialogContentText>
+                      Are you sure you want to cancel this ambulance booking for {selectedBooking?.patientName}?
+                    </DialogContentText>
+                    <TextField
+                      autoFocus
+                      margin="dense"
+                      label="Reason for Cancellation"
+                      fullWidth
+                      value={adminComment}
+                      onChange={(e) => setAdminComment(e.target.value)}
+                      multiline
+                      rows={isMobile ? 2 : 3}
+                      sx={{ mt: 2 }}
+                      size={isMobile ? "small" : "medium"}
+                    />
+                  </DialogContent>
+                  <DialogActions sx={{ flexDirection: isMobile ? 'column' : 'row', p: isMobile ? 2 : undefined }}>
+                    <Button 
+                      onClick={() => setCancelDialogOpen(false)} 
+                      color="primary"
+                      fullWidth={isMobile}
+                      sx={{ mb: isMobile ? 1 : undefined }}
+                    >
+                      Back
+                    </Button>
+                    <Button 
+                      onClick={handleCancelBooking} 
+                      color="error" 
+                      variant="contained"
+                      fullWidth={isMobile}
+                    >
+                      Cancel Booking
+                    </Button>
+                  </DialogActions>
+                </ResponsiveDialog>
 
-export default AdminAmbulance;
+                {/* Complete Dialog */}
+                <ResponsiveDialog
+                  open={completeDialogOpen}
+                  onClose={() => setCompleteDialogOpen(false)}
+                  fullScreen={isMobile}
+                >
+                  <DialogTitle>Mark Booking as Completed</DialogTitle>
+                  <DialogContent>
+                    <DialogContentText>
+                      Are you sure you want to mark this ambulance service for {selectedBooking?.patientName} as completed?
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions sx={{ flexDirection: isMobile ? 'column' : 'row', p: isMobile ? 2 : undefined }}>
+                    <Button 
+                      onClick={() => setCompleteDialogOpen(false)} 
+                      color="primary"
+                      fullWidth={isMobile}
+                      sx={{ mb: isMobile ? 1 : undefined }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleCompleteBooking} 
+                      color="success" 
+                      variant="contained"
+                      fullWidth={isMobile}
+                    >
+                      Mark as Completed
+                    </Button>
+                  </DialogActions>
+                </ResponsiveDialog>
+
+                {/* Diesel Cost Dialog */}
+                <ResponsiveDialog
+                  open={dieselDialogOpen}
+                  onClose={() => setDieselDialogOpen(false)}
+                  fullScreen={isMobile}
+                >
+                  <DialogTitle>Request Diesel Cost Coverage</DialogTitle>
+                  <DialogContent>
+                    <DialogContentText>
+                      Due to budget constraints, you need to ask the resident to cover the diesel cost for this ambulance service.
+                    </DialogContentText>
+                    <TextField
+                      autoFocus
+                      margin="dense"
+                      label="Message to Resident"
+                      fullWidth
+                      value={adminComment}
+                      onChange={(e) => setAdminComment(e.target.value)}
+                      multiline
+                      rows={isMobile ? 2 : 3}
+                      placeholder="Please confirm if you can cover the diesel cost for this ambulance service."
+                      sx={{ mt: 2 }}
+                      size={isMobile ? "small" : "medium"}
+                    />
+                  </DialogContent>
+                  <DialogActions sx={{ flexDirection: isMobile ? 'column' : 'row', p: isMobile ? 2 : undefined }}>
+                    <Button 
+                      onClick={() => setDieselDialogOpen(false)} 
+                      color="primary"
+                      fullWidth={isMobile}
+                      sx={{ mb: isMobile ? 1 : undefined }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button 
+                      onClick={handleDieselCostRequest} 
+                      color="primary" 
+                      variant="contained"
+                      fullWidth={isMobile}
+                    >
+                      Send Request
+                    </Button>
+                  </DialogActions>
+                </ResponsiveDialog>
+                </Container>
+                </LocalizationProvider>
+                );
+              };
+                // Booking Card Component
+              const BookingCard = ({ 
+                booking, 
+                onViewDetails, 
+                onAccept, 
+                onCancel, 
+                onComplete,
+                onDieselRequest,
+                formatDate,
+                getStatusColor,
+                getStatusIcon,
+                formatStatus,
+                isMobile
+              }) => {
+                return (
+                  <Card 
+                    sx={{ 
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      borderTop: `4px solid ${
+                        booking.status === 'pending' ? 'warning.main' : 
+                        booking.status === 'booked' ? 'success.main' : 
+                        booking.status === 'cancelled' ? 'error.main' : 
+                        booking.status === 'completed' ? 'primary.main' : 
+                        booking.status === 'needs_approval' ? 'secondary.main' : 'grey.500'
+                      }`
+                    }}
+                  >
+                    <CardContent sx={{ flexGrow: 1, p: isMobile ? 1.5 : 2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                        <Typography variant={isMobile ? "subtitle1" : "h6"} noWrap title={booking.patientName}>
+                          {booking.patientName}
+                        </Typography>
+                        <Chip
+                          size="small"
+                          label={formatStatus(booking.status)}
+                          color={getStatusColor(booking.status)}
+                          icon={getStatusIcon(booking.status)}
+                        />
+                      </Box>
+                      
+                      <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
+                        <CalendarMonthIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                        <Typography variant="body2">
+                          {formatDate(booking.pickupDate)}
+                        </Typography>
+                      </Box>
+                      
+                      <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
+                        <AccessTimeIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                        <Typography variant="body2">
+                          {booking.pickupTime} ({booking.duration})
+                        </Typography>
+                      </Box>
+                      
+                      <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
+                        <LocationOnIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                        <Typography variant="body2" noWrap title={booking.destination}>
+                          To: {booking.destination}
+                        </Typography>
+                      </Box>
+                      
+                      <Box sx={{ mb: 1, display: 'flex', alignItems: 'center' }}>
+                        <PhoneIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
+                        <Typography variant="body2">
+                          {booking.contactNumber}
+                        </Typography>
+                      </Box>
+                      
+                      {booking.adminComment && (
+                        <Box sx={{ mt: 1, display: 'flex', alignItems: 'flex-start' }}>
+                          <CommentIcon fontSize="small" sx={{ mr: 1, mt: 0.5, color: 'text.secondary' }} />
+                          <Typography variant="body2" sx={{ overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                            {booking.adminComment}
+                          </Typography>
+                        </Box>
+                      )}
+                    </CardContent>
+                    
+                    <CardActions sx={{ 
+                      justifyContent: 'space-between', 
+                      flexWrap: 'wrap', 
+                      gap: 1, 
+                      p: isMobile ? '8px 12px' : 2, 
+                      pt: 0,
+                      flexDirection: { xs: 'column', sm: 'row' }
+                    }}>
+                      <Button 
+                        size="small" 
+                        startIcon={<VisibilityIcon />}
+                        onClick={onViewDetails}
+                        fullWidth={isMobile}
+                      >
+                        Details
+                      </Button>
+                      
+                      {booking.status === 'pending' && (
+                        <Box sx={{ 
+                          display: 'flex', 
+                          gap: 1,
+                          width: isMobile ? '100%' : 'auto',
+                          justifyContent: isMobile ? 'space-between' : 'flex-end'
+                        }}>
+                          <Tooltip title="Request Diesel Cost Coverage">
+                            <IconButton size="small" color="warning" onClick={onDieselRequest}>
+                              <LocalGasStationIcon />
+                            </IconButton>
+                          </Tooltip>
+                          <Button size="small" color="error" onClick={onCancel}>
+                            Reject
+                          </Button>
+                          <Button size="small" color="success" variant="contained" onClick={onAccept}>
+                            Accept
+                          </Button>
+                        </Box>
+                      )}
+                      
+                      {booking.status === 'booked' && (
+                        <Box sx={{ 
+                          display: 'flex', 
+                          gap: 1,
+                          width: isMobile ? '100%' : 'auto',
+                          justifyContent: isMobile ? 'space-between' : 'flex-end'
+                        }}>
+                          <Button size="small" color="error" onClick={onCancel}>
+                            Cancel
+                          </Button>
+                          <Button size="small" color="success" variant="contained" onClick={onComplete}>
+                            Complete
+                          </Button>
+                        </Box>
+                      )}
+                      
+                      {booking.status === 'needs_approval' && (
+                        <Box sx={{ 
+                          display: 'flex', 
+                          gap: 1,
+                          width: isMobile ? '100%' : 'auto',
+                          justifyContent: isMobile ? 'space-between' : 'flex-end'
+                        }}>
+                          <Button size="small" color="error" onClick={onCancel}>
+                            Reject
+                          </Button>
+                          <Button size="small" color="success" variant="contained" onClick={onAccept}>
+                            Accept
+                          </Button>
+                        </Box>
+                      )}
+                    </CardActions>
+                  </Card>
+                );
+              };
+
+              export default AdminAmbulance;

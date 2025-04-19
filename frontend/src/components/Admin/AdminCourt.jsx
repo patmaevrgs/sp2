@@ -328,6 +328,7 @@ function AdminCourt() {
     }
   };
   
+  
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -416,7 +417,7 @@ function AdminCourt() {
                 headerToolbar={{
                   left: 'prev,next today',
                   center: 'title',
-                  right: isMobile ? 'timeGridDay,dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay'
+                  right: isMobile ? 'timeGridDay,timeGridWeek,dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay'
                 }}
                 events={calendarEvents}
                 height="100%"
