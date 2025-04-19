@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Container, 
   Typography, 
@@ -19,9 +19,6 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
-  Card,
-  CardContent,
-  Divider,
   Chip,
   useMediaQuery,
   IconButton,
@@ -51,6 +48,7 @@ import { format } from 'date-fns';
 function AdminCourt() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const calendarRef = useRef(null);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -65,6 +63,7 @@ function AdminCourt() {
   const [actionType, setActionType] = useState('');
   const [dateFilter, setDateFilter] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [calendarLoading, setCalendarLoading] = useState(false);
   
   // For pagination
   const [page, setPage] = useState(0);
@@ -136,65 +135,74 @@ function AdminCourt() {
     fetchReservations();
   }, [dateFilter, statusFilter]);
   
-  // Fetch calendar data
-// Fetch calendar data
-useEffect(() => {
-  const fetchCalendarData = async () => {
+  const fetchCalendarData = useCallback(async () => {
     try {
-      const token = localStorage.getItem('token');
-      
-      if (!token) return;
+      setCalendarLoading(true);
       
       const today = new Date();
       const threeMonthsLater = new Date(today);
       threeMonthsLater.setMonth(today.getMonth() + 3);
       
-      console.log('Fetching calendar data', {
-        start: today.toISOString().split('T')[0],
-        end: threeMonthsLater.toISOString().split('T')[0]
+      const startDate = today.toISOString().split('T')[0];
+      const endDate = threeMonthsLater.toISOString().split('T')[0];
+      
+      console.log('Fetching calendar data from API...', {
+        start: startDate,
+        end: endDate,
+        userType: 'admin'
       });
       
-      const response = await fetch(`http://localhost:3002/court-calendar?start=${today.toISOString().split('T')[0]}&end=${threeMonthsLater.toISOString().split('T')[0]}&userType=admin`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const url = `http://localhost:3002/court-calendar?start=${startDate}&end=${endDate}&userType=admin`;
       
-      console.log('Calendar Response Status:', response.status);
+      const response = await fetch(url);
+      
+      console.log('Calendar API response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to fetch calendar data: ${response.status}`);
+      }
       
       const data = await response.json();
       
-      console.log('Received Calendar Data:', data);
+      console.log('Raw calendar data from API:', data);
       
-      // Validate and filter data
-      const validEvents = data.filter(event => 
-        event.start && event.end && event.status === 'approved'
-      );
+      // Verify and format events
+      const validEvents = data
+        .filter(event => event.start && event.end)
+        .map((event, index) => ({
+          id: event.id || `event-${index}`,
+          title: event.title || 'Reserved',
+          start: event.start,
+          end: event.end,
+          backgroundColor: event.status === 'approved' ? '#4caf50' : '#ff9800', // Green for approved, orange for pending
+          borderColor: event.status === 'approved' ? '#4caf50' : '#ff9800',
+          textColor: 'white'
+        }));
       
-      console.log('Valid Events:', validEvents);
+      console.log('Formatted calendar events:', validEvents);
       
-      // Format events for admin calendar
-      const formattedEvents = validEvents.map(event => ({
-        ...event,
-        backgroundColor: '#4caf50', // Always green for approved
-        borderColor: '#4caf50',
-        textColor: 'white'
-      }));
+      setCalendarEvents(validEvents);
       
-      console.log('Formatted Events:', formattedEvents);
+      // Force calendar refetch
+      if (calendarRef.current) {
+        const calendarApi = calendarRef.current.getApi();
+        calendarApi.refetchEvents();
+      }
       
-      setCalendarEvents(formattedEvents);
     } catch (error) {
       console.error('Error fetching calendar data:', error);
-      setError('Failed to load calendar data');
+      setError('Failed to load calendar data: ' + error.message);
+    } finally {
+      setCalendarLoading(false);
     }
-  };
+  }, []);
   
-  if (showCalendar) {
-    fetchCalendarData();
-  }
-}, [showCalendar]);
+  // Fetch calendar data when calendar view is toggled
+  useEffect(() => {
+    if (showCalendar) {
+      fetchCalendarData();
+    }
+  }, [showCalendar, fetchCalendarData]);
   
   // Handle pagination changes
   const handleChangePage = (event, newPage) => {
@@ -229,6 +237,8 @@ useEffect(() => {
       const token = localStorage.getItem('token');
       const status = actionType === 'approve' ? 'approved' : 'rejected';
       
+      console.log(`Processing reservation ${selectedReservation._id} with status: ${status}`);
+      
       // Update reservation status
       const response = await fetch(`http://localhost:3002/court/${selectedReservation._id}/status`, {
         method: 'PATCH',
@@ -243,10 +253,11 @@ useEffect(() => {
       });
       
       if (!response.ok) {
-        throw new Error(`Failed to ${actionType} reservation`);
+        throw new Error(`Failed to ${actionType} reservation: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log(`Reservation ${status} response:`, data);
       
       // Update local state
       setReservations(reservations.map(res => 
@@ -259,13 +270,14 @@ useEffect(() => {
       
       setSuccess(`Reservation ${actionType === 'approve' ? 'approved' : 'rejected'} successfully`);
       
-      // Refresh calendar if showing
-      if (showCalendar) {
-        fetchCalendarData();
+      // Refresh calendar if showing and the action was approve
+      if (showCalendar && actionType === 'approve') {
+        console.log('Refreshing calendar after approval');
+        await fetchCalendarData();
       }
     } catch (error) {
       console.error(`Error ${actionType}ing reservation:`, error);
-      setError(`Failed to ${actionType} reservation`);
+      setError(`Failed to ${actionType} reservation: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -273,7 +285,7 @@ useEffect(() => {
   
   // Toggle calendar view
   const toggleCalendar = () => {
-    setShowCalendar(!showCalendar);
+    setShowCalendar(prev => !prev);
   };
   
   // Get status chip color
@@ -308,26 +320,34 @@ useEffect(() => {
   const formatDate = (dateString) => {
     return format(new Date(dateString), 'MMM d, yyyy');
   };
+
+  // Manual refresh of calendar
+  const handleRefreshCalendar = () => {
+    if (showCalendar) {
+      fetchCalendarData();
+    }
+  };
   
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Typography variant="h4" gutterBottom component="h2">
+        <Typography variant="h4" gutterBottom component="h2" sx={{ 
+          fontSize: { xs: '1.5rem', sm: '2rem', md: '2.25rem' }
+        }}>
           Court Reservation Management
         </Typography>
         
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} sm={4} md={3}>
+        <Paper sx={{ p: { xs: 1, sm: 2 }, mb: 3 }}>
+          <Grid container spacing={{ xs: 1, sm: 2 }} alignItems="center">
+            <Grid item xs={12} sm={6} md={3}>
               <DatePicker
                 label="Filter by Date"
                 value={dateFilter}
                 onChange={(newDate) => setDateFilter(newDate)}
-                renderInput={(params) => <TextField {...params} fullWidth />}
-                clearable
+                sx={{ width: '100%' }}
               />
             </Grid>
-            <Grid item xs={12} sm={4} md={3}>
+            <Grid item xs={12} sm={6} md={3}>
               <FormControl fullWidth>
                 <InputLabel id="status-filter-label">Status</InputLabel>
                 <Select
@@ -345,63 +365,75 @@ useEffect(() => {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={4} md={2}>
+            <Grid item xs={6} sm={4} md={2}>
               <Button
                 variant="outlined"
                 onClick={handleClearFilters}
                 fullWidth
+                size={isMobile ? "small" : "medium"}
               >
-                Clear Filters
+                Clear
               </Button>
             </Grid>
-            <Grid item xs={12} sm={6} md={2}>
+            <Grid item xs={6} sm={4} md={2}>
               <Button
                 variant="outlined"
                 startIcon={<RefreshIcon />}
-                onClick={fetchReservations}
+                onClick={showCalendar ? handleRefreshCalendar : fetchReservations}
                 fullWidth
+                size={isMobile ? "small" : "medium"}
               >
                 Refresh
               </Button>
             </Grid>
-            <Grid item xs={12} sm={6} md={2}>
+            <Grid item xs={12} sm={4} md={2}>
               <Button
                 variant="outlined"
                 startIcon={<CalendarMonthIcon />}
                 onClick={toggleCalendar}
                 fullWidth
+                size={isMobile ? "small" : "medium"}
               >
-                {showCalendar ? 'Hide Calendar' : 'View Calendar'}
+                {showCalendar ? 'List View' : 'Calendar'}
               </Button>
             </Grid>
           </Grid>
         </Paper>
         
         {showCalendar ? (
-          <Paper sx={{ p: 2, mb: 3, height: '600px' }}>
+          <Paper sx={{ p: { xs: 1, sm: 2 }, mb: 3, height: { xs: '400px', sm: '500px', md: '600px' } }}>
             <Typography variant="h6" gutterBottom>
               Court Reservation Calendar
+              {calendarLoading && (
+                <CircularProgress size={20} sx={{ ml: 2, verticalAlign: 'middle' }} />
+              )}
             </Typography>
             <Box sx={{ height: '90%' }}>
               <FullCalendar
+                ref={calendarRef}
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                 initialView={isMobile ? "timeGridDay" : "timeGridWeek"}
                 headerToolbar={{
                   left: 'prev,next today',
                   center: 'title',
-                  right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                  right: isMobile ? 'timeGridDay,dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay'
                 }}
                 events={calendarEvents}
                 height="100%"
-                eventDisplay="block" // Ensures events are visible
-                eventBackgroundColor="#4caf50"
-                eventBorderColor="#4caf50"
-                eventTextColor="white"
+                eventDisplay="block"
+                displayEventTime={true}
+                displayEventEnd={true}
+                allDaySlot={false}
+                slotMinTime="06:00:00"
+                slotMaxTime="22:00:00"
                 eventClick={(info) => {
+                  console.log('Event clicked:', info.event);
                   const reservationId = info.event.id;
                   const reservation = reservations.find(r => r._id === reservationId);
                   if (reservation) {
                     handleViewDetails(reservation);
+                  } else {
+                    console.log('Could not find matching reservation for event', reservationId);
                   }
                 }}
               />
@@ -409,14 +441,14 @@ useEffect(() => {
           </Paper>
         ) : (
           <Paper sx={{ width: '100%' }}>
-            <TableContainer component={Paper}>
-              <Table>
+            <TableContainer component={Paper} sx={{ maxHeight: { xs: '400px', sm: '600px' } }}>
+              <Table stickyHeader>
                 <TableHead>
                   <TableRow>
                     <TableCell>Date</TableCell>
                     <TableCell>Time</TableCell>
-                    <TableCell>Representative</TableCell>
-                    <TableCell>Purpose</TableCell>
+                    {!isMobile && <TableCell>Representative</TableCell>}
+                    {!isMobile && <TableCell>Purpose</TableCell>}
                     <TableCell>Status</TableCell>
                     <TableCell>Actions</TableCell>
                   </TableRow>
@@ -424,13 +456,13 @@ useEffect(() => {
                 <TableBody>
                   {loading ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                      <TableCell colSpan={isMobile ? 4 : 6} align="center" sx={{ py: 3 }}>
                         <CircularProgress />
                       </TableCell>
                     </TableRow>
                   ) : reservations.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} align="center" sx={{ py: 3 }}>
+                      <TableCell colSpan={isMobile ? 4 : 6} align="center" sx={{ py: 3 }}>
                         No reservations found
                       </TableCell>
                     </TableRow>
@@ -440,20 +472,22 @@ useEffect(() => {
                       : reservations
                     ).map((reservation) => (
                       <TableRow key={reservation._id}>
-                        <TableCell>{formatDate(reservation.reservationDate)}</TableCell>
-                        <TableCell>
+                        <TableCell sx={{ padding: { xs: '8px 4px', sm: '16px' } }}>
+                          {formatDate(reservation.reservationDate)}
+                        </TableCell>
+                        <TableCell sx={{ padding: { xs: '8px 4px', sm: '16px' } }}>
                           {reservation.startTime} ({reservation.duration} hr)
                         </TableCell>
-                        <TableCell>{reservation.representativeName}</TableCell>
-                        <TableCell>{reservation.purpose}</TableCell>
-                        <TableCell>
+                        {!isMobile && <TableCell>{reservation.representativeName}</TableCell>}
+                        {!isMobile && <TableCell>{reservation.purpose}</TableCell>}
+                        <TableCell sx={{ padding: { xs: '8px 4px', sm: '16px' } }}>
                           <Chip
                             label={reservation.status.toUpperCase()}
                             color={getStatusColor(reservation.status)}
                             size="small"
                           />
                         </TableCell>
-                        <TableCell>
+                        <TableCell sx={{ padding: { xs: '8px 2px', sm: '16px' } }}>
                           <IconButton
                             size="small"
                             onClick={() => handleViewDetails(reservation)}
@@ -509,6 +543,12 @@ useEffect(() => {
           onClose={() => setDetailsDialogOpen(false)}
           maxWidth="md"
           fullWidth
+          sx={{
+            '& .MuiDialog-paper': {
+              width: '100%',
+              margin: { xs: '8px', sm: '16px' }
+            }
+          }}
         >
           {selectedReservation && (
             <>
@@ -523,18 +563,6 @@ useEffect(() => {
               </DialogTitle>
               <DialogContent>
                 <Grid container spacing={2}>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2">Reservation ID</Typography>
-                    <Typography variant="body2" gutterBottom>
-                      {selectedReservation._id}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2">Booked On</Typography>
-                    <Typography variant="body2" gutterBottom>
-                      {format(new Date(selectedReservation.createdAt), 'MMM d, yyyy h:mm a')}
-                    </Typography>
-                  </Grid>
                   <Grid item xs={12} md={6}>
                     <Typography variant="subtitle2">Date</Typography>
                     <Typography variant="body2" gutterBottom>
@@ -619,6 +647,7 @@ useEffect(() => {
                       }} 
                       color="success"
                       variant="contained"
+                      size={isMobile ? "small" : "medium"}
                     >
                       Approve
                     </Button>
@@ -629,12 +658,15 @@ useEffect(() => {
                       }} 
                       color="error"
                       variant="contained"
+                      size={isMobile ? "small" : "medium"}
                     >
                       Reject
                     </Button>
                   </>
                 )}
-                <Button onClick={() => setDetailsDialogOpen(false)}>Close</Button>
+                <Button onClick={() => setDetailsDialogOpen(false)} size={isMobile ? "small" : "medium"}>
+                  Close
+                </Button>
               </DialogActions>
             </>
           )}
@@ -644,6 +676,12 @@ useEffect(() => {
         <Dialog
           open={actionDialogOpen}
           onClose={() => setActionDialogOpen(false)}
+          sx={{
+            '& .MuiDialog-paper': {
+              width: { xs: '90%', sm: '70%', md: '50%' },
+              maxWidth: '600px'
+            }
+          }}
         >
           <DialogTitle>
             {actionType === 'approve' ? 'Approve' : 'Reject'} Court Reservation
@@ -671,12 +709,15 @@ useEffect(() => {
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setActionDialogOpen(false)}>Cancel</Button>
+            <Button onClick={() => setActionDialogOpen(false)} size={isMobile ? "small" : "medium"}>
+              Cancel
+            </Button>
             <Button 
               onClick={handleProcessReservation} 
               color={actionType === 'approve' ? 'success' : 'error'}
               variant="contained"
               disabled={actionType === 'reject' && !adminComment}
+              size={isMobile ? "small" : "medium"}
             >
               {actionType === 'approve' ? 'Approve' : 'Reject'}
             </Button>

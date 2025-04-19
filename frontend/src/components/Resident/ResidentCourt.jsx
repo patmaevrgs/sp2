@@ -179,14 +179,41 @@ function ResidentCourt() {
       startTime: time
     });
   };
-  
-  // Check for time conflicts - simplified version that always returns false
+
+  // Check for time conflicts with existing reservations
   const checkTimeConflict = async () => {
-    console.log('Bypassing conflict check');
-    return false; // Always return no conflict to allow form submission
+    try {
+      if (!formData.reservationDate || !formData.startTime || !formData.duration) {
+        return false; // Can't check without complete data
+      }
+      
+      const formattedDate = format(formData.reservationDate, 'yyyy-MM-dd');
+      const formattedTime = format(formData.startTime, 'HH:mm');
+      
+      console.log('Checking conflict with:', {
+        date: formattedDate,
+        startTime: formattedTime,
+        duration: formData.duration
+      });
+      
+      const response = await fetch(
+        `http://localhost:3002/court-conflict?date=${formattedDate}&startTime=${formattedTime}&duration=${formData.duration}`,
+        {
+          headers: { 'Content-Type': 'application/json' }
+        }
+      );
+      
+      const data = await response.json();
+      console.log('Conflict check result:', data);
+      
+      return data.hasConflict;
+    } catch (error) {
+      console.error('Error checking time conflict:', error);
+      return true; // Assume conflict on error (safer)
+    }
   };
-  
-  // Submit reservation
+
+  // And update your handleSubmit function to properly call this:
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -210,7 +237,17 @@ function ResidentCourt() {
       return;
     }
     
-    // Open confirmation dialog
+    // Check for time conflicts
+    setLoading(true);
+    const hasTimeConflict = await checkTimeConflict();
+    setLoading(false);
+    
+    if (hasTimeConflict) {
+      setError('The selected time conflicts with an existing reservation. Please choose a different time.');
+      return;
+    }
+    
+    // Open confirmation dialog if no conflicts
     setConfirmDialogOpen(true);
   };
   

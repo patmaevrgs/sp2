@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Container,
   Typography,
@@ -96,6 +96,7 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
 }));
 
 const AdminAmbulance = () => {
+  const calendarRef = useRef(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
@@ -265,19 +266,19 @@ const AdminAmbulance = () => {
   const getCalendarEvents = () => {
     return bookings
       .filter(booking => booking.status === 'booked' || booking.status === 'completed')
-      .map(booking => ({
-        id: booking._id,
-        title: `${booking.patientName} - ${booking.destination}`,
-        start: `${format(new Date(booking.pickupDate), 'yyyy-MM-dd')}T${booking.pickupTime}`,
-        end: `${format(new Date(booking.pickupDate), 'yyyy-MM-dd')}T${
-          // Simple end time calculation
-          booking.pickupTime.split(':')[0] < 22 
-            ? `${parseInt(booking.pickupTime.split(':')[0]) + 2}:${booking.pickupTime.split(':')[1]}`
-            : '23:59'
-        }`,
-        color: booking.status === 'completed' ? theme.palette.success.main : theme.palette.primary.main,
-        extendedProps: { booking }
-      }));
+      .map(booking => {
+        const startDateTime = new Date(`${format(new Date(booking.pickupDate), 'yyyy-MM-dd')}T${booking.pickupTime}:00`);
+        const endDateTime = new Date(startDateTime.getTime() + (2 * 60 * 60 * 1000)); // 2-hour duration
+  
+        return {
+          id: booking._id,
+          title: `${booking.patientName} - ${booking.destination}`,
+          start: startDateTime.toISOString(),
+          end: endDateTime.toISOString(),
+          color: booking.status === 'completed' ? theme.palette.success.main : theme.palette.primary.main,
+          extendedProps: { booking }
+        };
+      });
   };
   
   // Handle calendar event click
@@ -825,43 +826,28 @@ const AdminAmbulance = () => {
                     </Grid>
                   )}
                 </TabPanel>
-                
                 {/* Calendar View Tab */}
                 <TabPanel value={tabValue} index={5}>
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                    <Button
-                      variant={calendarView === 'dayGridMonth' ? 'contained' : 'outlined'}
-                      onClick={() => setCalendarView('dayGridMonth')}
-                      sx={{ mr: 1 }}
-                    >
-                      Month
-                    </Button>
-                    <Button
-                      variant={calendarView === 'timeGridWeek' ? 'contained' : 'outlined'}
-                      onClick={() => setCalendarView('timeGridWeek')}
-                      sx={{ mr: 1 }}
-                    >
-                      Week
-                    </Button>
-                    <Button
-                      variant={calendarView === 'timeGridDay' ? 'contained' : 'outlined'}
-                      onClick={() => setCalendarView('timeGridDay')}
-                    >
-                      Day
-                    </Button>
-                  </Box>
                   <Box sx={{ height: '70vh' }}>
                     <FullCalendar
+                      ref={calendarRef}
                       plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                       initialView={calendarView}
+                      view={calendarView}
                       headerToolbar={{
                         left: 'prev,next today',
                         center: 'title',
-                        right: ''
+                        right: isMobile ? 'timeGridDay,dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay'
                       }}
                       events={getCalendarEvents()}
                       eventClick={handleEventClick}
                       height="100%"
+                      eventDisplay="block"
+                      displayEventTime={true}
+                      displayEventEnd={true}
+                      allDaySlot={false}
+                      slotMinTime="06:00:00"
+                      slotMaxTime="22:00:00"
                     />
                   </Box>
                 </TabPanel>
