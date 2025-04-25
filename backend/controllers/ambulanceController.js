@@ -310,6 +310,7 @@ export const residentCancelBooking = async (req, res) => {
         });
       }
       
+      
       // Update booking status to cancelled
       booking.status = 'cancelled';
       booking.adminComment = booking.adminComment 

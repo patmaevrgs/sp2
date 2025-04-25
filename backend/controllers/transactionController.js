@@ -133,7 +133,14 @@ export const updateTransactionStatus = async (req, res) => {
       const booking = await AmbulanceBooking.findById(transaction.referenceId);
       
       if (booking) {
-        booking.status = status;
+        let bookingStatus = status;
+
+        if (status==='approved'){
+          bookingStatus = 'booked';
+        }
+
+        booking.status = bookingStatus;
+        
         if (adminComment !== undefined) booking.adminComment = adminComment;
         booking.processedBy = adminId;
         await booking.save();

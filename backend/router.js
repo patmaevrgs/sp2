@@ -27,6 +27,13 @@ import {
   getTransactionById,
   updateTransactionStatus
 } from './controllers/transactionController.js';
+import { 
+  createReport, 
+  getAllReports, 
+  getUserReports, 
+  updateReportStatus, 
+  addResidentFeedback 
+} from './controllers/reportController.js';
 import multer from 'multer';
 
 const router = Router();
@@ -79,6 +86,13 @@ router.post('/transactions', createTransaction);
 router.get('/transactions', getTransactions);
 router.get('/transactions/:id', getTransactionById);
 router.patch('/transactions/:id/status', updateTransactionStatus);
+
+// Infrastructure Report Routes
+router.post('/reports', upload.array('media', 5), createReport);
+router.get('/reports', getAllReports);
+router.get('/reports/user', getUserReports);
+router.put('/reports/:reportId/status', updateReportStatus);
+router.post('/reports/:reportId/feedback', addResidentFeedback);
 
 // Serve static files
 import express from 'express';

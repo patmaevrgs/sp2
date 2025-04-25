@@ -200,7 +200,7 @@ export const getCourtReservationById = async (req, res) => {
 };
 
 // Update a court reservation's status (for admin use)
-// In courtController.js - update updateCourtReservationStatus
+// Update a court reservation's status (for admin use)
 export const updateCourtReservationStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -296,14 +296,24 @@ export const updateCourtReservationStatus = async (req, res) => {
     });
     
     if (transaction) {
-      transaction.status = status;
+      // Map court reservation status to transaction status
+      let transactionStatus;
+      if (status === 'rejected') {
+        // Map 'rejected' to 'cancelled' in transaction
+        transactionStatus = 'cancelled';
+        console.log('Mapping rejected status to cancelled in transaction');
+      } else {
+        transactionStatus = status;
+      }
+      
+      transaction.status = transactionStatus;
       if (adminComment !== undefined) transaction.adminComment = adminComment;
       if (processedBy) transaction.processedBy = processedBy;
       transaction.updatedAt = Date.now();
       
       try {
         await transaction.save();
-        console.log('Transaction updated successfully');
+        console.log('Transaction updated successfully with status:', transactionStatus);
       } catch (transactionSaveError) {
         console.error('Error saving transaction:', transactionSaveError);
         // Non-critical error, so we'll continue
@@ -311,10 +321,19 @@ export const updateCourtReservationStatus = async (req, res) => {
     } else {
       console.log('No transaction found for court reservation:', id);
       // Create a new transaction if none exists
+      
+      // Determine transaction status based on court reservation status
+      let transactionStatus;
+      if (status === 'rejected') {
+        transactionStatus = 'cancelled';
+      } else {
+        transactionStatus = status;
+      }
+      
       const newTransaction = new Transaction({
         userId: reservation.bookedBy,
         serviceType: 'court_reservation',
-        status: status,
+        status: transactionStatus,
         amount: calculateAmount(reservation.startTime, reservation.duration),
         details: {
           representativeName: reservation.representativeName,
@@ -330,7 +349,7 @@ export const updateCourtReservationStatus = async (req, res) => {
       
       try {
         await newTransaction.save();
-        console.log('New transaction created successfully');
+        console.log('New transaction created successfully with status:', transactionStatus);
       } catch (newTransactionError) {
         console.error('Error creating new transaction:', newTransactionError);
         // Non-critical error, so we'll continue

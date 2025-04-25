@@ -48,7 +48,8 @@ import {
   ArrowForwardIos as ArrowForwardIcon,
   Visibility as VisibilityIcon,
   Cancel as CancelIcon,
-  Refresh as RefreshIcon
+  Refresh as RefreshIcon,
+  Reply as ReplyIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
 
@@ -65,6 +66,10 @@ const ResidentTransaction = () => {
   const [cancellationReason, setCancellationReason] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
   const [filter, setFilter] = useState('all');
+  
+  // Diesel response states
+  const [openDieselDialog, setOpenDieselDialog] = useState(false);
+  const [dieselResponseLoading, setDieselResponseLoading] = useState(false);
   
   // For responsive design
   const theme = useTheme();
@@ -95,47 +100,47 @@ const ResidentTransaction = () => {
   };
 
   const handleViewDetails = async (transactionId) => {
-  try {
-    // First, get the transaction details
-    const response = await fetch(`http://localhost:3002/transactions/${transactionId}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    
-    const transaction = await response.json();
-    
-    // Now, if this is a court reservation or ambulance booking, fetch the details
-    let referenceDetails = null;
-    
-    if (transaction.serviceType === 'court_reservation' && transaction.referenceId) {
-      const refResponse = await fetch(`http://localhost:3002/court/${transaction.referenceId}`);
-      if (refResponse.ok) {
-        referenceDetails = await refResponse.json();
+    try {
+      // First, get the transaction details
+      const response = await fetch(`http://localhost:3002/transactions/${transactionId}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
-    } else if (transaction.serviceType === 'ambulance_booking' && transaction.referenceId) {
-      const refResponse = await fetch(`http://localhost:3002/ambulance/${transaction.referenceId}`);
-      if (refResponse.ok) {
-        referenceDetails = await refResponse.json();
+      
+      const transaction = await response.json();
+      
+      // Now, if this is a court reservation or ambulance booking, fetch the details
+      let referenceDetails = null;
+      
+      if (transaction.serviceType === 'court_reservation' && transaction.referenceId) {
+        const refResponse = await fetch(`http://localhost:3002/court/${transaction.referenceId}`);
+        if (refResponse.ok) {
+          referenceDetails = await refResponse.json();
+        }
+      } else if (transaction.serviceType === 'ambulance_booking' && transaction.referenceId) {
+        const refResponse = await fetch(`http://localhost:3002/ambulance/${transaction.referenceId}`);
+        if (refResponse.ok) {
+          referenceDetails = await refResponse.json();
+        }
       }
+      
+      // Combine the data
+      setSelectedTransaction({
+        ...transaction,
+        referenceDetails: referenceDetails
+      });
+      
+      setOpenDetails(true);
+    } catch (err) {
+      console.error('Error fetching transaction details:', err);
+      setSnackbar({
+        open: true,
+        message: 'Failed to load transaction details',
+        severity: 'error'
+      });
     }
-    
-    // Combine the data
-    setSelectedTransaction({
-      ...transaction,
-      referenceDetails: referenceDetails
-    });
-    
-    setOpenDetails(true);
-  } catch (err) {
-    console.error('Error fetching transaction details:', err);
-    setSnackbar({
-      open: true,
-      message: 'Failed to load transaction details',
-      severity: 'error'
-    });
-  }
-};
+  };
 
   const handleCancelRequest = (transaction) => {
     setSelectedTransaction(transaction);
@@ -187,6 +192,62 @@ const ResidentTransaction = () => {
     }
   };
 
+  // Diesel cost response functions
+  const handleRespondToDiesel = (transaction) => {
+    setSelectedTransaction(transaction);
+    setOpenDieselDialog(true);
+  };
+
+  const handleDieselCostDecision = async (accept) => {
+    setDieselResponseLoading(true);
+    
+    try {
+      const response = await fetch(`http://localhost:3002/ambulance/${selectedTransaction.referenceId}/resident-response`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          acceptDieselCost: accept,
+          userId: userId 
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      // Close the dialog and show success message
+      setOpenDieselDialog(false);
+      setSnackbar({
+        open: true,
+        message: accept 
+          ? 'You have agreed to cover the diesel cost' 
+          : 'You have declined to cover the diesel cost',
+        severity: 'success'
+      });
+      
+      // Refresh transactions list
+      fetchTransactions();
+    } catch (error) {
+      console.error('Error responding to diesel cost:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to submit your response. Please try again.',
+        severity: 'error'
+      });
+    } finally {
+      setDieselResponseLoading(false);
+    }
+  };
+
+  const needsDieselResponse = (transaction) => {
+    return (
+      transaction.status === 'needs_approval' && 
+      transaction.serviceType === 'ambulance_booking'
+    );
+  };
+
   const handleCloseDetails = () => {
     setOpenDetails(false);
     setSelectedTransaction(null);
@@ -201,36 +262,41 @@ const ResidentTransaction = () => {
   };
 
   // Update the getStatusChip function to handle both approved and booked statuses
-const getStatusChip = (status) => {
-  let color = 'default';
-  let label = status;
+  const getStatusChip = (status) => {
+    let color = 'default';
+    let label = status;
 
-  switch (status) {
-    case 'pending':
-      color = 'warning';
-      break;
-    case 'approved':
-    case 'booked':
-      color = 'primary';
-      // Display 'Approved' for both 'approved' and 'booked' statuses
-      label = status === 'booked' ? 'Approved' : status;
-      break;
-    case 'completed':
-      color = 'success';
-      break;
-    case 'cancelled':
-      color = 'error';
-      break;
-    case 'needs_approval':
-      color = 'info';
-      label = 'Needs Approval';
-      break;
-    default:
-      color = 'default';
-  }
+    switch (status) {
+      case 'pending':
+        color = 'warning';
+        break;
+      case 'approved':
+      case 'booked':
+        color = 'primary';
+        // Display 'Approved' for both 'approved' and 'booked' statuses
+        label = status === 'booked' ? 'Approved' : status;
+        break;
+      case 'completed':
+        color = 'success';
+        break;
+      case 'cancelled':
+        color = 'error';
+        break;
+      case 'rejected': // Also handle 'rejected' status
+        color = 'error';
+        // Display 'Cancelled' for both 'cancelled' and 'rejected' statuses
+        label = status === 'rejected' ? 'Cancelled' : status;
+        break;
+      case 'needs_approval':
+        color = 'info';
+        label = 'Needs Approval';
+        break;
+      default:
+        color = 'default';
+    }
 
-  return <Chip size="small" label={label.replace('_', ' ')} color={color} />;
-};
+    return <Chip size="small" label={label.replace('_', ' ')} color={color} />;
+  };
 
   const getServiceTypeLabel = (type) => {
     switch (type) {
@@ -268,33 +334,34 @@ const getStatusChip = (status) => {
   };
 
   const canCancel = (transaction) => {
-    return ['pending', 'needs_approval', 'booked'].includes(transaction.status);
+    return ['pending', 'needs_approval', 'booked', 'approved'].includes(transaction.status)
+    && transaction.status !== 'completed';
   };
 
   const filteredTransactions = filter === 'all' 
-  ? transactions 
-  : transactions.filter(transaction => {
-      if (filter === 'active') {
-        // Include both 'approved' and 'booked' statuses in active transactions
-        return ['pending', 'booked', 'needs_approval', 'approved'].includes(transaction.status);
-      } else if (filter === 'ambulance') {
-        return transaction.serviceType === 'ambulance_booking';
-      } else if (filter === 'document') {
-        return transaction.serviceType === 'document_request';
-      } else if (filter === 'court') {
-        return transaction.serviceType === 'court_reservation';
-      } else if (filter === 'payment') {
-        return transaction.serviceType === 'payment';
-      } else if (filter === 'approved') {
-        // Special case: if filtering for approved, also include booked
-        return transaction.status === 'approved' || transaction.status === 'booked';
-      } else if (filter === 'booked') {
-        // Special case: if filtering for booked, also include approved
-        return transaction.status === 'booked' || transaction.status === 'approved';
-      } else {
-        return transaction.status === filter;
-      }
-    });
+    ? transactions 
+    : transactions.filter(transaction => {
+        if (filter === 'active') {
+          // Include both 'approved' and 'booked' statuses in active transactions
+          return ['pending', 'booked', 'needs_approval', 'approved'].includes(transaction.status);
+        } else if (filter === 'ambulance') {
+          return transaction.serviceType === 'ambulance_booking';
+        } else if (filter === 'document') {
+          return transaction.serviceType === 'document_request';
+        } else if (filter === 'court') {
+          return transaction.serviceType === 'court_reservation';
+        } else if (filter === 'payment') {
+          return transaction.serviceType === 'payment';
+        } else if (filter === 'approved') {
+          // Special case: if filtering for approved, also include booked
+          return transaction.status === 'approved' || transaction.status === 'booked';
+        } else if (filter === 'booked') {
+          // Special case: if filtering for booked, also include approved
+          return transaction.status === 'booked' || transaction.status === 'approved';
+        } else {
+          return transaction.status === filter;
+        }
+      });
 
   if (loading) {
     return (
@@ -394,6 +461,15 @@ const getStatusChip = (status) => {
                         {getStatusChip(transaction.status)}
                       </Typography>
                       {" — "}{formatDate(transaction.createdAt)}
+                      {needsDieselResponse(transaction) && (
+                        <Chip 
+                          size="small" 
+                          label="Action Required" 
+                          color="secondary" 
+                          sx={{ ml: 1 }}
+                          variant="outlined"
+                        />
+                      )}
                       {transaction.serviceType === 'ambulance_booking' && transaction.details && (
                         <Typography component="div" variant="body2" sx={{ mt: 1 }}>
                           {transaction.details.patientName} • {transaction.details.destination}
@@ -403,11 +479,35 @@ const getStatusChip = (status) => {
                   }
                 />
                 <ListItemSecondaryAction>
-                  <IconButton edge="end" aria-label="view" onClick={() => handleViewDetails(transaction._id)}>
+                  <IconButton edge="end" aria-label="view" onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewDetails(transaction._id);
+                  }}>
                     <VisibilityIcon />
                   </IconButton>
+                  {needsDieselResponse(transaction) && (
+                    <IconButton 
+                      edge="end" 
+                      aria-label="respond" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRespondToDiesel(transaction);
+                      }} 
+                      color="secondary"
+                    >
+                      <ReplyIcon />
+                    </IconButton>
+                  )}
                   {canCancel(transaction) && (
-                    <IconButton edge="end" aria-label="cancel" onClick={() => handleCancelRequest(transaction)} color="error">
+                    <IconButton 
+                      edge="end" 
+                      aria-label="cancel" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCancelRequest(transaction);
+                      }} 
+                      color="error"
+                    >
                       <CancelIcon />
                     </IconButton>
                   )}
@@ -522,6 +622,20 @@ const getStatusChip = (status) => {
             )}
           </DialogContent>
           <DialogActions>
+            {selectedTransaction && needsDieselResponse(selectedTransaction) && (
+              <Button 
+                onClick={() => {
+                  handleCloseDetails();
+                  handleRespondToDiesel(selectedTransaction);
+                }} 
+                color="secondary"
+                fullWidth={isMobile}
+                variant="contained"
+                sx={{ mr: 1 }}
+              >
+                Respond to Diesel Request
+              </Button>
+            )}
             {selectedTransaction && canCancel(selectedTransaction) && (
               <Button 
                 onClick={() => {
@@ -566,6 +680,43 @@ const getStatusChip = (status) => {
             <Button onClick={() => setOpenCancel(false)}>No, Keep Request</Button>
             <Button onClick={confirmCancel} color="error">
               Yes, Cancel Request
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Diesel Cost Response Dialog */}
+        <Dialog
+          open={openDieselDialog}
+          onClose={() => !dieselResponseLoading && setOpenDieselDialog(false)}
+        >
+          <DialogTitle>Diesel Cost Confirmation</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              The ambulance service requires you to cover the diesel cost for this trip. Do you agree to cover this cost?
+            </DialogContentText>
+            {selectedTransaction?.adminComment && (
+              <Alert severity="info" sx={{ mt: 2 }}>
+                <Typography variant="body2">
+                  <strong>Admin Note:</strong> {selectedTransaction.adminComment}
+                </Typography>
+              </Alert>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button 
+              onClick={() => handleDieselCostDecision(false)} 
+              color="error"
+              disabled={dieselResponseLoading}
+            >
+              Decline
+            </Button>
+            <Button 
+              onClick={() => handleDieselCostDecision(true)} 
+              color="primary" 
+              variant="contained"
+              disabled={dieselResponseLoading}
+            >
+              {dieselResponseLoading ? <CircularProgress size={24} /> : 'Accept'}
             </Button>
           </DialogActions>
         </Dialog>
@@ -651,7 +802,18 @@ const getStatusChip = (status) => {
               <TableRow key={transaction._id}>
                 <TableCell>{getServiceTypeLabel(transaction.serviceType)}</TableCell>
                 <TableCell>{formatDate(transaction.createdAt)}</TableCell>
-                <TableCell>{getStatusChip(transaction.status)}</TableCell>
+                <TableCell>
+                  {getStatusChip(transaction.status)}
+                  {needsDieselResponse(transaction) && (
+                    <Chip 
+                      size="small" 
+                      label="Action Required" 
+                      color="secondary" 
+                      sx={{ ml: 1, mt: 1 }}
+                      variant="outlined"
+                    />
+                  )}
+                </TableCell>
                 <TableCell>
                   {transaction.serviceType === 'ambulance_booking' && transaction.details && (
                     <>
@@ -683,6 +845,17 @@ const getStatusChip = (status) => {
                   >
                     View
                   </Button>
+                  {needsDieselResponse(transaction) && (
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => handleRespondToDiesel(transaction)}
+                      sx={{ mr: 1 }}
+                    >
+                      Respond
+                    </Button>
+                  )}
                   {canCancel(transaction) && (
                     <Button
                       size="small"
@@ -978,6 +1151,19 @@ const getStatusChip = (status) => {
           )}
         </DialogContent>
         <DialogActions>
+          {selectedTransaction && needsDieselResponse(selectedTransaction) && (
+            <Button 
+              onClick={() => {
+                handleCloseDetails();
+                handleRespondToDiesel(selectedTransaction);
+              }} 
+              color="secondary"
+              variant={isMobile ? "contained" : "outlined"}
+              sx={{ mr: 1 }}
+            >
+              Respond to Diesel Request
+            </Button>
+          )}
           {selectedTransaction && canCancel(selectedTransaction) && (
             <Button 
               onClick={() => {
@@ -1018,6 +1204,43 @@ const getStatusChip = (status) => {
           <Button onClick={() => setOpenCancel(false)}>No, Keep Request</Button>
           <Button onClick={confirmCancel} color="error">
             Yes, Cancel Request
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Diesel Cost Response Dialog */}
+      <Dialog
+        open={openDieselDialog}
+        onClose={() => !dieselResponseLoading && setOpenDieselDialog(false)}
+      >
+        <DialogTitle>Diesel Cost Confirmation</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            The ambulance service requires you to cover the diesel cost for this trip. Do you agree to cover this cost?
+          </DialogContentText>
+          {selectedTransaction?.adminComment && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              <Typography variant="body2">
+                <strong>Admin Note:</strong> {selectedTransaction.adminComment}
+              </Typography>
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => handleDieselCostDecision(false)} 
+            color="error"
+            disabled={dieselResponseLoading}
+          >
+            Decline
+          </Button>
+          <Button 
+            onClick={() => handleDieselCostDecision(true)} 
+            color="primary" 
+            variant="contained"
+            disabled={dieselResponseLoading}
+          >
+            {dieselResponseLoading ? <CircularProgress size={24} /> : 'Accept'}
           </Button>
         </DialogActions>
       </Dialog>
