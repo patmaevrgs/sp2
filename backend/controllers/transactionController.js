@@ -152,13 +152,35 @@ export const updateTransactionStatus = async (req, res) => {
 };
 
 // Create a transaction from an ambulance booking
-// In transactionController.js - update createTransactionFromBooking
+// Create a transaction from an ambulance booking
 export const createTransactionFromBooking = async (bookingId) => {
   try {
     const booking = await AmbulanceBooking.findById(bookingId);
     
     if (!booking) {
       throw new Error('Ambulance booking not found');
+    }
+    
+    // Map ambulance booking status to transaction status
+    let transactionStatus;
+    switch(booking.status) {
+      case 'booked':
+        transactionStatus = 'approved'; // Map 'booked' in ambulance to 'approved' in transactions
+        break;
+      case 'pending':
+        transactionStatus = 'pending';
+        break;
+      case 'cancelled':
+        transactionStatus = 'cancelled';
+        break;
+      case 'completed':
+        transactionStatus = 'completed';
+        break;
+      case 'needs_approval':
+        transactionStatus = 'needs_approval';
+        break;
+      default:
+        transactionStatus = booking.status;
     }
     
     // Check if a transaction already exists for this booking
@@ -169,7 +191,7 @@ export const createTransactionFromBooking = async (bookingId) => {
     
     if (existingTransaction) {
       // Update existing transaction with current booking information
-      existingTransaction.status = booking.status;
+      existingTransaction.status = transactionStatus;
       existingTransaction.details = {
         patientName: booking.patientName,
         pickupDate: booking.pickupDate,
@@ -178,10 +200,15 @@ export const createTransactionFromBooking = async (bookingId) => {
         dieselCost: booking.dieselCost
       };
       existingTransaction.adminComment = booking.adminComment;
-      existingTransaction.processedBy = booking.processedBy;
+      
+      // Make sure processedBy is updated
+      if (booking.processedBy) {
+        existingTransaction.processedBy = booking.processedBy;
+      }
+      
       existingTransaction.updatedAt = Date.now();
       await existingTransaction.save();
-      console.log('Updated existing transaction for booking:', bookingId);
+      console.log('Updated existing transaction for booking:', bookingId, 'New status:', transactionStatus);
       return existingTransaction;
     }
     
@@ -189,7 +216,7 @@ export const createTransactionFromBooking = async (bookingId) => {
     const newTransaction = new Transaction({
       userId: booking.bookedBy,
       serviceType: 'ambulance_booking',
-      status: booking.status,
+      status: transactionStatus,
       amount: 0, // Free service
       details: {
         patientName: booking.patientName,
@@ -204,7 +231,7 @@ export const createTransactionFromBooking = async (bookingId) => {
     });
     
     await newTransaction.save();
-    console.log('Created new transaction for booking:', bookingId);
+    console.log('Created new transaction for booking:', bookingId, 'Status:', transactionStatus);
     return newTransaction;
   } catch (error) {
     console.error('Error creating/updating transaction from booking:', error);

@@ -1,5 +1,6 @@
 import AmbulanceBooking from '../models/AmbulanceBooking.js';
 import mongoose from 'mongoose';
+import { createTransactionFromBooking } from '../controllers/transactionController.js';
 
 // Create a new ambulance booking
 export const createBooking = async (req, res) => {
@@ -40,6 +41,14 @@ export const createBooking = async (req, res) => {
     });
 
     const savedBooking = await newBooking.save();
+    
+    // Create a transaction for this booking
+    try {
+      await createTransactionFromBooking(savedBooking._id);
+    } catch (error) {
+      console.error('Error creating transaction for booking:', error);
+      // Continue without failing the booking creation
+    }
     
     res.status(201).json(savedBooking);
   } catch (error) {
@@ -133,7 +142,15 @@ export const updateBookingStatus = async (req, res) => {
     if (processedBy) booking.processedBy = processedBy;
     booking.updatedAt = Date.now();
     
-    const savedBooking = await booking.save();
+    await booking.save();
+    
+    // Update the transaction for this booking
+    try {
+      await createTransactionFromBooking(id);
+    } catch (error) {
+      console.error('Error updating transaction for booking:', error);
+      // Continue without failing the booking update
+    }
     
     const updatedBooking = await AmbulanceBooking.findById(id)
       .populate('bookedBy', 'firstName lastName email')
@@ -173,9 +190,17 @@ export const residentResponse = async (req, res) => {
     }
     
     booking.updatedAt = Date.now();
-    const savedBooking = await booking.save();
+    await booking.save();
     
-    res.status(200).json(savedBooking);
+    // Update the transaction for this booking
+    try {
+      await createTransactionFromBooking(id);
+    } catch (error) {
+      console.error('Error updating transaction for booking:', error);
+      // Continue without failing the booking update
+    }
+    
+    res.status(200).json(booking);
   } catch (error) {
     console.error('Error updating resident response:', error);
     res.status(500).json({ message: 'Error updating resident response', error: error.message });
@@ -185,27 +210,39 @@ export const residentResponse = async (req, res) => {
 // Get all bookings for a calendar view (simplified data)
 export const getBookingsCalendar = async (req, res) => {
   try {
-    const { month, year } = req.query;
+    const { month, year, startDate, endDate, view } = req.query;
     
     let dateFilter = {};
     
-    // If month and year are provided, filter by that month
-    if (month && year) {
-      const startDate = new Date(year, month - 1, 1);
-      const endDate = new Date(year, month, 0);
+    // For specific date range (used in week and day views)
+    if (startDate && endDate) {
       dateFilter = {
         pickupDate: {
-          $gte: startDate,
-          $lte: endDate
+          $gte: new Date(startDate),
+          $lte: new Date(endDate)
+        }
+      };
+    }
+    // If month and year are provided, filter by that month (used in month view)
+    else if (month && year) {
+      const startOfMonth = new Date(year, month - 1, 1);
+      const endOfMonth = new Date(year, month, 0);
+      dateFilter = {
+        pickupDate: {
+          $gte: startOfMonth,
+          $lte: endOfMonth
         }
       };
     }
     
-    // Fetch only booked appointments (no cancelled/pending)
+    // Fetch only booked and completed appointments
     const bookings = await AmbulanceBooking.find({
       ...dateFilter,
       status: { $in: ['booked', 'completed'] }
-    }).select('pickupDate pickupTime duration status');
+    }).select('pickupDate pickupTime duration status patientName destination');
+    
+    // For debugging
+    console.log(`Calendar view: ${view}, Found ${bookings.length} bookings within date range`);
     
     res.status(200).json(bookings);
   } catch (error) {
@@ -280,12 +317,20 @@ export const residentCancelBooking = async (req, res) => {
         : `Cancelled by resident. Reason: ${cancellationReason || 'No reason provided'}`;
       
       booking.updatedAt = Date.now();
-      const savedBooking = await booking.save();
+      await booking.save();
+      
+      // Update the transaction for this booking
+      try {
+        await createTransactionFromBooking(id);
+      } catch (error) {
+        console.error('Error updating transaction for booking:', error);
+        // Continue without failing the booking cancellation
+      }
       
       res.status(200).json({
         success: true,
         message: 'Booking cancelled successfully',
-        booking: savedBooking
+        booking
       });
     } catch (error) {
       console.error('Error cancelling booking:', error);

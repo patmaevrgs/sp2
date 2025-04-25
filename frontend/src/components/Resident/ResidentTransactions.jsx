@@ -200,34 +200,37 @@ const ResidentTransaction = () => {
     setFilter(event.target.value);
   };
 
-  const getStatusChip = (status) => {
-    let color = 'default';
-    let label = status;
+  // Update the getStatusChip function to handle both approved and booked statuses
+const getStatusChip = (status) => {
+  let color = 'default';
+  let label = status;
 
-    switch (status) {
-      case 'pending':
-        color = 'warning';
-        break;
-      case 'approved':
-      case 'booked':
-        color = 'primary';
-        break;
-      case 'completed':
-        color = 'success';
-        break;
-      case 'cancelled':
-        color = 'error';
-        break;
-      case 'needs_approval':
-        color = 'info';
-        label = 'Needs Approval';
-        break;
-      default:
-        color = 'default';
-    }
+  switch (status) {
+    case 'pending':
+      color = 'warning';
+      break;
+    case 'approved':
+    case 'booked':
+      color = 'primary';
+      // Display 'Approved' for both 'approved' and 'booked' statuses
+      label = status === 'booked' ? 'Approved' : status;
+      break;
+    case 'completed':
+      color = 'success';
+      break;
+    case 'cancelled':
+      color = 'error';
+      break;
+    case 'needs_approval':
+      color = 'info';
+      label = 'Needs Approval';
+      break;
+    default:
+      color = 'default';
+  }
 
-    return <Chip size="small" label={label.replace('_', ' ')} color={color} />;
-  };
+  return <Chip size="small" label={label.replace('_', ' ')} color={color} />;
+};
 
   const getServiceTypeLabel = (type) => {
     switch (type) {
@@ -269,22 +272,29 @@ const ResidentTransaction = () => {
   };
 
   const filteredTransactions = filter === 'all' 
-    ? transactions 
-    : transactions.filter(transaction => {
-        if (filter === 'active') {
-          return ['pending', 'booked', 'needs_approval', 'approved'].includes(transaction.status);
-        } else if (filter === 'ambulance') {
-          return transaction.serviceType === 'ambulance_booking';
-        } else if (filter === 'document') {
-          return transaction.serviceType === 'document_request';
-        } else if (filter === 'court') {
-          return transaction.serviceType === 'court_reservation';
-        } else if (filter === 'payment') {
-          return transaction.serviceType === 'payment';
-        } else {
-          return transaction.status === filter;
-        }
-      });
+  ? transactions 
+  : transactions.filter(transaction => {
+      if (filter === 'active') {
+        // Include both 'approved' and 'booked' statuses in active transactions
+        return ['pending', 'booked', 'needs_approval', 'approved'].includes(transaction.status);
+      } else if (filter === 'ambulance') {
+        return transaction.serviceType === 'ambulance_booking';
+      } else if (filter === 'document') {
+        return transaction.serviceType === 'document_request';
+      } else if (filter === 'court') {
+        return transaction.serviceType === 'court_reservation';
+      } else if (filter === 'payment') {
+        return transaction.serviceType === 'payment';
+      } else if (filter === 'approved') {
+        // Special case: if filtering for approved, also include booked
+        return transaction.status === 'approved' || transaction.status === 'booked';
+      } else if (filter === 'booked') {
+        // Special case: if filtering for booked, also include approved
+        return transaction.status === 'booked' || transaction.status === 'approved';
+      } else {
+        return transaction.status === filter;
+      }
+    });
 
   if (loading) {
     return (
