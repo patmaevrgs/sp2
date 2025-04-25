@@ -1,12 +1,10 @@
-// ResidentReport.jsx
 import React, { useState, useEffect } from 'react';
 import { 
   Container, Box, Typography, TextField, Button, MenuItem, 
-  Grid, Paper, CircularProgress, Snackbar, Alert,
+  Grid, Paper, CircularProgress, Snackbar, Alert, CardMedia, Card, 
   FormControl, FormLabel, RadioGroup, FormControlLabel, Radio
 } from '@mui/material';
 import { useDropzone } from 'react-dropzone';
-import axios from 'axios';
 
 function ResidentReport() {
   const [loading, setLoading] = useState(false);
@@ -23,6 +21,7 @@ function ResidentReport() {
     additionalComments: '',
   });
   const [files, setFiles] = useState([]);
+  const [fileErrors, setFileErrors] = useState([]);
 
   // Fetch user's reports on component mount
   useEffect(() => {
@@ -31,15 +30,30 @@ function ResidentReport() {
 
   const fetchUserReports = async () => {
     try {
-      const response = await axios.get('/api/reports/user', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
-      if (response.data.success) {
-        setUserReports(response.data.reports);
+      // Get user ID from local storage
+      const userId = localStorage.getItem('userId') || localStorage.getItem('user');
+
+      if (!userId) {
+        handleAlert('User ID not found', 'error');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:3002/reports/user?userId=${userId}`);
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch reports');
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        setUserReports(data.reports);
+      } else {
+        handleAlert(data.message || 'Failed to fetch your reports', 'error');
       }
     } catch (error) {
       console.error('Error fetching reports:', error);
-      handleAlert('Failed to fetch your reports', 'error');
+      handleAlert(error.message || 'An error occurred', 'error');
     }
   };
 
@@ -52,14 +66,34 @@ function ResidentReport() {
   // Handle file uploads with react-dropzone
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
-      'image/*': ['.jpeg', '.jpg', '.png'],
-      'video/*': ['.mp4', '.mov']
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif'],
+      'video/*': ['.mp4', '.mov', '.avi']
     },
     maxFiles: 5,
-    onDrop: acceptedFiles => {
-      setFiles(acceptedFiles.map(file => Object.assign(file, {
+    maxSize: 10 * 1024 * 1024, // 10MB
+    onDrop: (acceptedFiles, rejectedFiles) => {
+      // Handle accepted files
+      const processedFiles = acceptedFiles.map(file => Object.assign(file, {
         preview: URL.createObjectURL(file)
-      })));
+      }));
+      setFiles(processedFiles);
+
+      // Handle rejected files
+      const errors = rejectedFiles.map(({ file, errors }) => {
+        const errorMessages = errors.map(e => {
+          switch(e.code) {
+            case 'file-too-large':
+              return `${file.name} is too large (max 10MB)`;
+            case 'file-invalid-type':
+              return `${file.name} is not a supported file type`;
+            default:
+              return `${file.name} could not be uploaded`;
+          }
+        });
+        return errorMessages;
+      }).flat();
+      
+      setFileErrors(errors);
     }
   });
 
@@ -69,35 +103,41 @@ function ResidentReport() {
     setLoading(true);
 
     try {
-      const reportFormData = new FormData();
+      // Get user ID from local storage
+      const userId = localStorage.getItem('userId') || localStorage.getItem('user');
+
+      const formDataToSubmit = new FormData();
       
-      // Add text fields to FormData
+      // Add user ID to form data
+      formDataToSubmit.append('userId', userId);
+
+      // Add other form fields
       Object.keys(formData).forEach(key => {
-        reportFormData.append(key, formData[key]);
+        formDataToSubmit.append(key, formData[key]);
       });
       
       // Add files to FormData
-      files.forEach(file => {
-        reportFormData.append('media', file);
+      files.forEach((file) => {
+        formDataToSubmit.append('media', file);
       });
 
-      const response = await axios.post('/api/reports', reportFormData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
+      const response = await fetch('http://localhost:3002/reports', {
+        method: 'POST',
+        body: formDataToSubmit
       });
 
-      if (response.data.success) {
-        handleAlert('Report submitted successfully!', 'success');
+      const data = await response.json();
+
+      if (data.success) {
+        handleAlert(data.message || 'Report submitted successfully!', 'success');
         resetForm();
-        fetchUserReports(); // Refresh the list of reports
+        fetchUserReports();
       } else {
-        handleAlert('Failed to submit report', 'error');
+        handleAlert(data.message || 'Failed to submit report', 'error');
       }
     } catch (error) {
       console.error('Error submitting report:', error);
-      handleAlert(error.response?.data?.message || 'An error occurred', 'error');
+      handleAlert(error.message || 'An error occurred', 'error');
     } finally {
       setLoading(false);
     }
@@ -106,20 +146,25 @@ function ResidentReport() {
   // Submit feedback for a report
   const submitFeedback = async (reportId, satisfied, comments) => {
     try {
-      const response = await axios.post(`/api/reports/${reportId}/feedback`, {
-        satisfied,
-        comments
-      }, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      const response = await fetch(`http://localhost:3002/reports/${reportId}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ satisfied, comments })
       });
 
-      if (response.data.success) {
+      const data = await response.json();
+
+      if (data.success) {
         handleAlert('Feedback submitted successfully!', 'success');
-        fetchUserReports(); // Refresh the list of reports
+        fetchUserReports();
+      } else {
+        handleAlert(data.message || 'Failed to submit feedback', 'error');
       }
     } catch (error) {
       console.error('Error submitting feedback:', error);
-      handleAlert('Failed to submit feedback', 'error');
+      handleAlert(error.message || 'An error occurred', 'error');
     }
   };
 
@@ -136,6 +181,7 @@ function ResidentReport() {
       additionalComments: '',
     });
     setFiles([]);
+    setFileErrors([]);
   };
 
   // Handle alert messages
@@ -195,9 +241,68 @@ function ResidentReport() {
     'Others'
   ];
 
+  // Add this method to your existing ResidentReport component
+  const cancelReport = async (reportId) => {
+    try {
+      const response = await fetch(`http://localhost:3002/reports/${reportId}/cancel`, {
+        method: 'PUT', // or 'PATCH' depending on your backend route
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        handleAlert('Report cancelled successfully!', 'success');
+        fetchUserReports(); // Refresh the list of reports
+      } else {
+        handleAlert(data.message || 'Failed to cancel report', 'error');
+      }
+    } catch (error) {
+      console.error('Error cancelling report:', error);
+      handleAlert(error.message || 'An error occurred', 'error');
+    }
+  };
+
+  // Helper function to render media galleries
+  const renderMedia = (report) => {
+    return (
+      <>
+        {/* Images Gallery */}
+        {report.mediaUrls && report.mediaUrls.length > 0 && (
+          <Box sx={{ mt: 2, mb: 2 }}>
+            <Grid container spacing={1}>
+              {report.mediaUrls.map((imgPath, index) => (
+                <Grid item xs={12} sm={6} md={4} key={index}>
+                  <Card sx={{ height: '100%' }}>
+                    <CardMedia
+                      component="img"
+                      image={`http://localhost:3002${imgPath}`}
+                      alt={`Report image ${index + 1}`}
+                      sx={{ 
+                        height: 200, 
+                        objectFit: 'cover',
+                        '&:hover': {
+                          cursor: 'pointer',
+                          opacity: 0.9
+                        }
+                      }}
+                      onClick={() => window.open(`http://localhost:3002${imgPath}`, '_blank')}
+                    />
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
+      </>
+    );
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom sx={{ mb: 4 }}>
+      <Typography variant="h4" component= "h1" gutterBottom sx={{ mb: 4 }}>
         Report Infrastructure Issue
       </Typography>
       
@@ -324,7 +429,7 @@ function ResidentReport() {
                   }
                 }}
               >
-                <input {...getInputProps()} />
+                <input {...getInputProps()} name="media" />
                 <Typography>
                   Drag and drop files here, or click to select files
                 </Typography>
@@ -332,6 +437,19 @@ function ResidentReport() {
                   Supported formats: JPEG, PNG, MP4, MOV (Max size: 10MB per file)
                 </Typography>
               </Box>
+              
+              {/* File error messages */}
+              {fileErrors.length > 0 && (
+                <Box sx={{ mt: 2, color: 'error.main' }}>
+                  {fileErrors.map((error, index) => (
+                    <Typography key={index} variant="body2" color="error">
+                      {error}
+                    </Typography>
+                  ))}
+                </Box>
+              )}
+              
+              {/* File previews */}
               <Box sx={{ display: 'flex', flexWrap: 'wrap', mt: 2 }}>
                 {thumbs}
               </Box>
@@ -419,28 +537,29 @@ function ResidentReport() {
             </Grid>
             
             {/* Render media if available */}
-            {report.mediaUrls && report.mediaUrls.length > 0 && (
-              <Box sx={{ mt: 2, mb: 2 }}>
-                <Typography variant="subtitle2" gutterBottom>Attachments:</Typography>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {report.mediaUrls.map((url, index) => (
-                    <Box 
-                      key={index}
-                      component="img"
-                      src={url}
-                      sx={{
-                        width: 100,
-                        height: 100,
-                        objectFit: 'cover',
-                        borderRadius: 1
-                      }}
-                      alt={`Attachment ${index + 1}`}
-                    />
-                  ))}
-                </Box>
+            {renderMedia(report)}
+            
+            {report.status === 'Pending' && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'flex-end', 
+                mt: 2 
+              }}>
+                <Button 
+                  variant="outlined" 
+                  color="error" 
+                  size="small"
+                  onClick={() => {
+                    const confirmCancel = window.confirm('Are you sure you want to cancel this report?');
+                    if (confirmCancel) {
+                      cancelReport(report._id);
+                    }
+                  }}
+                >
+                  Cancel Report
+                </Button>
               </Box>
             )}
-            
             {/* Feedback section for resolved issues */}
             {report.status === 'Resolved' && !report.residentFeedback && (
               <Box sx={{ mt: 3, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>

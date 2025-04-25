@@ -32,6 +32,7 @@ import {
   getAllReports, 
   getUserReports, 
   updateReportStatus, 
+  cancelReport,
   addResidentFeedback 
 } from './controllers/reportController.js';
 import multer from 'multer';
@@ -88,11 +89,12 @@ router.get('/transactions/:id', getTransactionById);
 router.patch('/transactions/:id/status', updateTransactionStatus);
 
 // Infrastructure Report Routes
-router.post('/reports', upload.array('media', 5), createReport);
-router.get('/reports', getAllReports);
-router.get('/reports/user', getUserReports);
-router.put('/reports/:reportId/status', updateReportStatus);
+router.post('/reports', upload.array('media', 5), createReport); 
+router.get('/reports', getAllReports); 
+router.get('/reports/user', getUserReports); // This is the route causing the 500 error
+router.put('/reports/:reportId/status', updateReportStatus); 
 router.post('/reports/:reportId/feedback', addResidentFeedback);
+router.put('/reports/:reportId/cancel', cancelReport);
 
 // Serve static files
 import express from 'express';

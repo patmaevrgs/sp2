@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { 
   Container, Typography, Paper, Grid, Box, TextField, Button,
   Tab, Tabs, MenuItem, Dialog, DialogActions, DialogContent,
-  DialogTitle, CircularProgress, Snackbar, Alert, Chip
+  DialogTitle, CircularProgress, Snackbar, Alert, Chip,
+  CardMedia, Card
 } from '@mui/material';
-import axios from 'axios';
 
 function AdminReport() {
   const [loading, setLoading] = useState(true);
@@ -38,6 +38,8 @@ function AdminReport() {
       filtered = filtered.filter(report => report.status === 'In Progress');
     } else if (tabValue === 3) {
       filtered = filtered.filter(report => report.status === 'Resolved');
+    } else if (tabValue === 4) {
+      filtered = filtered.filter(report => report.status === 'Cancelled');
     }
     
     // Apply search filter if searchTerm exists
@@ -57,13 +59,17 @@ function AdminReport() {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/reports', {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const response = await fetch('http://localhost:3002/reports');
       
-      if (response.data.success) {
-        setReports(response.data.reports);
-        setFilteredReports(response.data.reports);
+      if (!response.ok) {
+        throw new Error('Failed to fetch reports');
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setReports(data.reports);
+        setFilteredReports(data.reports);
       }
     } catch (error) {
       console.error('Error fetching reports:', error);
@@ -83,14 +89,14 @@ function AdminReport() {
 
   const handleViewReport = (report) => {
     setSelectedReport(report);
-  };
-
-  const handleUpdateStatus = (report) => {
-    setSelectedReport(report);
+    // Reset status update when opening details
     setStatusUpdate({
       status: report.status,
       adminComments: report.adminComments || ''
     });
+  };
+
+  const handleUpdateStatus = () => {
     setUpdateDialogOpen(true);
   };
 
@@ -101,21 +107,31 @@ function AdminReport() {
 
   const submitStatusUpdate = async () => {
     try {
-      const response = await axios.put(
-        `/api/reports/${selectedReport._id}/status`,
-        statusUpdate,
-        { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
+      const response = await fetch(
+        `http://localhost:3002/reports/${selectedReport._id}/status`, 
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(statusUpdate)
+        }
       );
       
-      if (response.data.success) {
+      const data = await response.json();
+      
+      if (data.success) {
         // Update the reports array with the updated report
         const updatedReports = reports.map(report => 
-          report._id === selectedReport._id ? response.data.report : report
+          report._id === selectedReport._id ? data.report : report
         );
         setReports(updatedReports);
         
         handleAlert('Report status updated successfully', 'success');
+        
+        // Close both dialogs
         setUpdateDialogOpen(false);
+        setSelectedReport(null);
       }
     } catch (error) {
       console.error('Error updating report status:', error);
@@ -141,8 +157,46 @@ function AdminReport() {
       case 'Pending': return 'warning';
       case 'In Progress': return 'info';
       case 'Resolved': return 'success';
+      case 'Cancelled': return 'error';
       default: return 'default';
     }
+  };
+
+  // Render media galleries
+  const renderMedia = (report) => {
+    return (
+      <>
+        {report.mediaUrls && report.mediaUrls.length > 0 && (
+          <Grid item xs={12}>
+            <Typography variant="subtitle2" sx={{ mt: 1, mb: 1 }}>
+              Media ({report.mediaUrls.length}):
+            </Typography>
+            <Grid container spacing={1}>
+              {report.mediaUrls.map((url, index) => (
+                <Grid item xs={6} sm={4} md={3} key={index}>
+                  <Card sx={{ height: '100%' }}>
+                    <CardMedia
+                      component="img"
+                      image={`http://localhost:3002${url}`}
+                      alt={`Report image ${index + 1}`}
+                      sx={{ 
+                        height: 150, 
+                        objectFit: 'cover',
+                        '&:hover': {
+                          cursor: 'pointer',
+                          opacity: 0.9
+                        }
+                      }}
+                      onClick={() => window.open(`http://localhost:3002${url}`, '_blank')}
+                    />
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </Grid>
+        )}
+      </>
+    );
   };
 
   return (
@@ -157,6 +211,7 @@ function AdminReport() {
           <Tab label="Pending" />
           <Tab label="In Progress" />
           <Tab label="Resolved" />
+          <Tab label="Cancelled" />
         </Tabs>
         
         <TextField
@@ -256,56 +311,23 @@ function AdminReport() {
                       >
                         View Details
                       </Button>
-                      <Button 
-                        variant="contained" 
-                        size="small" 
-                        color="primary"
-                        onClick={() => handleUpdateStatus(report)}
-                      >
-                        Update Status
-                      </Button>
+                      {report.status !== 'Cancelled' && (
+                        <Button 
+                          variant="contained" 
+                          size="small" 
+                          color="primary"
+                          onClick={() => {
+                            handleViewReport(report);
+                            handleUpdateStatus();
+                          }}
+                        >
+                          Update Status
+                        </Button>
+                      )}
                     </Box>
                   </Grid>
                   
-                  {/* Show media preview if available */}
-                  {report.mediaUrls && report.mediaUrls.length > 0 && (
-                    <Grid item xs={12}>
-                      <Typography variant="subtitle2" sx={{ mt: 1, mb: 1 }}>
-                        Media ({report.mediaUrls.length}):
-                      </Typography>
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                        {report.mediaUrls.slice(0, 3).map((url, index) => (
-                          <Box 
-                            key={index}
-                            component="img"
-                            src={url}
-                            sx={{
-                              width: 80,
-                              height: 80,
-                              objectFit: 'cover',
-                              borderRadius: 1
-                            }}
-                            alt={`Attachment ${index + 1}`}
-                          />
-                        ))}
-                        {report.mediaUrls.length > 3 && (
-                          <Box 
-                            sx={{
-                              width: 80,
-                              height: 80,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              bgcolor: 'rgba(0,0,0,0.1)',
-                              borderRadius: 1
-                            }}
-                          >
-                            <Typography>+{report.mediaUrls.length - 3} more</Typography>
-                          </Box>
-                        )}
-                      </Box>
-                    </Grid>
-                  )}
+                  {renderMedia(report)}
                 </Grid>
               </Paper>
             </Grid>
@@ -314,9 +336,9 @@ function AdminReport() {
       )}
       
       {/* Report Detail Dialog */}
-      {selectedReport && (
+      {selectedReport && !updateDialogOpen && (
         <Dialog 
-          open={Boolean(selectedReport) && !updateDialogOpen} 
+          open={Boolean(selectedReport)} 
           onClose={() => setSelectedReport(null)}
           fullWidth
           maxWidth="md"
@@ -371,25 +393,33 @@ function AdminReport() {
                 )}
               </Grid>
               
+              {/* Media rendering for dialog */}
               {selectedReport.mediaUrls && selectedReport.mediaUrls.length > 0 && (
                 <Grid item xs={12}>
                   <Typography variant="subtitle1" gutterBottom>Media:</Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2 }}>
+                  <Grid container spacing={2}>
                     {selectedReport.mediaUrls.map((url, index) => (
-                      <Box 
-                        key={index}
-                        component="img"
-                        src={url}
-                        sx={{
-                          maxWidth: '100%',
-                          height: 200,
-                          objectFit: 'cover',
-                          borderRadius: 1
-                        }}
-                        alt={`Attachment ${index + 1}`}
-                      />
+                      <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Card sx={{ height: '100%' }}>
+                          <CardMedia
+                            component="img"
+                            image={`http://localhost:3002${url}`}
+                            alt={`Attachment ${index + 1}`}
+                            sx={{
+                              height: 200,
+                              objectFit: 'cover',
+                              borderRadius: 1,
+                              '&:hover': {
+                                cursor: 'pointer',
+                                opacity: 0.9
+                              }
+                            }}
+                            onClick={() => window.open(`http://localhost:3002${url}`, '_blank')}
+                          />
+                        </Card>
+                      </Grid>
                     ))}
-                  </Box>
+                  </Grid>
                 </Grid>
               )}
               
@@ -426,19 +456,17 @@ function AdminReport() {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setSelectedReport(null)}>Close</Button>
-            <Button 
-              variant="contained" 
-              color="primary"
-              onClick={() => {
-                setUpdateDialogOpen(true);
-                setStatusUpdate({
-                  status: selectedReport.status,
-                  adminComments: selectedReport.adminComments || ''
-                });
-              }}
-            >
-              Update Status
-            </Button>
+            {selectedReport.status !== 'Cancelled' && (
+              <Button 
+                variant="contained" 
+                color="primary"
+                onClick={() => {
+                  handleUpdateStatus();
+                }}
+              >
+                Update Status
+              </Button>
+            )}
           </DialogActions>
         </Dialog>
       )}
@@ -446,7 +474,10 @@ function AdminReport() {
       {/* Status Update Dialog */}
       <Dialog
         open={updateDialogOpen}
-        onClose={() => setUpdateDialogOpen(false)}
+        onClose={() => {
+          setUpdateDialogOpen(false);
+          setSelectedReport(null);
+        }}
         maxWidth="sm"
         fullWidth
       >
@@ -480,7 +511,14 @@ function AdminReport() {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setUpdateDialogOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={() => {
+              setUpdateDialogOpen(false);
+              setSelectedReport(null);
+            }}
+          >
+            Cancel
+          </Button>
           <Button variant="contained" color="primary" onClick={submitStatusUpdate}>
             Update
           </Button>
