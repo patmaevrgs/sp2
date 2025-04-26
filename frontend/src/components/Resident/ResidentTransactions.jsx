@@ -35,12 +35,14 @@ import {
   useMediaQuery,
   useTheme,
   List,
+  Link,
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
   IconButton
 } from '@mui/material';
 import {
+  FilePresent as FileIcon,
   AccessTime as TimeIcon,
   LocalHospital as HospitalIcon,
   Room as LocationIcon,
@@ -150,6 +152,23 @@ const ResidentTransaction = () => {
           }
         }
       }
+      else if (transaction.serviceType === 'project_proposal' && transaction.referenceId) {
+        const refResponse = await fetch(`http://localhost:3002/proposals/${transaction.referenceId}`);
+        if (refResponse.ok) {
+          const proposalData = await refResponse.json();
+          if (proposalData.success && proposalData.proposal) {
+            referenceDetails = proposalData.proposal;
+            
+            // Store the original proposal status in the transaction details
+            if (transaction.details && !transaction.details.proposalStatus) {
+              transaction.details = {
+                ...transaction.details,
+                proposalStatus: proposalData.proposal.status
+              };
+            }
+          }
+        }
+      }
       
       // Combine the data
       setSelectedTransaction({
@@ -240,6 +259,9 @@ const ResidentTransaction = () => {
       } else if (selectedTransaction.serviceType === 'infrastructure_report' && selectedTransaction.referenceId) {
         cancelEndpoint = `http://localhost:3002/reports/${selectedTransaction.referenceId}/cancel`;
         method = 'PUT'; // Use PUT for report cancellation as defined in your router
+      } else if (selectedTransaction.serviceType === 'project_proposal' && selectedTransaction.referenceId) {
+        cancelEndpoint = `http://localhost:3002/proposals/${selectedTransaction.referenceId}/cancel`;
+        method = 'PATCH';
       } else {
         throw new Error('Cannot cancel this type of transaction');
       }
@@ -355,7 +377,38 @@ const ResidentTransaction = () => {
   const getStatusChip = (status, serviceType) => {
     let color = 'default';
     let label = status;
-  
+    
+    // Special case for project proposals
+    if (serviceType === 'project_proposal') {
+      switch (status) {
+        case 'pending':
+          color = 'warning';
+          label = 'Pending';
+          break;
+        case 'approved': // This maps to 'considered' in proposal terms
+          color = 'primary';
+          label = 'Considered';
+          break;
+        case 'completed': // This maps to 'approved' in proposal terms
+          color = 'success';
+          label = 'Approved';
+          break;
+        case 'cancelled': // This maps to 'rejected' in proposal terms
+          color = 'error';
+          label = 'Rejected';
+          break;
+        case 'needs_approval':
+          color = 'info';
+          label = 'In Review';
+          break;
+        default:
+          color = 'default';
+          label = status.replace('_', ' ');
+      }
+      
+      return <Chip size="small" label={label} color={color} />;
+    }
+
     // Special case for infrastructure reports
     if (serviceType === 'infrastructure_report') {
       // Map transaction status back to Report status
@@ -381,7 +434,7 @@ const ResidentTransaction = () => {
       }
       return <Chip size="small" label={label} color={color} />;
     }
-  
+
     // Regular transaction status handling
     switch (status) {
       case 'pending':
@@ -427,6 +480,8 @@ const ResidentTransaction = () => {
         return 'Court Reservation';
       case 'infrastructure_report':
         return 'Infrastructure Report';
+      case 'project_proposal':
+        return 'Project Proposal';
       case 'other':
         return 'Other Service';
       default:
@@ -453,6 +508,16 @@ const ResidentTransaction = () => {
   };
 
   const canCancel = (transaction) => {
+    // For project proposals
+    if (transaction.serviceType === 'project_proposal') {
+      // Get actual status from either details or transaction status
+      const proposalStatus = transaction.details && transaction.details.proposalStatus 
+        ? transaction.details.proposalStatus 
+        : transaction.status;
+        
+      // Only allow cancellation if proposal is not approved or rejected
+      return !['approved', 'rejected', 'completed', 'cancelled'].includes(proposalStatus);
+    }
     // Special case for infrastructure reports
     if (transaction.serviceType === 'infrastructure_report') {
       // Only allow cancellation if status is 'pending' 
@@ -1250,6 +1315,97 @@ const ResidentTransaction = () => {
                 </>
               )}
               
+              {/* Project Proposal Details */}
+              {selectedTransaction?.serviceType === 'project_proposal' && (
+                <>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                      Project Proposal Information
+                    </Typography>
+                    <Divider />
+                  </Grid>
+                  
+                  {/* From transaction.details */}
+                  {selectedTransaction.details && (
+                    <>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2">
+                          <strong>Project Title:</strong> {selectedTransaction.details.projectTitle || 'N/A'}
+                        </Typography>
+                      </Grid>
+                    </>
+                  )}
+                  
+                  {/* From referenceDetails - more comprehensive information */}
+                  {selectedTransaction.referenceDetails && (
+                    <>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2">
+                          <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Submitter:</strong> {selectedTransaction.referenceDetails.fullName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
+                        </Typography>
+                        <Typography variant="body2">
+                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Email:</strong> {selectedTransaction.referenceDetails.email}
+                        </Typography>
+                        <Typography variant="body2">
+                          <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Submitted:</strong> {formatDate(selectedTransaction.referenceDetails.createdAt)}
+                        </Typography>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2">
+                          <strong>Project Title:</strong> {selectedTransaction.referenceDetails.projectTitle}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Status:</strong> {
+                            (() => {
+                              const status = selectedTransaction.referenceDetails.status;
+                              switch(status) {
+                                case 'pending': return 'Pending';
+                                case 'in_review': return 'In Review';
+                                case 'considered': return 'Considered';
+                                case 'approved': return 'Approved';
+                                case 'rejected': return 'Rejected';
+                                default: return status.replace('_', ' ');
+                              }
+                            })()
+                          }
+                        </Typography>
+                        {selectedTransaction.referenceDetails.documentPath && (
+                          <Typography variant="body2" sx={{ mt: 1 }}>
+                            <FileIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                            <Link 
+                              href={`http://localhost:3002${selectedTransaction.referenceDetails.documentPath}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              View Proposal Document
+                            </Link>
+                          </Typography>
+                        )}
+                      </Grid>
+                      
+                      <Grid item xs={12}>
+                        <Typography variant="body2" sx={{ mt: 1, mb: 1 }}>
+                          <strong>Project Description:</strong>
+                        </Typography>
+                        <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f9f9f9' }}>
+                          <Typography variant="body2" style={{ whiteSpace: 'pre-line' }}>
+                            {selectedTransaction.referenceDetails.description}
+                          </Typography>
+                        </Paper>
+                      </Grid>
+                    </>
+                  )}
+                </>
+              )}
+
               {/* Infrastructure Report Details */}
               {selectedTransaction?.serviceType === 'infrastructure_report' && (
                 <>

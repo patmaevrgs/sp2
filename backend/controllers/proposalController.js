@@ -4,6 +4,7 @@ import fetch from 'node-fetch';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import Transaction from '../models/Transaction.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -89,8 +90,11 @@ export const createProposal = async (req, res) => {
         amount: 0,
         details: {
           projectTitle,
-          description,
-          proposalId: newProposal._id
+          description: description && description.length > 100 
+            ? description.substring(0, 100) + '...' 
+            : description,
+          proposalId: newProposal._id,
+          proposalStatus: 'pending' // Store the original proposal status
         },
         referenceId: newProposal._id
       };
@@ -237,28 +241,51 @@ export const updateProposalStatus = async (req, res) => {
     await proposal.save();
     
     // Also update the related transaction
-    try {
-      const transactionResponse = await fetch(`http://localhost:3002/transactions?referenceId=${id}`);
-      const transactions = await transactionResponse.json();
-      
-      if (transactions && transactions.length > 0) {
-        const transaction = transactions[0];
-        
-        await fetch(`http://localhost:3002/transactions/${transaction._id}/status`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            status: status === 'rejected' ? 'cancelled' : status === 'approved' ? 'completed' : 'pending',
-            adminComment: adminComment
-          }),
-        });
+    // Find and update the related transaction 
+try {
+    const transaction = await Transaction.findOne({ 
+      referenceId: proposal._id,
+      serviceType: 'project_proposal'
+    });
+    
+    if (transaction) {
+      // Map proposal status to transaction status while preserving original names
+      let transactionStatus;
+      switch(status) {
+        case 'in_review':
+          transactionStatus = 'pending'; 
+          break;
+        case 'considered':
+          transactionStatus = 'approved'; 
+          break;
+        case 'approved':
+          transactionStatus = 'completed'; 
+          break;
+        case 'rejected':
+          transactionStatus = 'cancelled'; 
+          break;
+        default:
+          transactionStatus = status; 
       }
-    } catch (transactionError) {
-      console.error('Error updating related transaction:', transactionError);
-      // Continue even if transaction update fails
+      
+      // Update transaction
+      transaction.status = transactionStatus;
+      transaction.adminComment = adminComment;
+      transaction.details = {
+        ...transaction.details,
+        proposalStatus: status,
+        projectTitle: proposal.projectTitle,
+        description: proposal.description && proposal.description.length > 100 
+          ? proposal.description.substring(0, 100) + '...' 
+          : proposal.description
+      };
+      
+      await transaction.save();
     }
+  } catch (transactionError) {
+    console.error('Error updating related transaction:', transactionError);
+    // Continue even if transaction update fails
+  }
     
     const updatedProposal = await ProjectProposal.findById(id)
       .populate('userId', 'firstName lastName email')
@@ -274,6 +301,98 @@ export const updateProposalStatus = async (req, res) => {
     return res.status(500).json({ 
       success: false, 
       message: 'Error updating proposal status', 
+      error: error.message 
+    });
+  }
+};
+
+// Cancel a proposal (resident)
+export const cancelProposal = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userId, cancellationReason } = req.body;
+    
+    // Validate user ID
+    if (!userId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User ID is required' 
+      });
+    }
+    
+    // Find the proposal
+    const proposal = await ProjectProposal.findById(id);
+    
+    if (!proposal) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Project proposal not found' 
+      });
+    }
+    
+    // Verify that the user owns this proposal
+    if (proposal.userId.toString() !== userId) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'You are not authorized to cancel this proposal' 
+      });
+    }
+    
+    // Check if the proposal is already approved or rejected
+    if (['approved', 'rejected'].includes(proposal.status)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `This proposal cannot be cancelled because it is already ${proposal.status}` 
+      });
+    }
+    
+    // Update proposal status to rejected (cancelled by resident)
+    proposal.status = 'rejected';
+    proposal.adminComment = cancellationReason 
+      ? `Cancelled by resident. Reason: ${cancellationReason}`
+      : 'Cancelled by resident';
+    proposal.updatedAt = Date.now();
+    
+    await proposal.save();
+    
+    // Also update the related transaction
+    try {
+      const transactionResponse = await fetch(`http://localhost:3002/transactions?referenceId=${id}`);
+      const transactions = await transactionResponse.json();
+      
+      if (transactions && transactions.length > 0) {
+        const transaction = transactions[0];
+        
+        await fetch(`http://localhost:3002/transactions/${transaction._id}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            status: 'cancelled',
+            adminComment: proposal.adminComment,
+            details: {
+              ...transaction.details,
+              proposalStatus: 'rejected' // Store the original proposal status
+            }
+          }),
+        });
+      }
+    } catch (transactionError) {
+      console.error('Error updating related transaction:', transactionError);
+      // Continue even if transaction update fails
+    }
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Project proposal cancelled successfully',
+      proposal
+    });
+  } catch (error) {
+    console.error('Error cancelling proposal:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Error cancelling proposal', 
       error: error.message 
     });
   }

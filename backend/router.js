@@ -41,6 +41,7 @@ import {
   getProposals,
   getProposalById,
   updateProposalStatus,
+  cancelProposal,
   deleteProposal
 } from './controllers/proposalController.js';
 import multer from 'multer';
@@ -110,6 +111,7 @@ router.post('/proposals', upload.single('document'), createProposal);
 router.get('/proposals', getProposals);
 router.get('/proposals/:id', getProposalById);
 router.patch('/proposals/:id/status', updateProposalStatus);
+router.patch('/proposals/:id/cancel', cancelProposal);
 router.delete('/proposals/:id', deleteProposal);
 
 // Serve static files
