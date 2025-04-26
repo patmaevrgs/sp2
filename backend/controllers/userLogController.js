@@ -3,14 +3,15 @@ import UserLog from '../models/UserLog.js';
 // Create a new log entry
 export const createLog = async (req, res) => {
   try {
-    const { adminName, action, details, entityId } = req.body;
+    const { adminName, action, details, entityId, entityType } = req.body;
     
     const newLog = new UserLog({
       adminName,
       action,
       details,
       timestamp: new Date(),
-      entityId
+      entityId,
+      entityType: entityType || 'Other'
     });
     
     await newLog.save();

@@ -107,6 +107,19 @@ function AdminReport() {
 
   const submitStatusUpdate = async () => {
     try {
+      // Get admin's name from localStorage
+      const firstName = localStorage.getItem("firstName") || '';
+      const lastName = localStorage.getItem("lastName") || '';
+      let adminName = '';
+      
+      if (firstName && lastName) {
+        adminName = `${firstName} ${lastName}`;
+      } else if (localStorage.getItem("fullName")) {
+        adminName = localStorage.getItem("fullName");
+      } else {
+        adminName = localStorage.getItem("user") || "Unknown Admin";
+      }
+      
       const response = await fetch(
         `http://localhost:3002/reports/${selectedReport._id}/status`, 
         {
@@ -114,7 +127,10 @@ function AdminReport() {
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(statusUpdate)
+          body: JSON.stringify({
+            ...statusUpdate,
+            adminName // Add admin name to the request
+          })
         }
       );
       

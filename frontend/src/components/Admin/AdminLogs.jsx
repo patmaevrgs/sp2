@@ -155,6 +155,8 @@ function AdminLogs() {
       case 'CREATE_ANNOUNCEMENT': return 'Created Announcement';
       case 'UPDATE_ANNOUNCEMENT': return 'Updated Announcement';
       case 'DELETE_ANNOUNCEMENT': return 'Deleted Announcement';
+      case 'UPDATE_REPORT_STATUS': return 'Updated Report Status';
+      case 'CANCEL_REPORT': return 'Cancelled Report';
       default: return action.replace(/_/g, ' ').toLowerCase();
     }
   };
@@ -165,6 +167,8 @@ function AdminLogs() {
       case 'CREATE_ANNOUNCEMENT': return 'primary';
       case 'UPDATE_ANNOUNCEMENT': return 'warning';
       case 'DELETE_ANNOUNCEMENT': return 'error';
+      case 'UPDATE_REPORT_STATUS': return 'info';
+      case 'CANCEL_REPORT': return 'error';
       default: return 'default';
     }
   };

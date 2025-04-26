@@ -7,6 +7,30 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const createAdminLog = async (adminName, action, details, entityId) => {
+  try {
+    const response = await fetch('http://localhost:3002/logs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        adminName,
+        action,
+        details,
+        entityId,
+        entityType: 'Report'
+      })
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to create admin log:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error creating admin log:', error);
+  }
+};
+
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, '../uploads/reports');
 if (!fs.existsSync(uploadsDir)) {
@@ -79,12 +103,16 @@ export const createReport = async (req, res) => {
     const transaction = new Transaction({
       userId,
       serviceType: 'infrastructure_report',
-      status: 'pending',
+      status: 'pending', // This is correct - lowercase matches Transaction model
       details: {
         reportId: savedReport._id,
-        issueType: savedReport.issueType
-      }
+        issueType: savedReport.issueType,
+        location: savedReport.location,
+        description: savedReport.description
+      },
+      referenceId: savedReport._id // This was missing - add the reportId as referenceId
     });
+    
 
     await transaction.save();
 
@@ -166,7 +194,16 @@ export const getUserReports = async (req, res) => {
 export const updateReportStatus = async (req, res) => {
   try {
     const { reportId } = req.params;
-    const { status, adminComments } = req.body;
+    const { status, adminComments, adminName } = req.body;
+    
+    // Find the report first to get previous status for logging
+    const report = await Report.findById(reportId);
+    
+    if (!report) {
+      return res.status(404).json({ success: false, message: "Report not found" });
+    }
+    
+    const previousStatus = report.status;
     
     const updatedReport = await Report.findByIdAndUpdate(
       reportId,
@@ -178,12 +215,50 @@ export const updateReportStatus = async (req, res) => {
       { new: true }
     );
     
-    if (!updatedReport) {
-      return res.status(404).json({ success: false, message: "Report not found" });
+    // Map Report status (PascalCase) to Transaction status (lowercase)
+    let transactionStatus;
+    switch(status) {
+      case 'Pending':
+        transactionStatus = 'pending';
+        break;
+      case 'In Progress':
+        transactionStatus = 'approved'; // Map 'In Progress' to 'approved'
+        break;
+      case 'Resolved':
+        transactionStatus = 'completed'; // Map 'Resolved' to 'completed'
+        break;
+      case 'Cancelled':
+        transactionStatus = 'cancelled'; // This mapping is straightforward
+        break;
+      default:
+        transactionStatus = 'pending';
+    }
+    
+    // Update the associated transaction
+    await Transaction.findOneAndUpdate(
+      { 
+        serviceType: 'infrastructure_report',
+        referenceId: reportId 
+      },
+      {
+        status: transactionStatus,
+        adminComment: adminComments || '',
+        updatedAt: Date.now()
+      }
+    );
+    
+    // Create admin log for the status update
+    if (adminName) {
+      const logAction = 'UPDATE_REPORT_STATUS';
+      const logDetails = `Updated infrastructure report status from ${previousStatus} to ${status}. Report Type: ${report.issueType}, Location: ${report.location}`;
+      
+      // Using axios would be more appropriate, but we'll create a direct call to your API
+      await createAdminLog(adminName, logAction, logDetails, reportId);
     }
     
     res.status(200).json({ success: true, report: updatedReport });
   } catch (error) {
+    console.error('Error updating report status:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
@@ -210,54 +285,80 @@ export const addResidentFeedback = async (req, res) => {
   }
 };
 
-// Add this method to your reportController.js
 export const cancelReport = async (req, res) => {
-    try {
-      const { reportId } = req.params;
-      const userId = req.body.userId; // You might want to validate the user
-  
-      const report = await Report.findById(reportId);
-  
-      if (!report) {
-        return res.status(404).json({ success: false, message: "Report not found" });
-      }
-  
-      // Only allow cancellation of pending reports
-      if (report.status !== 'Pending') {
-        return res.status(400).json({ 
-          success: false, 
-          message: "Only pending reports can be cancelled" 
-        });
-      }
-  
-      // Update report status to cancelled
-      report.status = 'Cancelled';
-      report.updatedAt = Date.now();
-  
-      const updatedReport = await report.save();
-  
-      // Optionally, you might want to update or remove the associated transaction
-      await Transaction.findOneAndUpdate(
-        { 
-          serviceType: 'infrastructure_report', 
-          referenceId: reportId 
-        }, 
-        { 
-          status: 'cancelled' 
-        }
-      );
-  
-      res.status(200).json({ 
-        success: true, 
-        report: updatedReport,
-        message: 'Report cancelled successfully' 
-      });
-    } catch (error) {
-      console.error('Error cancelling report:', error);
-      res.status(500).json({ 
+  try {
+    const { reportId } = req.params;
+    const { userId, adminName } = req.body;
+
+    const report = await Report.findById(reportId);
+
+    if (!report) {
+      return res.status(404).json({ success: false, message: "Report not found" });
+    }
+
+    // Only allow cancellation of pending reports
+    if (report.status !== 'Pending') {
+      return res.status(400).json({ 
         success: false, 
-        message: error.message,
-        error: error.toString() 
+        message: "Only pending reports can be cancelled" 
       });
     }
-  };
+
+    // Update report status to cancelled
+    report.status = 'Cancelled';
+    report.updatedAt = Date.now();
+
+    const updatedReport = await report.save();
+
+    // Update the associated transaction status to 'cancelled'
+    await Transaction.findOneAndUpdate(
+      { 
+        serviceType: 'infrastructure_report', 
+        referenceId: reportId 
+      }, 
+      { 
+        status: 'cancelled',
+        updatedAt: Date.now()
+      }
+    );
+
+    // Create admin log if this was cancelled by admin
+    if (adminName) {
+      const logAction = 'CANCEL_REPORT';
+      const logDetails = `Cancelled infrastructure report. Report Type: ${report.issueType}, Location: ${report.location}`;
+      
+      await createAdminLog(adminName, logAction, logDetails, reportId);
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      report: updatedReport,
+      message: 'Report cancelled successfully' 
+    });
+  } catch (error) {
+    console.error('Error cancelling report:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message,
+      error: error.toString() 
+    });
+  }
+};
+
+
+export const getReportById = async (req, res) => {
+  try {
+    const { reportId } = req.params;
+    
+    const report = await Report.findById(reportId);
+    
+    if (!report) {
+      return res.status(404).json({ success: false, message: "Report not found" });
+    }
+    
+    res.status(200).json({ success: true, report });
+  } catch (error) {
+    console.error('Error fetching report:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

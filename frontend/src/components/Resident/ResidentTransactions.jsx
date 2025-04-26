@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
   Button,
   Container,
   Typography,
@@ -59,11 +62,16 @@ const ResidentTransaction = () => {
   
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [feedbackReportId, setFeedbackReportId] = useState(null);
   const [error, setError] = useState(null);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [openDetails, setOpenDetails] = useState(false);
   const [openCancel, setOpenCancel] = useState(false);
   const [cancellationReason, setCancellationReason] = useState('');
+  const [openFeedbackDialog, setOpenFeedbackDialog] = useState(false);
+  const [feedbackSatisfied, setFeedbackSatisfied] = useState(true);
+  const [feedbackComments, setFeedbackComments] = useState('');
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
   const [filter, setFilter] = useState('all');
   
@@ -110,7 +118,7 @@ const ResidentTransaction = () => {
       
       const transaction = await response.json();
       
-      // Now, if this is a court reservation or ambulance booking, fetch the details
+      // Now, fetch the reference details based on service type
       let referenceDetails = null;
       
       if (transaction.serviceType === 'court_reservation' && transaction.referenceId) {
@@ -122,6 +130,24 @@ const ResidentTransaction = () => {
         const refResponse = await fetch(`http://localhost:3002/ambulance/${transaction.referenceId}`);
         if (refResponse.ok) {
           referenceDetails = await refResponse.json();
+        }
+      } else if (transaction.serviceType === 'infrastructure_report') {
+        // Try to get the report ID from either referenceId or details.reportId
+        let reportId = transaction.referenceId;
+        
+        // If referenceId is not available, check details.reportId
+        if (!reportId && transaction.details && transaction.details.reportId) {
+          reportId = transaction.details.reportId;
+        }
+        
+        if (reportId) {
+          const refResponse = await fetch(`http://localhost:3002/reports/${reportId}`);
+          if (refResponse.ok) {
+            const reportData = await refResponse.json();
+            if (reportData.success && reportData.report) {
+              referenceDetails = reportData.report;
+            }
+          }
         }
       }
       
@@ -142,6 +168,61 @@ const ResidentTransaction = () => {
     }
   };
 
+  const submitFeedback = async () => {
+    if (!feedbackReportId) {
+      setSnackbar({
+        open: true,
+        message: 'Cannot submit feedback: Missing report reference',
+        severity: 'error'
+      });
+      return;
+    }
+    
+    setFeedbackSubmitting(true);
+    
+    try {
+      console.log('Submitting feedback for report:', feedbackReportId);
+      
+      const response = await fetch(`http://localhost:3002/reports/${feedbackReportId}/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          satisfied: feedbackSatisfied,
+          comments: feedbackComments
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      setOpenFeedbackDialog(false);
+      setOpenDetails(false); // Close both dialogs
+      setFeedbackComments('');
+      setFeedbackSatisfied(true);
+      setFeedbackReportId(null); // Clear the stored ID
+      fetchTransactions();
+      setSnackbar({
+        open: true,
+        message: 'Your feedback has been submitted successfully',
+        severity: 'success'
+      });
+    } catch (err) {
+      console.error('Error submitting feedback:', err);
+      setSnackbar({
+        open: true,
+        message: 'Failed to submit your feedback: ' + err.message,
+        severity: 'error'
+      });
+    } finally {
+      setFeedbackSubmitting(false);
+    }
+  };
+
   const handleCancelRequest = (transaction) => {
     setSelectedTransaction(transaction);
     setOpenCancel(true);
@@ -150,17 +231,21 @@ const ResidentTransaction = () => {
   const confirmCancel = async () => {
     try {
       let cancelEndpoint = '';
+      let method = 'PATCH'; // Default method for ambulance and court
       
       if (selectedTransaction.serviceType === 'ambulance_booking' && selectedTransaction.referenceId) {
         cancelEndpoint = `http://localhost:3002/ambulance/${selectedTransaction.referenceId}/cancel`;
       } else if (selectedTransaction.serviceType === 'court_reservation' && selectedTransaction.referenceId) {
         cancelEndpoint = `http://localhost:3002/court/${selectedTransaction.referenceId}/cancel`;
+      } else if (selectedTransaction.serviceType === 'infrastructure_report' && selectedTransaction.referenceId) {
+        cancelEndpoint = `http://localhost:3002/reports/${selectedTransaction.referenceId}/cancel`;
+        method = 'PUT'; // Use PUT for report cancellation as defined in your router
       } else {
         throw new Error('Cannot cancel this type of transaction');
       }
       
       const response = await fetch(cancelEndpoint, {
-        method: 'PATCH',
+        method: method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -172,6 +257,12 @@ const ResidentTransaction = () => {
       
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.success) {
+        throw new Error(data.message || 'Failed to cancel request');
       }
       
       setOpenCancel(false);
@@ -186,7 +277,7 @@ const ResidentTransaction = () => {
       console.error('Error cancelling request:', err);
       setSnackbar({
         open: true,
-        message: 'Failed to cancel your request. Please try again.',
+        message: 'Failed to cancel your request: ' + err.message,
         severity: 'error'
       });
     }
@@ -261,11 +352,37 @@ const ResidentTransaction = () => {
     setFilter(event.target.value);
   };
 
-  // Update the getStatusChip function to handle both approved and booked statuses
-  const getStatusChip = (status) => {
+  const getStatusChip = (status, serviceType) => {
     let color = 'default';
     let label = status;
-
+  
+    // Special case for infrastructure reports
+    if (serviceType === 'infrastructure_report') {
+      // Map transaction status back to Report status
+      switch (status) {
+        case 'pending':
+          color = 'warning';
+          label = 'Pending';
+          break;
+        case 'approved':
+          color = 'primary';
+          label = 'In Progress';
+          break;
+        case 'completed':
+          color = 'success';
+          label = 'Resolved';
+          break;
+        case 'cancelled':
+          color = 'error';
+          label = 'Cancelled';
+          break;
+        default:
+          color = 'default';
+      }
+      return <Chip size="small" label={label} color={color} />;
+    }
+  
+    // Regular transaction status handling
     switch (status) {
       case 'pending':
         color = 'warning';
@@ -294,7 +411,7 @@ const ResidentTransaction = () => {
       default:
         color = 'default';
     }
-
+  
     return <Chip size="small" label={label.replace('_', ' ')} color={color} />;
   };
 
@@ -308,6 +425,8 @@ const ResidentTransaction = () => {
         return 'Payment';
       case 'court_reservation':
         return 'Court Reservation';
+      case 'infrastructure_report':
+        return 'Infrastructure Report';
       case 'other':
         return 'Other Service';
       default:
@@ -334,34 +453,41 @@ const ResidentTransaction = () => {
   };
 
   const canCancel = (transaction) => {
+    // Special case for infrastructure reports
+    if (transaction.serviceType === 'infrastructure_report') {
+      // Only allow cancellation if status is 'pending' 
+      return transaction.status === 'pending';
+    }
+    
+    // For other transaction types
     return ['pending', 'needs_approval', 'booked', 'approved'].includes(transaction.status)
-    && transaction.status !== 'completed';
+      && transaction.status !== 'completed';
   };
 
   const filteredTransactions = filter === 'all' 
-    ? transactions 
-    : transactions.filter(transaction => {
-        if (filter === 'active') {
-          // Include both 'approved' and 'booked' statuses in active transactions
-          return ['pending', 'booked', 'needs_approval', 'approved'].includes(transaction.status);
-        } else if (filter === 'ambulance') {
-          return transaction.serviceType === 'ambulance_booking';
-        } else if (filter === 'document') {
-          return transaction.serviceType === 'document_request';
-        } else if (filter === 'court') {
-          return transaction.serviceType === 'court_reservation';
-        } else if (filter === 'payment') {
-          return transaction.serviceType === 'payment';
-        } else if (filter === 'approved') {
-          // Special case: if filtering for approved, also include booked
-          return transaction.status === 'approved' || transaction.status === 'booked';
-        } else if (filter === 'booked') {
-          // Special case: if filtering for booked, also include approved
-          return transaction.status === 'booked' || transaction.status === 'approved';
-        } else {
-          return transaction.status === filter;
-        }
-      });
+  ? transactions 
+  : transactions.filter(transaction => {
+      if (filter === 'active') {
+        return ['pending', 'booked', 'needs_approval', 'approved'].includes(transaction.status);
+      } else if (filter === 'ambulance') {
+        return transaction.serviceType === 'ambulance_booking';
+      } else if (filter === 'document') {
+        return transaction.serviceType === 'document_request';
+      } else if (filter === 'court') {
+        return transaction.serviceType === 'court_reservation';
+      } else if (filter === 'payment') {
+        return transaction.serviceType === 'payment';
+      } else if (filter === 'infrastructure') {
+        return transaction.serviceType === 'infrastructure_report';
+      } else if (filter === 'approved') {
+        return transaction.status === 'approved' || transaction.status === 'booked';
+      } else if (filter === 'booked') {
+        return transaction.status === 'booked' || transaction.status === 'approved';
+      } else {
+        return transaction.status === filter;
+      }
+    });
+
 
   if (loading) {
     return (
@@ -458,7 +584,7 @@ const ResidentTransaction = () => {
                   secondary={
                     <>
                       <Typography component="span" variant="body2" color="text.primary">
-                        {getStatusChip(transaction.status)}
+                        {getStatusChip(transaction.status, transaction.serviceType)}
                       </Typography>
                       {" — "}{formatDate(transaction.createdAt)}
                       {needsDieselResponse(transaction) && (
@@ -767,6 +893,7 @@ const ResidentTransaction = () => {
             <MenuItem value="ambulance">Ambulance Bookings</MenuItem>
             <MenuItem value="document">Document Requests</MenuItem>
             <MenuItem value="court">Court Reservations</MenuItem>
+            <MenuItem value="infrastructure">Infrastructure Reports</MenuItem>
             <MenuItem value="payment">Payments</MenuItem>
             <Divider />
             <MenuItem value="pending">Pending</MenuItem>
@@ -803,7 +930,7 @@ const ResidentTransaction = () => {
                 <TableCell>{getServiceTypeLabel(transaction.serviceType)}</TableCell>
                 <TableCell>{formatDate(transaction.createdAt)}</TableCell>
                 <TableCell>
-                  {getStatusChip(transaction.status)}
+                  {getStatusChip(transaction.status, transaction.serviceType)}
                   {needsDieselResponse(transaction) && (
                     <Chip 
                       size="small" 
@@ -835,7 +962,18 @@ const ResidentTransaction = () => {
                       </Typography>
                     </>
                   )}
+                  {transaction.serviceType === 'infrastructure_report' && transaction.details && (
+                    <>
+                      <Typography variant="body2">
+                        <strong>Issue:</strong> {transaction.details.issueType || 'N/A'}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Location:</strong> {transaction.details.location || 'N/A'}
+                      </Typography>
+                    </>
+                  )}
                 </TableCell>
+
                 <TableCell>
                   <Button
                     size="small"
@@ -1112,6 +1250,141 @@ const ResidentTransaction = () => {
                 </>
               )}
               
+              {/* Infrastructure Report Details */}
+              {selectedTransaction?.serviceType === 'infrastructure_report' && (
+                <>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                      Infrastructure Report Information
+                    </Typography>
+                    <Divider />
+                  </Grid>
+                  
+                  {/* From transaction.details */}
+                  {selectedTransaction.details && (
+                    <>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2">
+                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Issue Type:</strong> {selectedTransaction.details.issueType || 'N/A'}
+                        </Typography>
+                      </Grid>
+                    </>
+                  )}
+                  
+                  {/* From referenceDetails - more comprehensive information */}
+                  {selectedTransaction.referenceDetails && (
+                    <>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2">
+                          <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Reported By:</strong> {selectedTransaction.referenceDetails.fullName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Contact Number:</strong> {selectedTransaction.referenceDetails.contactNumber}
+                        </Typography>
+                        <Typography variant="body2">
+                          <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Date Observed:</strong> {formatDate(selectedTransaction.referenceDetails.dateObserved)}
+                        </Typography>
+                        <Typography variant="body2">
+                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Issue Type:</strong> {selectedTransaction.referenceDetails.issueType}
+                        </Typography>
+                      </Grid>
+                      
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2">
+                          <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Location:</strong> {selectedTransaction.referenceDetails.location}
+                        </Typography>
+                        <Typography variant="body2">
+                          <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Nearest Landmark:</strong> {selectedTransaction.referenceDetails.nearestLandmark}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Status:</strong> {selectedTransaction.referenceDetails.status}
+                        </Typography>
+                      </Grid>
+                      
+                      <Grid item xs={12}>
+                        <Typography variant="body2">
+                          <strong>Description:</strong> {selectedTransaction.referenceDetails.description}
+                        </Typography>
+                        {selectedTransaction.referenceDetails.additionalComments && (
+                          <Typography variant="body2" sx={{ mt: 1 }}>
+                            <strong>Additional Comments:</strong> {selectedTransaction.referenceDetails.additionalComments}
+                          </Typography>
+                        )}
+                      </Grid>
+                      
+                      {/* Admin Comments Section */}
+                      {selectedTransaction.referenceDetails.adminComments && (
+                        <Grid item xs={12}>
+                          <Typography variant="body2" sx={{ mt: 1 }}>
+                            <strong>Admin Comments:</strong> {selectedTransaction.referenceDetails.adminComments}
+                          </Typography>
+                        </Grid>
+                      )}
+                      
+                      {/* Resident Feedback Section */}
+                      {selectedTransaction.referenceDetails.residentFeedback && 
+                        (selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined || 
+                        selectedTransaction.referenceDetails.residentFeedback.comments) && (
+                        <Grid item xs={12}>
+                          <Card sx={{ mt: 2, bgcolor: '#f8f9fa' }}>
+                            <CardContent>
+                              <Typography variant="subtitle2" gutterBottom>
+                                Your Feedback:
+                              </Typography>
+                              {selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined && (
+                                <Typography variant="body2">
+                                  <strong>Satisfied:</strong> {selectedTransaction.referenceDetails.residentFeedback.satisfied ? 'Yes' : 'No'}
+                                </Typography>
+                              )}
+                              {selectedTransaction.referenceDetails.residentFeedback.comments && (
+                                <Typography variant="body2">
+                                  <strong>Comments:</strong> {selectedTransaction.referenceDetails.residentFeedback.comments}
+                                </Typography>
+                              )}
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      )}
+                      
+                      {/* Display attached media if available */}
+                      {selectedTransaction.referenceDetails.mediaUrls && 
+                      selectedTransaction.referenceDetails.mediaUrls.length > 0 && (
+                        <Grid item xs={12}>
+                          <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+                            Attached Media:
+                          </Typography>
+                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                            {selectedTransaction.referenceDetails.mediaUrls.map((url, index) => (
+                              <Box 
+                                key={index}
+                                component="a" 
+                                href={`http://localhost:3002${url}`} 
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                sx={{ 
+                                  border: '1px solid #ddd',
+                                  padding: '5px',
+                                  borderRadius: '4px'
+                                }}
+                              >
+                                <Typography variant="body2">View Attachment {index + 1}</Typography>
+                              </Box>
+                            ))}
+                          </Box>
+                        </Grid>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+
               {/* Document Request Details (placeholder for future implementation) */}
               {selectedTransaction.serviceType === 'document_request' && (
                 <>
@@ -1151,6 +1424,45 @@ const ResidentTransaction = () => {
           )}
         </DialogContent>
         <DialogActions>
+          {selectedTransaction && 
+          selectedTransaction.serviceType === 'infrastructure_report' && 
+          (
+            // If using transaction status (lowercase)
+            (selectedTransaction.status === 'completed' || 
+            // Or if using report status (PascalCase) from referenceDetails
+            (selectedTransaction.referenceDetails?.status === 'Resolved'))
+          ) && 
+          !selectedTransaction.referenceDetails?.residentFeedback && (
+            <Button 
+              onClick={() => {
+                // Store the report ID before opening feedback dialog
+                let reportId = null;
+                if (selectedTransaction.referenceId) {
+                  reportId = selectedTransaction.referenceId;
+                } else if (selectedTransaction.details && selectedTransaction.details.reportId) {
+                  reportId = selectedTransaction.details.reportId;
+                } else if (selectedTransaction.referenceDetails && selectedTransaction.referenceDetails._id) {
+                  reportId = selectedTransaction.referenceDetails._id;
+                }
+                
+                if (reportId) {
+                  setFeedbackReportId(reportId);
+                  setOpenFeedbackDialog(true);
+                } else {
+                  setSnackbar({
+                    open: true,
+                    message: 'Cannot determine report ID for feedback',
+                    severity: 'error'
+                  });
+                }
+              }} 
+              color="primary"
+              variant="contained"
+              sx={{ mr: 1 }}
+            >
+              Provide Feedback
+            </Button>
+          )}
           {selectedTransaction && needsDieselResponse(selectedTransaction) && (
             <Button 
               onClick={() => {
@@ -1204,6 +1516,55 @@ const ResidentTransaction = () => {
           <Button onClick={() => setOpenCancel(false)}>No, Keep Request</Button>
           <Button onClick={confirmCancel} color="error">
             Yes, Cancel Request
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Feedback Dialog for Infrastructure Reports */}
+      <Dialog
+        open={openFeedbackDialog}
+        onClose={() => {
+          setOpenFeedbackDialog(false);
+          setFeedbackReportId(null); // Clear the ID when closing
+        }}
+      >
+        <DialogTitle>Provide Your Feedback</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you satisfied with how your issue was resolved?
+          </DialogContentText>
+          <FormControl component="fieldset" sx={{ mt: 2 }}>
+            <RadioGroup
+              value={feedbackSatisfied ? 'yes' : 'no'}
+              onChange={(e) => setFeedbackSatisfied(e.target.value === 'yes')}
+            >
+              <FormControlLabel value="yes" control={<Radio />} label="Yes, I'm satisfied" />
+              <FormControlLabel value="no" control={<Radio />} label="No, I'm not satisfied" />
+            </RadioGroup>
+          </FormControl>
+          <TextField
+            margin="dense"
+            id="feedback-comments"
+            label="Comments (optional)"
+            type="text"
+            fullWidth
+            multiline
+            rows={3}
+            variant="outlined"
+            value={feedbackComments}
+            onChange={(e) => setFeedbackComments(e.target.value)}
+            sx={{ mt: 2 }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenFeedbackDialog(false)}>Cancel</Button>
+          <Button 
+            onClick={submitFeedback} 
+            color="primary"
+            variant="contained"
+            disabled={feedbackSubmitting}
+          >
+            {feedbackSubmitting ? <CircularProgress size={24} /> : 'Submit Feedback'}
           </Button>
         </DialogActions>
       </Dialog>

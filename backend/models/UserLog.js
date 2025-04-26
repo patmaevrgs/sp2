@@ -20,7 +20,12 @@ const userLogSchema = new mongoose.Schema({
   // Optional reference to the related entity (like announcement ID)
   entityId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Announcement'
+    refPath: 'entityType'
+  },
+  entityType: {
+    type: String,
+    enum: ['Announcement', 'Report', 'Other'],
+    default: 'Other'
   }
 });
 

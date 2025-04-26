@@ -33,7 +33,8 @@ import {
   getUserReports, 
   updateReportStatus, 
   cancelReport,
-  addResidentFeedback 
+  addResidentFeedback,
+  getReportById
 } from './controllers/reportController.js';
 import multer from 'multer';
 
@@ -95,6 +96,7 @@ router.get('/reports/user', getUserReports); // This is the route causing the 50
 router.put('/reports/:reportId/status', updateReportStatus); 
 router.post('/reports/:reportId/feedback', addResidentFeedback);
 router.put('/reports/:reportId/cancel', cancelReport);
+router.get('/reports/:reportId', getReportById);
 
 // Serve static files
 import express from 'express';
