@@ -36,6 +36,13 @@ import {
   addResidentFeedback,
   getReportById
 } from './controllers/reportController.js';
+import {
+  createProposal,
+  getProposals,
+  getProposalById,
+  updateProposalStatus,
+  deleteProposal
+} from './controllers/proposalController.js';
 import multer from 'multer';
 
 const router = Router();
@@ -97,6 +104,13 @@ router.put('/reports/:reportId/status', updateReportStatus);
 router.post('/reports/:reportId/feedback', addResidentFeedback);
 router.put('/reports/:reportId/cancel', cancelReport);
 router.get('/reports/:reportId', getReportById);
+
+// Project Proposal Routes
+router.post('/proposals', upload.single('document'), createProposal);
+router.get('/proposals', getProposals);
+router.get('/proposals/:id', getProposalById);
+router.patch('/proposals/:id/status', updateProposalStatus);
+router.delete('/proposals/:id', deleteProposal);
 
 // Serve static files
 import express from 'express';
