@@ -44,6 +44,13 @@ import {
   cancelProposal,
   deleteProposal
 } from './controllers/proposalController.js';
+import {
+  createDocumentRequest,
+  getDocumentRequests,
+  getDocumentRequestById,
+  updateDocumentRequestStatus,
+  cancelDocumentRequest
+} from './controllers/documentRequestController.js';
 import multer from 'multer';
 
 const router = Router();
@@ -113,6 +120,13 @@ router.get('/proposals/:id', getProposalById);
 router.patch('/proposals/:id/status', updateProposalStatus);
 router.patch('/proposals/:id/cancel', cancelProposal);
 router.delete('/proposals/:id', deleteProposal);
+
+// Document Request Routes
+router.post('/documents', createDocumentRequest);
+router.get('/documents', getDocumentRequests);
+router.get('/documents/:id', getDocumentRequestById);
+router.patch('/documents/:id/status', updateDocumentRequestStatus);
+router.patch('/documents/:id/cancel', cancelDocumentRequest);
 
 // Serve static files
 import express from 'express';

@@ -153,6 +153,15 @@ const ResidentTransaction = () => {
           }
         }
       }
+      else if (transaction.serviceType === 'document_request' && transaction.referenceId) {
+        const refResponse = await fetch(`http://localhost:3002/documents/${transaction.referenceId}`);
+        if (refResponse.ok) {
+          const documentData = await refResponse.json();
+          if (documentData.success && documentData.documentRequest) {
+            referenceDetails = documentData.documentRequest;
+          }
+        }
+      }
       else if (transaction.serviceType === 'project_proposal' && transaction.referenceId) {
         const refResponse = await fetch(`http://localhost:3002/proposals/${transaction.referenceId}`);
         if (refResponse.ok) {
@@ -199,7 +208,8 @@ const ResidentTransaction = () => {
           (transaction.serviceType === 'ambulance_booking' || 
           transaction.serviceType === 'court_reservation' ||
           transaction.serviceType === 'infrastructure_report' ||
-          transaction.serviceType === 'project_proposal')) {
+          transaction.serviceType === 'project_proposal' ||
+          transaction.serviceType === 'document_request')) {
         
         setLoading(true);
         
@@ -218,6 +228,9 @@ const ResidentTransaction = () => {
           case 'project_proposal':
             endpoint = `http://localhost:3002/proposals/${transaction.referenceId}`;
             break;
+          case 'document_request':
+            endpoint = `http://localhost:3002/documents/${transaction.referenceId}`;
+            break;
           default:
             endpoint = null;
         }
@@ -235,6 +248,10 @@ const ResidentTransaction = () => {
                 if (data.proposal.serviceId) {
                   setServiceId(data.proposal.serviceId);
                 }
+              } else if (transaction.serviceType === 'document_request' && data && data.documentRequest) {
+                if (data.documentRequest.serviceId) {
+                  setServiceId(data.documentRequest.serviceId);
+                }
               } else if (data && data.serviceId) {
                 setServiceId(data.serviceId);
               }
@@ -245,6 +262,9 @@ const ResidentTransaction = () => {
               setLoading(false);
             });
         }
+      } else if (transaction.details && transaction.details.serviceId) {
+        // If the service ID is already in the transaction details, use it directly
+        setServiceId(transaction.details.serviceId);
       }
     }, [transaction]);
 
@@ -252,7 +272,8 @@ const ResidentTransaction = () => {
     if (transaction.serviceType !== 'ambulance_booking' && 
         transaction.serviceType !== 'court_reservation' &&
         transaction.serviceType !== 'infrastructure_report' &&
-        transaction.serviceType !== 'project_proposal') {
+        transaction.serviceType !== 'project_proposal' &&
+        transaction.serviceType !== 'document_request') {
       return <span>-</span>;
     }
 
@@ -265,6 +286,7 @@ const ResidentTransaction = () => {
           transaction.details?.serviceId || 
           (transaction.serviceType === 'infrastructure_report' && transaction.referenceDetails?.serviceId) ||
           (transaction.serviceType === 'project_proposal' && transaction.referenceDetails?.serviceId) ||
+          (transaction.serviceType === 'document_request' && transaction.referenceDetails?.serviceId) ||
           'N/A'
         )}
       </>
@@ -345,6 +367,9 @@ const ResidentTransaction = () => {
         method = 'PUT'; // Use PUT for report cancellation as defined in your router
       } else if (selectedTransaction.serviceType === 'project_proposal' && selectedTransaction.referenceId) {
         cancelEndpoint = `http://localhost:3002/proposals/${selectedTransaction.referenceId}/cancel`;
+        method = 'PATCH';
+      } else if (selectedTransaction.serviceType === 'document_request' && selectedTransaction.referenceId) {
+        cancelEndpoint = `http://localhost:3002/documents/${selectedTransaction.referenceId}/cancel`;
         method = 'PATCH';
       } else {
         throw new Error('Cannot cancel this type of transaction');
@@ -458,9 +483,71 @@ const ResidentTransaction = () => {
     setFilter(event.target.value);
   };
 
-  const getStatusChip = (status, serviceType) => {
+  // Updated getStatusChip function to display correct status for document requests
+  const getStatusChip = (status, serviceType, transaction) => {
     let color = 'default';
     let label = status;
+    
+    // Special case for document requests - map transaction status back to document request status
+    if (serviceType === 'document_request') {
+      // If we have the reference details with the original status, use that
+      if (transaction && transaction.referenceDetails && transaction.referenceDetails.status) {
+        const docStatus = transaction.referenceDetails.status;
+        
+        switch (docStatus) {
+          case 'pending':
+            color = 'warning';
+            label = 'Pending';
+            break;
+          case 'in_progress':
+            color = 'primary';
+            label = 'In Progress';
+            break;
+          case 'completed':
+            color = 'success';
+            label = 'Completed';
+            break;
+          case 'rejected':
+            color = 'error';
+            label = 'Rejected';
+            break;
+          case 'cancelled':
+            color = 'default';
+            label = 'Cancelled';
+            break;
+          default:
+            color = 'default';
+            label = docStatus.replace('_', ' ');
+        }
+        
+        return <Chip size="small" label={label} color={color} />;
+      }
+      
+      // If we don't have reference details yet, map from transaction status
+      switch (status) {
+        case 'pending':
+          color = 'warning';
+          label = 'Pending';
+          break;
+        case 'approved':
+          color = 'primary';
+          label = 'In Progress';
+          break;
+        case 'completed':
+          color = 'success';
+          label = 'Completed';
+          break;
+        case 'cancelled':
+          color = 'error';
+          label = 'Rejected/Cancelled';
+          break;
+        default:
+          color = 'default';
+          label = status.replace('_', ' ');
+      }
+      
+      return <Chip size="small" label={label} color={color} />;
+    }
     
     // Special case for project proposals
     if (serviceType === 'project_proposal') {
@@ -548,7 +635,7 @@ const ResidentTransaction = () => {
       default:
         color = 'default';
     }
-  
+
     return <Chip size="small" label={label.replace('_', ' ')} color={color} />;
   };
 
@@ -556,8 +643,6 @@ const ResidentTransaction = () => {
     switch (type) {
       case 'ambulance_booking':
         return 'Ambulance Booking';
-      case 'document_request':
-        return 'Document Request';
       case 'payment':
         return 'Payment';
       case 'court_reservation':
@@ -566,6 +651,8 @@ const ResidentTransaction = () => {
         return 'Infrastructure Report';
       case 'project_proposal':
         return 'Project Proposal';
+      case 'document_request':
+        return 'Document Request';
       case 'other':
         return 'Other Service';
       default:
@@ -591,7 +678,19 @@ const ResidentTransaction = () => {
     }
   };
 
+  // Updated canCancel function to handle document requests
   const canCancel = (transaction) => {
+    // For document requests
+    if (transaction.serviceType === 'document_request') {
+      // If we have reference details with original status
+      if (transaction.referenceDetails && transaction.referenceDetails.status) {
+        // Only allow cancellation if status is 'pending'
+        return transaction.referenceDetails.status === 'pending';
+      }
+      // Otherwise use transaction status
+      return transaction.status === 'pending';
+    }
+    
     // For project proposals
     if (transaction.serviceType === 'project_proposal') {
       // Get actual status from either details or transaction status
@@ -602,6 +701,7 @@ const ResidentTransaction = () => {
       // Only allow cancellation if proposal is not approved or rejected
       return !['approved', 'rejected', 'completed', 'cancelled'].includes(proposalStatus);
     }
+    
     // Special case for infrastructure reports
     if (transaction.serviceType === 'infrastructure_report') {
       // Only allow cancellation if status is 'pending' 
@@ -733,7 +833,7 @@ const ResidentTransaction = () => {
                   secondary={
                     <>
                       <Typography component="span" variant="body2" color="text.primary">
-                        {getStatusChip(transaction.status, transaction.serviceType)}
+                        {getStatusChip(transaction.status, transaction.serviceType, transaction)}
                       </Typography>
                       {" — "}{formatDate(transaction.createdAt)}
                       {needsDieselResponse(transaction) && (
@@ -1079,7 +1179,7 @@ const ResidentTransaction = () => {
               <TableRow key={transaction._id}>
                 <TableCell>{getServiceTypeLabel(transaction.serviceType)}</TableCell>
                 <TableCell>
-                  {transaction.serviceType === 'ambulance_booking' || transaction.serviceType === 'court_reservation' || transaction.serviceType === 'infrastructure_report' || transaction.serviceType === 'project_proposal'? (
+                  {transaction.serviceType === 'ambulance_booking' || transaction.serviceType === 'court_reservation' || transaction.serviceType === 'infrastructure_report' || transaction.serviceType === 'document_request' || transaction.serviceType === 'project_proposal'? (
                     <ServiceIdCell transaction={transaction} />
                   ) : (
                     '-'
@@ -1087,7 +1187,7 @@ const ResidentTransaction = () => {
                 </TableCell>
                 <TableCell>{formatDate(transaction.createdAt)}</TableCell>
                 <TableCell>
-                  {getStatusChip(transaction.status, transaction.serviceType)}
+                  {getStatusChip(transaction.status, transaction.serviceType, transaction)}
                   {needsDieselResponse(transaction) && (
                     <Chip 
                       size="small" 
@@ -1358,6 +1458,112 @@ const ResidentTransaction = () => {
                 </>
               )}
               
+              {/* Document Request Details */}
+              {selectedTransaction?.serviceType === 'document_request' && (
+                <>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                      Document Request Information
+                    </Typography>
+                    <Divider />
+                  </Grid>
+                  
+                  {/* From transaction.details */}
+                  {selectedTransaction.details && (
+                    <>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2">
+                          <strong>Document Type:</strong> {
+                            (() => {
+                              const docType = selectedTransaction.details.documentType;
+                              switch(docType) {
+                                case 'barangay_id': return 'Barangay ID';
+                                case 'barangay_clearance': return 'Barangay Clearance';
+                                case 'business_clearance': return 'Business Clearance';
+                                case 'lot_ownership': return 'Lot Ownership';
+                                case 'digging_permit': return 'Digging Permit';
+                                case 'fencing_permit': return 'Fencing Permit';
+                                case 'request_for_assistance': return 'Request for Assistance';
+                                case 'certificate_of_indigency': return 'Certificate of Indigency';
+                                case 'certificate_of_residency': return 'Certificate of Residency';
+                                case 'no_objection_certificate': return 'No Objection Certificate';
+                                case 'blotter_form': return 'Blotter Form';
+                                default: return docType;
+                              }
+                            })()
+                          }
+                        </Typography>
+                      </Grid>
+                    </>
+                  )}
+                  
+                  {/* From referenceDetails - more comprehensive information */}
+                  {selectedTransaction.referenceDetails && (
+                    <>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2">
+                          <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId || 'N/A'}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Purpose:</strong> {selectedTransaction.referenceDetails.purpose}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Status:</strong> {
+                            (() => {
+                              const status = selectedTransaction.referenceDetails.status;
+                              switch(status) {
+                                case 'pending': return 'Pending';
+                                case 'in_progress': return 'In Progress';
+                                case 'completed': return 'Completed';
+                                case 'rejected': return 'Rejected';
+                                case 'cancelled': return 'Cancelled';
+                                default: return status.replace('_', ' ');
+                              }
+                            })()
+                          }
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Date Requested:</strong> {format(new Date(selectedTransaction.referenceDetails.createdAt), 'MMM dd, yyyy')}
+                        </Typography>
+                      </Grid>
+                      
+                      {selectedTransaction.referenceDetails.documentType === 'certificate_of_residency' && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Age:</strong> {selectedTransaction.referenceDetails.formData.age}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Date of Birth:</strong> {
+                                selectedTransaction.referenceDetails.formData.dateOfBirth ? 
+                                format(new Date(selectedTransaction.referenceDetails.formData.dateOfBirth), 'MMM dd, yyyy') : 
+                                'N/A'
+                              }
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Place of Birth:</strong> {selectedTransaction.referenceDetails.formData.placeOfBirth}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Nationality:</strong> {selectedTransaction.referenceDetails.formData.nationality}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Civil Status:</strong> {selectedTransaction.referenceDetails.formData.civilStatus}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Years of Stay:</strong> {selectedTransaction.referenceDetails.formData.yearsOfStay}
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
               {/* Project Proposal Details */}
               {selectedTransaction?.serviceType === 'project_proposal' && (
                 <>
@@ -1593,26 +1799,6 @@ const ResidentTransaction = () => {
                         </Grid>
                       )}
                     </>
-                  )}
-                </>
-              )}
-
-              {/* Document Request Details (placeholder for future implementation) */}
-              {selectedTransaction.serviceType === 'document_request' && (
-                <>
-                  <Grid item xs={12}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                      Document Request Information
-                    </Typography>
-                    <Divider />
-                  </Grid>
-                  
-                  {selectedTransaction.details && (
-                    <Grid item xs={12}>
-                      <Typography variant="body2">
-                        <strong>Request details will be shown here</strong>
-                      </Typography>
-                    </Grid>
                   )}
                 </>
               )}
