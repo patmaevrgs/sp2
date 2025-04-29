@@ -132,6 +132,7 @@ const ResidentTransaction = () => {
         const refResponse = await fetch(`http://localhost:3002/ambulance/${transaction.referenceId}`);
         if (refResponse.ok) {
           referenceDetails = await refResponse.json();
+          console.log('Ambulance booking details:', referenceDetails); // Debug log
         }
       } else if (transaction.serviceType === 'infrastructure_report') {
         // Try to get the report ID from either referenceId or details.reportId
@@ -185,6 +186,89 @@ const ResidentTransaction = () => {
         severity: 'error'
       });
     }
+  };
+
+  // ServiceIdCell component
+  const ServiceIdCell = ({ transaction }) => {
+    const [serviceId, setServiceId] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+      // Only fetch if we have a referenceId and the service type is one we can handle
+      if (transaction.referenceId && 
+          (transaction.serviceType === 'ambulance_booking' || 
+          transaction.serviceType === 'court_reservation' ||
+          transaction.serviceType === 'infrastructure_report' ||
+          transaction.serviceType === 'project_proposal')) {
+        
+        setLoading(true);
+        
+        // Determine the correct endpoint based on service type
+        let endpoint;
+        switch(transaction.serviceType) {
+          case 'ambulance_booking':
+            endpoint = `http://localhost:3002/ambulance/${transaction.referenceId}`;
+            break;
+          case 'court_reservation':
+            endpoint = `http://localhost:3002/court/${transaction.referenceId}`;
+            break;
+          case 'infrastructure_report':
+            endpoint = `http://localhost:3002/reports/${transaction.referenceId}`;
+            break;
+          case 'project_proposal':
+            endpoint = `http://localhost:3002/proposals/${transaction.referenceId}`;
+            break;
+          default:
+            endpoint = null;
+        }
+        
+        if (endpoint) {
+          fetch(endpoint)
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+              // For reports, the data structure might be different
+              if (transaction.serviceType === 'infrastructure_report' && data && data.report) {
+                if (data.report.serviceId) {
+                  setServiceId(data.report.serviceId);
+                }
+              } else if (transaction.serviceType === 'project_proposal' && data && data.proposal) {
+                if (data.proposal.serviceId) {
+                  setServiceId(data.proposal.serviceId);
+                }
+              } else if (data && data.serviceId) {
+                setServiceId(data.serviceId);
+              }
+              setLoading(false);
+            })
+            .catch(err => {
+              console.error(`Error fetching service ID for ${transaction.serviceType}:`, err);
+              setLoading(false);
+            });
+        }
+      }
+    }, [transaction]);
+
+    // Don't show anything for service types we don't handle
+    if (transaction.serviceType !== 'ambulance_booking' && 
+        transaction.serviceType !== 'court_reservation' &&
+        transaction.serviceType !== 'infrastructure_report' &&
+        transaction.serviceType !== 'project_proposal') {
+      return <span>-</span>;
+    }
+
+    return (
+      <>
+        {loading ? (
+          <CircularProgress size={16} />
+        ) : (
+          serviceId || 
+          transaction.details?.serviceId || 
+          (transaction.serviceType === 'infrastructure_report' && transaction.referenceDetails?.serviceId) ||
+          (transaction.serviceType === 'project_proposal' && transaction.referenceDetails?.serviceId) ||
+          'N/A'
+        )}
+      </>
+    );
   };
 
   const submitFeedback = async () => {
@@ -983,6 +1067,7 @@ const ResidentTransaction = () => {
           <TableHead>
             <TableRow>
               <TableCell>Service</TableCell>
+              <TableCell>Service ID</TableCell>
               <TableCell>Date</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Details</TableCell>
@@ -993,6 +1078,13 @@ const ResidentTransaction = () => {
             {filteredTransactions.map((transaction) => (
               <TableRow key={transaction._id}>
                 <TableCell>{getServiceTypeLabel(transaction.serviceType)}</TableCell>
+                <TableCell>
+                  {transaction.serviceType === 'ambulance_booking' || transaction.serviceType === 'court_reservation' || transaction.serviceType === 'infrastructure_report' || transaction.serviceType === 'project_proposal'? (
+                    <ServiceIdCell transaction={transaction} />
+                  ) : (
+                    '-'
+                  )}
+                </TableCell>
                 <TableCell>{formatDate(transaction.createdAt)}</TableCell>
                 <TableCell>
                   {getStatusChip(transaction.status, transaction.serviceType)}
@@ -1138,35 +1230,10 @@ const ResidentTransaction = () => {
                     <Divider />
                   </Grid>
                   
-                  {/* From transaction.details */}
-                  {selectedTransaction.details && (
-                    <>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Patient:</strong> {selectedTransaction.details.patientName}
-                        </Typography>
-                        <Typography variant="body2">
-                          <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Pickup Date:</strong> {formatDate(selectedTransaction.details.pickupDate)}
-                        </Typography>
-                        <Typography variant="body2">
-                          <TimeIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Pickup Time:</strong> {selectedTransaction.details.pickupTime}
-                        </Typography>
-                      </Grid>
-                      
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Destination:</strong> {selectedTransaction.details.destination}
-                        </Typography>
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Diesel Cost Required:</strong> {selectedTransaction.details.dieselCost ? 'Yes' : 'No'}
-                        </Typography>
-                      </Grid>
-                    </>
+                  {selectedTransaction.serviceType === 'ambulance_booking' && selectedTransaction.referenceDetails && (
+                    <Typography variant="body2">
+                      <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId || 'N/A'}
+                    </Typography>
                   )}
                   
                   {/* From referenceDetails - more comprehensive information */}
@@ -1219,6 +1286,10 @@ const ResidentTransaction = () => {
                             <strong>Additional Notes:</strong> {selectedTransaction.referenceDetails.additionalNote}
                           </Typography>
                         )}
+                        <Typography variant="body2">
+                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Diesel Cost Required:</strong> {selectedTransaction.details.dieselCost ? 'Yes' : 'No'}
+                        </Typography>
                       </Grid>
                     </>
                   )}
@@ -1235,41 +1306,13 @@ const ResidentTransaction = () => {
                     <Divider />
                   </Grid>
                   
-                  {/* From transaction.details */}
-                  {selectedTransaction.details && (
-                    <>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Representative:</strong> {selectedTransaction.details.representativeName}
-                        </Typography>
-                        <Typography variant="body2">
-                          <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Date:</strong> {formatDate(selectedTransaction.details.reservationDate)}
-                        </Typography>
-                        <Typography variant="body2">
-                          <TimeIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Time:</strong> {selectedTransaction.details.startTime}
-                        </Typography>
-                      </Grid>
-                      
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Duration:</strong> {selectedTransaction.details.duration} hours
-                        </Typography>
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Purpose:</strong> {selectedTransaction.details.purpose}
-                        </Typography>
-                      </Grid>
-                    </>
-                  )}
-                  
                   {/* From referenceDetails - more comprehensive information */}
                   {selectedTransaction.referenceDetails && (
                     <>
                       <Grid item xs={12} sm={6}>
+                        <Typography variant="body2">
+                          <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId}
+                        </Typography>
                         <Typography variant="body2">
                           <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
                           <strong>Representative:</strong> {selectedTransaction.referenceDetails.representativeName}
@@ -1325,6 +1368,16 @@ const ResidentTransaction = () => {
                     <Divider />
                   </Grid>
                   
+                  <Grid item xs={12}>
+                    <Typography variant="body2">
+                      <strong>Proposal ID:</strong> {
+                        selectedTransaction.referenceDetails?.serviceId || 
+                        selectedTransaction.details?.serviceId || 
+                        'N/A'
+                      }
+                    </Typography>
+                  </Grid>
+
                   {/* From transaction.details */}
                   {selectedTransaction.details && (
                     <>
@@ -1420,6 +1473,9 @@ const ResidentTransaction = () => {
                   {selectedTransaction.details && (
                     <>
                       <Grid item xs={12} sm={6}>
+                        <Typography variant="body2">
+                          <strong>Report ID:</strong> {selectedTransaction.referenceDetails?.serviceId || 'N/A'}
+                        </Typography>
                         <Typography variant="body2">
                           <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
                           <strong>Issue Type:</strong> {selectedTransaction.details.issueType || 'N/A'}

@@ -499,6 +499,9 @@ function ResidentReport() {
             <Grid container spacing={2}>
               <Grid item xs={12} sm={8}>
                 <Typography variant="h6">{report.issueType}</Typography>
+                <Typography variant="caption" color="textSecondary" display="block" gutterBottom>
+                  ID: {report.serviceId || 'N/A'}
+                </Typography>
                 <Typography variant="body2" color="textSecondary" gutterBottom>
                   Submitted on {formatDate(report.createdAt)}
                 </Typography>

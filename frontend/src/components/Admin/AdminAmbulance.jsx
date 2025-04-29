@@ -390,19 +390,19 @@ const AdminAmbulance = () => {
     let actionDetails = '';
     switch (action) {
       case 'booked':
-        actionDetails = `Accepted ambulance booking for ${selectedBooking.patientName}`;
+        actionDetails = `Accepted ambulance booking ${selectedBooking.serviceId} for ${selectedBooking.patientName}`;
         break;
       case 'cancelled':
-        actionDetails = `Cancelled ambulance booking for ${selectedBooking.patientName}`;
+        actionDetails = `Cancelled ambulance booking ${selectedBooking.serviceId} for ${selectedBooking.patientName}`;
         break;
       case 'completed':
-        actionDetails = `Marked ambulance booking as completed for ${selectedBooking.patientName}`;
+        actionDetails = `Marked ambulance booking ${selectedBooking.serviceId} as completed for ${selectedBooking.patientName}`;
         break;
       case 'needs_approval':
-        actionDetails = `Requested diesel cost approval for ${selectedBooking.patientName}'s booking`;
+        actionDetails = `Requested diesel cost approval for ${selectedBooking.patientName}'s ambulance booking ${selectedBooking.serviceId}`;
         break;
       default:
-        actionDetails = `Updated ambulance booking for ${selectedBooking.patientName}`;
+        actionDetails = `Updated ambulance booking ${selectedBooking.serviceId} for ${selectedBooking.patientName}`;
     }
     
     if (details) {
@@ -973,6 +973,9 @@ const AdminAmbulance = () => {
                           <Typography variant={isMobile ? "subtitle1" : "h6"}>
                             Ambulance Booking Details
                           </Typography>
+                          <Typography variant="subtitle2" color="text.secondary">
+                            Booking ID: {selectedBooking.serviceId || 'N/A'}
+                          </Typography>
                           <Chip
                             label={formatStatus(selectedBooking.status)}
                             color={getStatusColor(selectedBooking.status)}
@@ -1373,6 +1376,9 @@ const AdminAmbulance = () => {
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                         <Typography variant={isMobile ? "subtitle1" : "h6"} noWrap title={booking.patientName}>
                           {booking.patientName}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          ID: {booking.serviceId || 'N/A'}
                         </Typography>
                         <Chip
                           size="small"

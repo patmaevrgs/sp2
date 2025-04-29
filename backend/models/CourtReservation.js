@@ -1,6 +1,14 @@
 import mongoose from 'mongoose';
 
 const courtReservationSchema = new mongoose.Schema({
+  serviceId: { 
+    type: String,
+    unique: true,
+    default: function() {
+      return 'CRT' + Math.floor(100000 + Math.random() * 900000);
+    }
+  },
+  
   representativeName: {
     type: String,
     required: true

@@ -1,6 +1,13 @@
 import mongoose from 'mongoose';
 
 const projectProposalSchema = new mongoose.Schema({
+  serviceId: { 
+    type: String,
+    unique: true,
+    default: function() {
+      return 'PRJ' + Math.floor(100000 + Math.random() * 900000);
+    }
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

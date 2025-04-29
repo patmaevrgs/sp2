@@ -1,6 +1,13 @@
 import mongoose from 'mongoose';
 
 const ambulanceBookingSchema = new mongoose.Schema({
+  serviceId: { 
+    type: String,
+    unique: true,
+    default: function() {
+      return 'AMB' + Math.floor(100000 + Math.random() * 900000);
+    }
+  },
   patientName: { 
     type: String, 
     required: true 

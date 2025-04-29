@@ -265,15 +265,20 @@ function AdminReport() {
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={8}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Typography variant="h6" component="h2">
-                        {report.issueType} 
-                        <Chip 
-                          label={report.status} 
-                          color={getStatusColor(report.status)} 
-                          size="small" 
-                          sx={{ ml: 1 }} 
-                        />
-                      </Typography>
+                      <Box>
+                        <Typography variant="h6" component="h2">
+                          {report.issueType} 
+                          <Chip 
+                            label={report.status} 
+                            color={getStatusColor(report.status)} 
+                            size="small" 
+                            sx={{ ml: 1 }} 
+                          />
+                        </Typography>
+                        <Typography variant="caption" color="textSecondary">
+                          ID: {report.serviceId || 'N/A'}
+                        </Typography>
+                      </Box>
                       <Typography variant="body2" color="textSecondary">
                         Reported on {formatDate(report.createdAt)}
                       </Typography>
@@ -363,6 +368,11 @@ function AdminReport() {
             {selectedReport.issueType} - {selectedReport.status}
           </DialogTitle>
           <DialogContent dividers>
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="textSecondary">
+                Service ID: {selectedReport.serviceId || 'N/A'}
+              </Typography>
+            </Grid>
             <Grid container spacing={3}>
               <Grid item xs={12} sm={6}>
                 <Typography variant="subtitle1">Reported By:</Typography>

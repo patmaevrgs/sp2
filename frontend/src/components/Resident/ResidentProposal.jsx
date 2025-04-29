@@ -715,6 +715,7 @@ function ResidentProposal() {
                     <TableHead>
                       <TableRow>
                         <TableCell>Project Title</TableCell>
+                        <TableCell>Service ID</TableCell>
                         <TableCell>Submission Date</TableCell>
                         <TableCell>Status</TableCell>
                         <TableCell>Actions</TableCell>
@@ -724,6 +725,7 @@ function ResidentProposal() {
                       {proposals.map((proposal) => (
                         <TableRow key={proposal._id}>
                           <TableCell>{proposal.projectTitle}</TableCell>
+                          <TableCell>{proposal.serviceId}</TableCell>
                           <TableCell>{formatDate(proposal.createdAt)}</TableCell>
                           <TableCell>{getStatusChip(proposal.status)}</TableCell>
                           <TableCell>
@@ -831,6 +833,9 @@ function ResidentProposal() {
                 <Grid item xs={12}>
                   <Typography variant="h5" gutterBottom>
                     {selectedProposal.projectTitle}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Service ID: {selectedProposal.serviceId || 'N/A'}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                     {getStatusChip(selectedProposal.status)}

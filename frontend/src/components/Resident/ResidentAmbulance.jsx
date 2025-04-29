@@ -715,6 +715,9 @@ const ResidentAmbulance = () => {
                         <Typography variant="h6" noWrap title={booking.patientName}>
                           {booking.patientName}
                         </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          ID: {booking.serviceId || 'N/A'}
+                        </Typography>
                         <Chip
                           size="small"
                           label={formatStatus(booking.status)}

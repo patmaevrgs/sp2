@@ -338,6 +338,7 @@ function AdminProposal() {
             <TableHead>
               <TableRow>
                 <TableCell>Project Title</TableCell>
+                <TableCell>Service ID</TableCell>
                 <TableCell>Submitted By</TableCell>
                 <TableCell>Submission Date</TableCell>
                 <TableCell>Status</TableCell>
@@ -355,6 +356,7 @@ function AdminProposal() {
                 proposals.map((proposal) => (
                   <TableRow key={proposal._id}>
                     <TableCell>{proposal.projectTitle}</TableCell>
+                    <TableCell>{proposal.serviceId || 'N/A'}</TableCell>
                     <TableCell>{proposal.fullName}</TableCell>
                     <TableCell>{formatDate(proposal.createdAt)}</TableCell>
                     <TableCell>{getStatusChip(proposal.status)}</TableCell>
@@ -412,7 +414,9 @@ function AdminProposal() {
                     </Typography>
                     {getStatusChip(proposal.status)}
                   </Box>
-                  
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    ID: {proposal.serviceId || 'N/A'}
+                  </Typography>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
                     Submitted by: {proposal.fullName}
                   </Typography>
@@ -481,6 +485,9 @@ function AdminProposal() {
                 <Grid item xs={12}>
                   <Typography variant="h5" gutterBottom>
                     {selectedProposal.projectTitle}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+                    Service ID: {selectedProposal.serviceId || 'N/A'}
                   </Typography>
                   {getStatusChip(selectedProposal.status)}
                   <Divider sx={{ my: 2 }} />

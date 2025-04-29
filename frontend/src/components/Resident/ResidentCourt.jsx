@@ -628,6 +628,9 @@ function ResidentCourt() {
                     {reservations.map((reservation) => (
                       <Card key={reservation._id} sx={{ mb: 2 }}>
                         <CardContent>
+                        <Typography variant="caption" color="text.secondary">
+                          ID: {reservation.serviceId || 'N/A'}
+                        </Typography>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Typography variant="subtitle1" component="div">
                               {format(new Date(reservation.reservationDate), 'MMMM d, yyyy')}
@@ -722,6 +725,12 @@ function ResidentCourt() {
               </DialogTitle>
               <DialogContent>
                 <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                    <Typography variant="subtitle2">Service ID</Typography>
+                    <Typography variant="body2" gutterBottom>
+                      {selectedReservation.serviceId || 'N/A'}
+                    </Typography>
+                  </Grid>
                   <Grid item xs={12} sm={6}>
                     <Typography variant="subtitle2">Date</Typography>
                     <Typography variant="body2" gutterBottom>

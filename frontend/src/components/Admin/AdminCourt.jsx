@@ -204,6 +204,40 @@ function AdminCourt() {
     }
   }, [showCalendar, fetchCalendarData]);
   
+  // ServiceIdCell component for court reservations
+  const ServiceIdCell = ({ reservation }) => {
+    const [serviceId, setServiceId] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+      if (reservation && reservation._id) {
+        setLoading(true);
+        fetch(`http://localhost:3002/court/${reservation._id}`)
+          .then(res => res.ok ? res.json() : null)
+          .then(data => {
+            if (data && data.serviceId) {
+              setServiceId(data.serviceId);
+            }
+            setLoading(false);
+          })
+          .catch(err => {
+            console.error('Error fetching service ID:', err);
+            setLoading(false);
+          });
+      }
+    }, [reservation]);
+
+    return (
+      <>
+        {loading ? (
+          <CircularProgress size={16} />
+        ) : (
+          serviceId || (reservation.serviceId || 'N/A')
+        )}
+      </>
+    );
+  };
+
   // Handle pagination changes
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -446,6 +480,7 @@ function AdminCourt() {
               <Table stickyHeader>
                 <TableHead>
                   <TableRow>
+                    <TableCell>Service ID</TableCell>
                     <TableCell>Date</TableCell>
                     <TableCell>Time</TableCell>
                     {!isMobile && <TableCell>Representative</TableCell>}
@@ -473,6 +508,9 @@ function AdminCourt() {
                       : reservations
                     ).map((reservation) => (
                       <TableRow key={reservation._id}>
+                        <TableCell>
+                          {reservation.serviceId || <ServiceIdCell reservation={reservation} />}
+                        </TableCell>
                         <TableCell sx={{ padding: { xs: '8px 4px', sm: '16px' } }}>
                           {formatDate(reservation.reservationDate)}
                         </TableCell>
@@ -564,6 +602,12 @@ function AdminCourt() {
               </DialogTitle>
               <DialogContent>
                 <Grid container spacing={2}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="subtitle2">Reservation ID</Typography>
+                    <Typography variant="body2" gutterBottom>
+                      {selectedReservation.serviceId}
+                    </Typography>
+                  </Grid>
                   <Grid item xs={12} md={6}>
                     <Typography variant="subtitle2">Date</Typography>
                     <Typography variant="body2" gutterBottom>
