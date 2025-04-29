@@ -40,15 +40,18 @@ import {
   Close as CloseIcon,
   Print as PrintIcon,
   Refresh as RefreshIcon,
-  Search as SearchIcon
+  Search as SearchIcon,
+  Download as DownloadIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
+import documentService from '../../services/documentService';
 
 function AdminRequestForms() {
   // State for document requests
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [docxGenerating, setDocxGenerating] = useState(false);
   
   // Pagination
   const [page, setPage] = useState(0);
@@ -311,17 +314,71 @@ function AdminRequestForms() {
     setOpenPrintPreview(true);
   };
   
-  // Print document
-  const handlePrint = () => {
-    const printContents = document.getElementById('print-content').innerHTML;
-    const originalContents = document.body.innerHTML;
+  // Generate and download DOCX document
+  const handleGenerateDocument = async () => {
+    if (!selectedRequest) return;
     
-    document.body.innerHTML = printContents;
-    window.print();
-    document.body.innerHTML = originalContents;
+    setDocxGenerating(true);
     
-    // Reload the page to restore React functionality
-    window.location.reload();
+    try {
+      // Generate a DOCX document
+      const response = await fetch('http://localhost:3002/documents/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documentType: selectedRequest.documentType,
+          formData: selectedRequest.formData,
+          purpose: selectedRequest.purpose
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      // Get the blob from the response
+      const blob = await response.blob();
+      
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a link element
+      const a = document.createElement('a');
+      
+      // Set link properties
+      a.href = url;
+      a.download = `${selectedRequest.documentType}_${Date.now()}.docx`;
+      
+      // Append to the body
+      document.body.appendChild(a);
+      
+      // Trigger the download
+      a.click();
+      
+      // Clean up
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      setSnackbar({
+        open: true,
+        message: 'Document generated successfully. Downloading now...',
+        severity: 'success'
+      });
+      
+      // Close the print preview dialog after successful generation
+      setOpenPrintPreview(false);
+    } catch (error) {
+      console.error('Error generating document:', error);
+      setSnackbar({
+        open: true,
+        message: `Failed to generate document: ${error.message}`,
+        severity: 'error'
+      });
+    } finally {
+      setDocxGenerating(false);
+    }
   };
 
   const handleRejectRequest = (request) => {
@@ -378,138 +435,6 @@ function AdminRequestForms() {
   // Handle snackbar close
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
-  };
-  
-  // Generate certificate of residency
-  const generateCertificateOfResidency = (request) => {
-    if (!request || request.documentType !== 'certificate_of_residency') {
-      return <Typography>Invalid document type</Typography>;
-    }
-    
-    const { formData } = request;
-    const currentDate = new Date();
-    
-    return (
-      <Box id="print-content" sx={{ p: 2 }}>
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography variant="h5">REPUBLIC OF THE PHILIPPINES</Typography>
-          <Typography variant="h6">PROVINCE OF LAGUNA</Typography>
-          <Typography variant="h6">MUNICIPALITY OF LOS BAÑOS</Typography>
-          <Typography variant="h5" sx={{ mt: 2, fontWeight: 'bold' }}>BARANGAY MAAHAS</Typography>
-        </Box>
-        
-        <Box sx={{ textAlign: 'center', mb: 4 }}>
-          <Typography variant="h4" sx={{ textDecoration: 'underline', fontWeight: 'bold' }}>
-            CERTIFICATE OF RESIDENCY
-          </Typography>
-        </Box>
-        
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h6">TO WHOM IT MAY CONCERN:</Typography>
-        </Box>
-        
-        <Box sx={{ mb: 4, pl: 4 }}>
-          <Typography paragraph sx={{ textIndent: '2em' }}>
-            This is to certify that the name stated below is a registered and legitimate resident of 
-            Sitio Ibaba, Barangay Maahas, Los Baños, Laguna.
-          </Typography>
-        </Box>
-        
-        <Box sx={{ mb: 4, pl: 8 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={3}>
-              <Typography sx={{ fontWeight: 'bold' }}>Name:</Typography>
-            </Grid>
-            <Grid item xs={9}>
-              <Typography>{formData.fullName?.toUpperCase()}</Typography>
-            </Grid>
-            
-            <Grid item xs={3}>
-              <Typography sx={{ fontWeight: 'bold' }}>Age:</Typography>
-            </Grid>
-            <Grid item xs={9}>
-              <Typography>{formData.age} years old</Typography>
-            </Grid>
-            
-            <Grid item xs={3}>
-              <Typography sx={{ fontWeight: 'bold' }}>Date of Birth:</Typography>
-            </Grid>
-            <Grid item xs={9}>
-              <Typography>{formatDate(formData.dateOfBirth)}</Typography>
-            </Grid>
-            
-            <Grid item xs={3}>
-              <Typography sx={{ fontWeight: 'bold' }}>Place of Birth:</Typography>
-            </Grid>
-            <Grid item xs={9}>
-              <Typography>{formData.placeOfBirth}</Typography>
-            </Grid>
-            
-            <Grid item xs={3}>
-              <Typography sx={{ fontWeight: 'bold' }}>Nationality:</Typography>
-            </Grid>
-            <Grid item xs={9}>
-              <Typography>{formData.nationality}</Typography>
-            </Grid>
-            
-            <Grid item xs={3}>
-              <Typography sx={{ fontWeight: 'bold' }}>Civil Status:</Typography>
-            </Grid>
-            <Grid item xs={9}>
-              <Typography>{formData.civilStatus}</Typography>
-            </Grid>
-            
-            {formData.motherName && (
-              <>
-                <Grid item xs={3}>
-                  <Typography sx={{ fontWeight: 'bold' }}>Mother:</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                  <Typography>{formData.motherName}</Typography>
-                </Grid>
-              </>
-            )}
-            
-            {formData.fatherName && (
-              <>
-                <Grid item xs={3}>
-                  <Typography sx={{ fontWeight: 'bold' }}>Father:</Typography>
-                </Grid>
-                <Grid item xs={9}>
-                  <Typography>{formData.fatherName}</Typography>
-                </Grid>
-              </>
-            )}
-          </Grid>
-        </Box>
-        
-        <Box sx={{ mb: 4, pl: 4 }}>
-          <Typography paragraph>
-            No. Years of Stay at Barangay: {formData.yearsOfStay} years up to present.
-          </Typography>
-        </Box>
-        
-        <Box sx={{ mb: 4, pl: 4 }}>
-          <Typography paragraph>
-            This certification is being issued upon the request of {formData.fullName?.toUpperCase()}, 
-            for {request.purpose}.
-          </Typography>
-        </Box>
-        
-        <Box sx={{ mb: 4, pl: 4 }}>
-          <Typography paragraph>
-            Signed this {currentDate.getDate()}{getOrdinalSuffix(currentDate.getDate())} day of {format(currentDate, 'MMMM, yyyy')}.
-          </Typography>
-        </Box>
-        
-        <Box sx={{ mt: 8, mb: 4, textAlign: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            HON. JUAN DELA CRUZ
-          </Typography>
-          <Typography>Barangay Captain</Typography>
-        </Box>
-      </Box>
-    );
   };
   
   // Get ordinal suffix for day of month
@@ -674,7 +599,7 @@ function AdminRequestForms() {
                                 size="small"
                                 color="secondary"
                                 onClick={() => handlePrintPreview(request)}
-                                title="Print Document"
+                                title="Generate Document"
                               >
                                 <PrintIcon fontSize="small" />
                               </IconButton>
@@ -754,6 +679,7 @@ function AdminRequestForms() {
                   <Grid item xs={12} sm={6}>
                     <Typography variant="body2"><strong>Full Name:</strong> {selectedRequest.formData.fullName}</Typography>
                     <Typography variant="body2"><strong>Age:</strong> {selectedRequest.formData.age}</Typography>
+                    <Typography variant="body2"><strong>Address:</strong> {selectedRequest.formData.address}</Typography>
                     <Typography variant="body2"><strong>Date of Birth:</strong> {formatDate(selectedRequest.formData.dateOfBirth)}</Typography>
                     <Typography variant="body2"><strong>Place of Birth:</strong> {selectedRequest.formData.placeOfBirth}</Typography>
                     <Typography variant="body2"><strong>Nationality:</strong> {selectedRequest.formData.nationality}</Typography>
@@ -814,7 +740,7 @@ function AdminRequestForms() {
               variant="contained"
               startIcon={<PrintIcon />}
             >
-              Print Document
+              Generate Document
             </Button>
           )}
           
@@ -880,7 +806,7 @@ function AdminRequestForms() {
         </DialogActions>
       </Dialog>
       
-      {/* Print Preview Dialog */}
+      {/* Document Preview Dialog */}
       <Dialog
         open={openPrintPreview}
         onClose={() => setOpenPrintPreview(false)}
@@ -900,33 +826,77 @@ function AdminRequestForms() {
         
         <DialogContent>
           <Alert severity="info" sx={{ mb: 2 }}>
-            This is a preview of the document that will be printed. Click the Print button to print or save as PDF.
+            Click the "Download Document" button to generate a Microsoft Word document based on the resident's information.
+            You can open, edit, and print the document after downloading.
           </Alert>
           
           <Box sx={{ border: '1px solid #ddd', p: 2 }}>
-            <Typography variant="h6" align="center" gutterBottom>
-              [Preview of {selectedRequest && documentTypeMap[selectedRequest.documentType]}]
-            </Typography>
-            
-            <Typography paragraph>
-              The actual document will be generated based on the information provided by the resident.
-            </Typography>
+            {selectedRequest && (
+              <>
+                <Typography variant="h6" align="center" gutterBottom>
+                  {documentTypeMap[selectedRequest.documentType]}
+                </Typography>
+                
+                <Divider sx={{ my: 2 }} />
+                
+                <Typography variant="subtitle1" gutterBottom>
+                  Document will include:
+                </Typography>
+                
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2">
+                      <strong>Name:</strong> {selectedRequest.formData.fullName}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Age:</strong> {selectedRequest.formData.age} years old
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Address:</strong> {selectedRequest.formData.address} Barangay Maahas, Los Baños, Laguna
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Date of Birth:</strong> {formatDate(selectedRequest.formData.dateOfBirth)}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Place of Birth:</strong> {selectedRequest.formData.placeOfBirth}
+                    </Typography>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2">
+                      <strong>Nationality:</strong> {selectedRequest.formData.nationality}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Civil Status:</strong> {selectedRequest.formData.civilStatus}
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Years of Stay:</strong> {selectedRequest.formData.yearsOfStay} years
+                    </Typography>
+                    <Typography variant="body2">
+                      <strong>Purpose:</strong> {selectedRequest.purpose}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </>
+            )}
           </Box>
         </DialogContent>
         
         <DialogActions>
           <Button
             onClick={() => setOpenPrintPreview(false)}
+            disabled={docxGenerating}
           >
             Close
           </Button>
           <Button
-            onClick={handlePrint}
+            onClick={handleGenerateDocument}
             color="primary"
             variant="contained"
-            startIcon={<PrintIcon />}
+            startIcon={docxGenerating ? <CircularProgress size={20} /> : <DownloadIcon />}
+            disabled={docxGenerating}
           >
-            Print
+            {docxGenerating ? 'Generating...' : 'Download Document'}
           </Button>
         </DialogActions>
       </Dialog>

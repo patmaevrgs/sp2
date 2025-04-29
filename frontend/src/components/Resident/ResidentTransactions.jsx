@@ -1537,6 +1537,9 @@ const ResidentTransaction = () => {
                               <strong>Age:</strong> {selectedTransaction.referenceDetails.formData.age}
                             </Typography>
                             <Typography variant="body2">
+                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address} Barangay Maahas, Los Baños, Laguna
+                            </Typography>
+                            <Typography variant="body2">
                               <strong>Date of Birth:</strong> {
                                 selectedTransaction.referenceDetails.formData.dateOfBirth ? 
                                 format(new Date(selectedTransaction.referenceDetails.formData.dateOfBirth), 'MMM dd, yyyy') : 

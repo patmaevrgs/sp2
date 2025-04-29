@@ -4,16 +4,11 @@ import path from 'path';
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import { fileURLToPath } from 'url';
-import libre from 'libreoffice-convert';
-import util from 'util';
-
-// Convert libre's callback-based method to a Promise-based one
-const convertAsync = util.promisify(libre.convert);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Generate document based on template and data
+// Generate document based on template and data (DOCX only)
 export const generateDocument = async (req, res) => {
   try {
     const { documentType, formData, purpose } = req.body;
@@ -81,6 +76,7 @@ export const generateDocument = async (req, res) => {
     // Prepare data for template
     const data = {
       fullName: formData.fullName?.toUpperCase() || '',
+      address: formData.address || '',
       age: formData.age || '',
       dateOfBirth: formatDate(formData.dateOfBirth) || '',
       placeOfBirth: formData.placeOfBirth || '',
@@ -106,51 +102,11 @@ export const generateDocument = async (req, res) => {
     // Create a unique filename
     const timestamp = Date.now();
     const docxFilename = `${documentType}_${timestamp}.docx`;
-    const pdfFilename = `${documentType}_${timestamp}.pdf`;
     
-    const docxOutputPath = path.resolve(__dirname, `../temp/${docxFilename}`);
-    const pdfOutputPath = path.resolve(__dirname, `../temp/${pdfFilename}`);
-    
-    // Ensure temp directory exists
-    const tempDir = path.resolve(__dirname, '../temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir);
-    }
-    
-    // Write the DOCX to a temp file
-    fs.writeFileSync(docxOutputPath, outputDocx);
-    
-    // Convert DOCX to PDF
-    try {
-      const docxBuffer = fs.readFileSync(docxOutputPath);
-      const pdfBuffer = await convertAsync(docxBuffer, '.pdf', undefined);
-      
-      // Write the PDF to a temp file
-      fs.writeFileSync(pdfOutputPath, pdfBuffer);
-      
-      // Send the PDF file as a response
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename=${pdfFilename}`);
-      res.send(pdfBuffer);
-      
-      // Clean up temp files (optional - can be done by a scheduled task instead)
-      setTimeout(() => {
-        try {
-          fs.unlinkSync(docxOutputPath);
-          fs.unlinkSync(pdfOutputPath);
-        } catch (err) {
-          console.error('Error cleaning up temp files:', err);
-        }
-      }, 60000); // Clean up after 1 minute
-      
-    } catch (conversionError) {
-      console.error('Error converting DOCX to PDF:', conversionError);
-      
-      // If PDF conversion fails, send the DOCX file as a fallback
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
-      res.setHeader('Content-Disposition', `attachment; filename=${docxFilename}`);
-      res.sendFile(docxOutputPath);
-    }
+    // Send the DOCX file directly to the client
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename=${docxFilename}`);
+    res.send(outputDocx);
     
   } catch (error) {
     console.error('Error generating document:', error);

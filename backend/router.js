@@ -52,6 +52,7 @@ import {
   cancelDocumentRequest
 } from './controllers/documentRequestController.js';
 import multer from 'multer';
+import { generateDocument } from './controllers/documentGeneratorController.js';
 
 const router = Router();
 
@@ -127,6 +128,9 @@ router.get('/documents', getDocumentRequests);
 router.get('/documents/:id', getDocumentRequestById);
 router.patch('/documents/:id/status', updateDocumentRequestStatus);
 router.patch('/documents/:id/cancel', cancelDocumentRequest);
+
+// Document Generation Route
+router.post('/documents/generate', generateDocument);
 
 // Serve static files
 import express from 'express';

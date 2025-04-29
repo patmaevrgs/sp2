@@ -33,6 +33,7 @@ function RequestResidency() {
     civilStatus: '',
     motherName: '',
     fatherName: '',
+    address: '', // Added address field
     yearsOfStay: '',
     purpose: ''
   });
@@ -75,7 +76,8 @@ function RequestResidency() {
     // Required fields validation
     const requiredFields = [
       'fullName', 'age', 'dateOfBirth', 'placeOfBirth', 
-      'nationality', 'civilStatus', 'yearsOfStay', 'purpose'
+      'nationality', 'civilStatus', 'motherName', 'fatherName', // Made parent fields required
+      'address', 'yearsOfStay', 'purpose' // Added address to required fields
     ];
     
     requiredFields.forEach(field => {
@@ -261,6 +263,23 @@ function RequestResidency() {
                 />
               </Grid>
               
+              {/* Address Field - NEW */}
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  id="address"
+                  name="address"
+                  label="House No., Street, Block/Lot/Phase (within Brgy. Maahas)"
+                  placeholder="e.g., 123 Sample St., Phase 1"
+                  value={formData.address}
+                  onChange={handleChange}
+                  error={!!errors.address}
+                  helperText={errors.address || "Enter your specific address (no need to include Barangay Maahas, Los Baños, Laguna)"}
+                  variant="outlined"
+                />
+              </Grid>
+              
               {/* Civil Status */}
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth required error={!!errors.civilStatus}>
@@ -303,28 +322,34 @@ function RequestResidency() {
                 />
               </Grid>
               
-              {/* Mother's Name */}
+              {/* Mother's Name - Now required */}
               <Grid item xs={12} sm={6}>
                 <TextField
+                  required
                   fullWidth
                   id="motherName"
                   name="motherName"
-                  label="Mother's Name (Optional)"
+                  label="Mother's Name"
                   value={formData.motherName}
                   onChange={handleChange}
+                  error={!!errors.motherName}
+                  helperText={errors.motherName}
                   variant="outlined"
                 />
               </Grid>
               
-              {/* Father's Name */}
+              {/* Father's Name - Now required */}
               <Grid item xs={12} sm={6}>
                 <TextField
+                  required
                   fullWidth
                   id="fatherName"
                   name="fatherName"
-                  label="Father's Name (Optional)"
+                  label="Father's Name"
                   value={formData.fatherName}
                   onChange={handleChange}
+                  error={!!errors.fatherName}
+                  helperText={errors.fatherName}
                   variant="outlined"
                 />
               </Grid>
