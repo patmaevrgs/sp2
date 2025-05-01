@@ -1458,7 +1458,7 @@ const ResidentTransaction = () => {
                 </>
               )}
               
-              {/* Document Request Details */}
+              {/* Document Request Details - Add Barangay Clearance section */}
               {selectedTransaction?.serviceType === 'document_request' && (
                 <>
                   <Grid item xs={12}>
@@ -1527,6 +1527,7 @@ const ResidentTransaction = () => {
                         </Typography>
                       </Grid>
                       
+                      {/* Display different fields based on document type */}
                       {selectedTransaction.referenceDetails.documentType === 'certificate_of_residency' && (
                         <>
                           <Grid item xs={12} sm={6}>
@@ -1563,10 +1564,28 @@ const ResidentTransaction = () => {
                           </Grid>
                         </>
                       )}
+                      
+                      {/* Barangay Clearance Details */}
+                      {selectedTransaction.referenceDetails.documentType === 'barangay_clearance' && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Gender:</strong> {selectedTransaction.referenceDetails.formData.gender === 'male' ? 'Male' : 'Female'}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
                     </>
                   )}
                 </>
               )}
+
               {/* Project Proposal Details */}
               {selectedTransaction?.serviceType === 'project_proposal' && (
                 <>

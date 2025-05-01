@@ -44,7 +44,6 @@ import {
   Download as DownloadIcon
 } from '@mui/icons-material';
 import { format } from 'date-fns';
-import documentService from '../../services/documentService';
 
 function AdminRequestForms() {
   // State for document requests
@@ -52,6 +51,7 @@ function AdminRequestForms() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [docxGenerating, setDocxGenerating] = useState(false);
+  const [clearanceNumber, setClearanceNumber] = useState('');
   
   // Pagination
   const [page, setPage] = useState(0);
@@ -318,20 +318,38 @@ function AdminRequestForms() {
   const handleGenerateDocument = async () => {
     if (!selectedRequest) return;
     
+    // Validate clearance number for barangay clearance
+    if (selectedRequest.documentType === 'barangay_clearance' && !clearanceNumber.trim()) {
+      setSnackbar({
+        open: true,
+        message: 'Please enter a clearance number',
+        severity: 'error'
+      });
+      return;
+    }
+    
     setDocxGenerating(true);
     
     try {
+      // Prepare request body with additional clearance number for barangay clearance
+      const requestBody = {
+        documentType: selectedRequest.documentType,
+        formData: selectedRequest.formData,
+        purpose: selectedRequest.purpose
+      };
+      
+      // Add clearance number for barangay clearance
+      if (selectedRequest.documentType === 'barangay_clearance') {
+        requestBody.clearanceNumber = clearanceNumber;
+      }
+      
       // Generate a DOCX document
       const response = await fetch('http://localhost:3002/documents/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          documentType: selectedRequest.documentType,
-          formData: selectedRequest.formData,
-          purpose: selectedRequest.purpose
-        })
+        body: JSON.stringify(requestBody)
       });
       
       if (!response.ok) {
@@ -366,6 +384,11 @@ function AdminRequestForms() {
         message: 'Document generated successfully. Downloading now...',
         severity: 'success'
       });
+      
+      // Reset clearance number after successful generation
+      if (selectedRequest.documentType === 'barangay_clearance') {
+        setClearanceNumber('');
+      }
       
       // Close the print preview dialog after successful generation
       setOpenPrintPreview(false);
@@ -555,55 +578,78 @@ function AdminRequestForms() {
                           </TableCell>
                           <TableCell>{getStatusChip(request.status)}</TableCell>
                           <TableCell>
-                            <IconButton
-                              size="small"
-                              onClick={() => handleViewDetails(request)}
-                              title="View Details"
-                            >
-                              <VisibilityIcon fontSize="small" />
-                            </IconButton>
-                            
-                            {request.status !== 'completed' && request.status !== 'rejected' && (
-                              <>
-                                <IconButton
-                                  size="small"
-                                  color="primary"
-                                  onClick={() => handleOpenUpdateStatus(request)}
-                                  title="Update Status"
-                                >
-                                  <CheckIcon fontSize="small" />
-                                </IconButton>
-                                
-                                <IconButton
-                                  size="small"
-                                  color="error"
-                                  onClick={() => handleRejectRequest(request)}
-                                  title="Reject Request"
-                                >
-                                  <CloseIcon fontSize="small" />
-                                </IconButton>
-                                
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                              {/* View Details Button */}
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={<VisibilityIcon />}
+                                onClick={() => handleViewDetails(request)}
+                              >
+                                View
+                              </Button>
+                              
+                              {/* Approve Button - Only for pending requests */}
+                              {request.status === 'pending' && (
                                 <Button
                                   size="small"
-                                  variant="outlined"
-                                  onClick={() => handleOpenUpdateStatus(request)}
-                                  sx={{ ml: 1 }}
+                                  variant="contained"
+                                  color="primary"
+                                  onClick={() => {
+                                    setSelectedRequest(request);
+                                    setNewStatus('in_progress');
+                                    setAdminComment(request.adminComment || '');
+                                    setOpenUpdateStatus(true);
+                                  }}
                                 >
-                                  Update Status
+                                  Approve
                                 </Button>
-                              </>
-                            )}
-                            
-                            {request.status === 'completed' && (
-                              <IconButton
-                                size="small"
-                                color="secondary"
-                                onClick={() => handlePrintPreview(request)}
-                                title="Generate Document"
-                              >
-                                <PrintIcon fontSize="small" />
-                              </IconButton>
-                            )}
+                              )}
+                              
+                              {/* Complete Button - Only for in_progress requests */}
+                              {request.status === 'in_progress' && (
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  color="success"
+                                  onClick={() => {
+                                    setSelectedRequest(request);
+                                    setNewStatus('completed');
+                                    setAdminComment(request.adminComment ? 
+                                      `${request.adminComment}\nReady for pickup!` : 
+                                      'Ready for pickup!');
+                                    setOpenUpdateStatus(true);
+                                  }}
+                                >
+                                  Complete
+                                </Button>
+                              )}
+                              
+                              {/* Reject Button - Only for pending and in_progress requests */}
+                              {(request.status === 'pending' || request.status === 'in_progress') && (
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  color="error"
+                                  onClick={() => handleRejectRequest(request)}
+                                >
+                                  Reject
+                                </Button>
+                              )}
+                              
+                              {/* Generate Document Button - Only for completed requests */}
+                              {request.status === 'completed' && (
+                                <Button
+                                  size="small"
+                                  variant="contained"
+                                  color="secondary"
+                                  startIcon={<PrintIcon />}
+                                  onClick={() => handlePrintPreview(request)}
+                                >
+                                  Generate
+                                </Button>
+                              )}
+                            </Box>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -644,92 +690,154 @@ function AdminRequestForms() {
         </DialogTitle>
         
         <DialogContent dividers>
-          {selectedRequest && (
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Typography variant="h6">
-                  {documentTypeMap[selectedRequest.documentType]}
+        {selectedRequest && (
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <Typography variant="h6">
+                {documentTypeMap[selectedRequest.documentType]}
+              </Typography>
+              <Divider sx={{ my: 1 }} />
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body2"><strong>Service ID:</strong> {selectedRequest.serviceId}</Typography>
+              <Typography variant="body2"><strong>Status:</strong> {
+                (() => {
+                  const status = selectedRequest.status;
+                  switch(status) {
+                    case 'pending': return 'Pending';
+                    case 'in_progress': return 'In Progress';
+                    case 'completed': return 'Completed';
+                    case 'rejected': return 'Rejected';
+                    case 'cancelled': return 'Cancelled';
+                    default: return status.replace('_', ' ');
+                  }
+                })()
+              }</Typography>
+              <Typography variant="body2"><strong>Requested:</strong> {formatDate(selectedRequest.createdAt)}</Typography>
+              <Typography variant="body2"><strong>Last Updated:</strong> {formatDate(selectedRequest.updatedAt)}</Typography>
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <Typography variant="body2"><strong>Purpose:</strong> {selectedRequest.purpose}</Typography>
+              {selectedRequest.processedBy && (
+                <Typography variant="body2">
+                  <strong>Processed By:</strong> {selectedRequest.processedBy.firstName} {selectedRequest.processedBy.lastName}
                 </Typography>
-                <Divider sx={{ my: 1 }} />
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2"><strong>Service ID:</strong> {selectedRequest.serviceId}</Typography>
-                <Typography variant="body2"><strong>Status:</strong> {selectedRequest.status}</Typography>
-                <Typography variant="body2"><strong>Requested:</strong> {formatDate(selectedRequest.createdAt)}</Typography>
-                <Typography variant="body2"><strong>Last Updated:</strong> {formatDate(selectedRequest.updatedAt)}</Typography>
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2"><strong>Purpose:</strong> {selectedRequest.purpose}</Typography>
-                {selectedRequest.processedBy && (
-                  <Typography variant="body2">
-                    <strong>Processed By:</strong> {selectedRequest.processedBy.firstName} {selectedRequest.processedBy.lastName}
-                  </Typography>
-                )}
-              </Grid>
-              
-              <Grid item xs={12}>
-                <Typography variant="subtitle1" sx={{ mt: 2 }}>Requester Information</Typography>
-                <Divider sx={{ mb: 1 }} />
-              </Grid>
-              
-              {selectedRequest.documentType === 'certificate_of_residency' && (
-                <>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2"><strong>Full Name:</strong> {selectedRequest.formData.fullName}</Typography>
-                    <Typography variant="body2"><strong>Age:</strong> {selectedRequest.formData.age}</Typography>
-                    <Typography variant="body2"><strong>Address:</strong> {selectedRequest.formData.address}</Typography>
-                    <Typography variant="body2"><strong>Date of Birth:</strong> {formatDate(selectedRequest.formData.dateOfBirth)}</Typography>
-                    <Typography variant="body2"><strong>Place of Birth:</strong> {selectedRequest.formData.placeOfBirth}</Typography>
-                    <Typography variant="body2"><strong>Nationality:</strong> {selectedRequest.formData.nationality}</Typography>
-                  </Grid>
-                  
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2"><strong>Civil Status:</strong> {selectedRequest.formData.civilStatus}</Typography>
-                    <Typography variant="body2"><strong>Years of Stay:</strong> {selectedRequest.formData.yearsOfStay}</Typography>
-                    {selectedRequest.formData.motherName && (
-                      <Typography variant="body2"><strong>Mother's Name:</strong> {selectedRequest.formData.motherName}</Typography>
-                    )}
-                    {selectedRequest.formData.fatherName && (
-                      <Typography variant="body2"><strong>Father's Name:</strong> {selectedRequest.formData.fatherName}</Typography>
-                    )}
-                  </Grid>
-                </>
-              )}
-              
-              {selectedRequest.adminComment && (
-                <Grid item xs={12}>
-                  <Card sx={{ mt: 2, bgcolor: '#f5f5f5' }}>
-                    <CardContent>
-                      <Typography variant="subtitle2" gutterBottom>
-                        Admin Comment:
-                      </Typography>
-                      <Typography variant="body2">
-                        {selectedRequest.adminComment}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
               )}
             </Grid>
-          )}
+            
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" sx={{ mt: 2 }}>Requester Information</Typography>
+              <Divider sx={{ mb: 1 }} />
+            </Grid>
+            
+            {/* Certificate of Residency fields */}
+            {selectedRequest.documentType === 'certificate_of_residency' && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Full Name:</strong> {selectedRequest.formData.fullName}</Typography>
+                  <Typography variant="body2"><strong>Age:</strong> {selectedRequest.formData.age}</Typography>
+                  <Typography variant="body2"><strong>Address:</strong> {selectedRequest.formData.address}</Typography>
+                  <Typography variant="body2"><strong>Date of Birth:</strong> {formatDate(selectedRequest.formData.dateOfBirth)}</Typography>
+                  <Typography variant="body2"><strong>Place of Birth:</strong> {selectedRequest.formData.placeOfBirth}</Typography>
+                  <Typography variant="body2"><strong>Nationality:</strong> {selectedRequest.formData.nationality}</Typography>
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Civil Status:</strong> {selectedRequest.formData.civilStatus}</Typography>
+                  <Typography variant="body2"><strong>Years of Stay:</strong> {selectedRequest.formData.yearsOfStay}</Typography>
+                  {selectedRequest.formData.motherName && (
+                    <Typography variant="body2"><strong>Mother's Name:</strong> {selectedRequest.formData.motherName}</Typography>
+                  )}
+                  {selectedRequest.formData.fatherName && (
+                    <Typography variant="body2"><strong>Father's Name:</strong> {selectedRequest.formData.fatherName}</Typography>
+                  )}
+                </Grid>
+              </>
+            )}
+            
+            {/* Barangay Clearance fields */}
+            {selectedRequest.documentType === 'barangay_clearance' && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Full Name:</strong> {selectedRequest.formData.fullName}</Typography>
+                  <Typography variant="body2"><strong>Gender:</strong> {selectedRequest.formData.gender === 'male' ? 'Male' : 'Female'}</Typography>
+                  <Typography variant="body2"><strong>Address:</strong> {selectedRequest.formData.address}, Barangay Maahas, Los Baños, Laguna 4030</Typography>
+                </Grid>
+              </>
+            )}
+            
+            {selectedRequest.adminComment && (
+              <Grid item xs={12}>
+                <Card sx={{ mt: 2, bgcolor: '#f5f5f5' }}>
+                  <CardContent>
+                    <Typography variant="subtitle2" gutterBottom>
+                      Admin Comment:
+                    </Typography>
+                    <Typography variant="body2">
+                      {selectedRequest.adminComment}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            )}
+          </Grid>
+        )}
         </DialogContent>
         
         <DialogActions>
-          {selectedRequest && selectedRequest.status !== 'completed' && selectedRequest.status !== 'rejected' && (
+          {/* Approve Button - Only for pending requests */}
+          {selectedRequest && selectedRequest.status === 'pending' && (
             <Button 
               onClick={() => {
                 setOpenDetails(false);
-                handleOpenUpdateStatus(selectedRequest);
+                setSelectedRequest(selectedRequest);
+                setNewStatus('in_progress');
+                setAdminComment(selectedRequest.adminComment || '');
+                setOpenUpdateStatus(true);
               }} 
-              color="primary"
               variant="contained"
+              color="primary"
             >
-              Update Status
+              Approve
             </Button>
           )}
           
+          {/* Complete Button - Only for in_progress requests */}
+          {selectedRequest && selectedRequest.status === 'in_progress' && (
+            <Button 
+              onClick={() => {
+                setOpenDetails(false);
+                setSelectedRequest(selectedRequest);
+                setNewStatus('completed');
+                setAdminComment(selectedRequest.adminComment ? 
+                  `${selectedRequest.adminComment}\nReady for pickup!` : 
+                  'Ready for pickup!');
+                setOpenUpdateStatus(true);
+              }} 
+              variant="contained"
+              color="success"
+            >
+              Complete
+            </Button>
+          )}
+          
+          {/* Reject Button - For pending and in_progress requests */}
+          {selectedRequest && (selectedRequest.status === 'pending' || selectedRequest.status === 'in_progress') && (
+            <Button 
+              onClick={() => {
+                setOpenDetails(false);
+                handleRejectRequest(selectedRequest);
+              }} 
+              variant="contained"
+              color="error"
+            >
+              Reject
+            </Button>
+          )}
+          
+          {/* Generate Document Button - Only for completed requests */}
           {selectedRequest && selectedRequest.status === 'completed' && (
             <Button 
               onClick={() => {
@@ -744,7 +852,7 @@ function AdminRequestForms() {
             </Button>
           )}
           
-          <Button onClick={() => setOpenDetails(false)}>
+          <Button onClick={() => setOpenDetails(false)} sx={{ ml: 1 }}>
             Close
           </Button>
         </DialogActions>
@@ -839,42 +947,80 @@ function AdminRequestForms() {
                 
                 <Divider sx={{ my: 2 }} />
                 
+                {/* Clearance Number input field - Only for Barangay Clearance */}
+                {selectedRequest.documentType === 'barangay_clearance' && (
+                  <Box sx={{ mb: 3 }}>
+                    <TextField
+                      required
+                      fullWidth
+                      label="Clearance Number"
+                      value={clearanceNumber}
+                      onChange={(e) => setClearanceNumber(e.target.value)}
+                      placeholder="e.g., 2025-S-511"
+                      helperText="Enter the Barangay Clearance number"
+                      sx={{ mb: 1 }}
+                    />
+                  </Box>
+                )}
+                
                 <Typography variant="subtitle1" gutterBottom>
                   Document will include:
                 </Typography>
                 
                 <Grid container spacing={2} sx={{ mt: 1 }}>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2">
-                      <strong>Name:</strong> {selectedRequest.formData.fullName}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Age:</strong> {selectedRequest.formData.age} years old
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Address:</strong> {selectedRequest.formData.address} Barangay Maahas, Los Baños, Laguna
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Date of Birth:</strong> {formatDate(selectedRequest.formData.dateOfBirth)}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Place of Birth:</strong> {selectedRequest.formData.placeOfBirth}
-                    </Typography>
-                  </Grid>
-                  
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="body2">
-                      <strong>Nationality:</strong> {selectedRequest.formData.nationality}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Civil Status:</strong> {selectedRequest.formData.civilStatus}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Years of Stay:</strong> {selectedRequest.formData.yearsOfStay} years
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Purpose:</strong> {selectedRequest.purpose}
-                    </Typography>
+                  <Grid item xs={12}>
+                    {/* Document type specific preview */}
+                    {selectedRequest.documentType === 'certificate_of_residency' && (
+                      <>
+                        <Typography variant="body2">
+                          <strong>Name:</strong> {selectedRequest.formData.fullName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Age:</strong> {selectedRequest.formData.age} years old
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Address:</strong> {selectedRequest.formData.address}, Barangay Maahas, Los Baños, Laguna
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Date of Birth:</strong> {formatDate(selectedRequest.formData.dateOfBirth)}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Place of Birth:</strong> {selectedRequest.formData.placeOfBirth}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Nationality:</strong> {selectedRequest.formData.nationality}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Civil Status:</strong> {selectedRequest.formData.civilStatus}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Years of Stay:</strong> {selectedRequest.formData.yearsOfStay} years
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Purpose:</strong> {selectedRequest.purpose}
+                        </Typography>
+                      </>
+                    )}
+                    
+                    {selectedRequest.documentType === 'barangay_clearance' && (
+                      <>
+                        <Typography variant="body2">
+                          <strong>Clearance Number:</strong> {clearanceNumber || '[Enter clearance number above]'}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Name:</strong> {selectedRequest.formData.fullName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Gender:</strong> {selectedRequest.formData.gender === 'male' ? 'Male' : 'Female'}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Address:</strong> {selectedRequest.formData.address}, Barangay Maahas, Los Baños, Laguna 4030
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Purpose:</strong> {selectedRequest.purpose}
+                        </Typography>
+                      </>
+                    )}
                   </Grid>
                 </Grid>
               </>
@@ -894,7 +1040,7 @@ function AdminRequestForms() {
             color="primary"
             variant="contained"
             startIcon={docxGenerating ? <CircularProgress size={20} /> : <DownloadIcon />}
-            disabled={docxGenerating}
+            disabled={docxGenerating || (selectedRequest?.documentType === 'barangay_clearance' && !clearanceNumber)}
           >
             {docxGenerating ? 'Generating...' : 'Download Document'}
           </Button>

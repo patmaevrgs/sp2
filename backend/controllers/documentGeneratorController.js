@@ -11,13 +11,16 @@ const __dirname = path.dirname(__filename);
 // Generate document based on template and data (DOCX only)
 export const generateDocument = async (req, res) => {
   try {
-    const { documentType, formData, purpose } = req.body;
+    const { documentType, formData, purpose, clearanceNumber } = req.body;
     
     // Determine which template to use based on document type
     let templatePath;
     switch(documentType) {
       case 'certificate_of_residency':
         templatePath = path.resolve(__dirname, '../templates/certificate_of_residency_template.docx');
+        break;
+      case 'barangay_clearance':
+        templatePath = path.resolve(__dirname, '../templates/barangay_clearance_template.docx');
         break;
       // Add other document types here as needed
       default:
@@ -74,21 +77,44 @@ export const generateDocument = async (req, res) => {
     const signedDate = `${dayWithSuffix} day of ${formattedMonth}, ${year}`;
     
     // Prepare data for template
-    const data = {
-      fullName: formData.fullName?.toUpperCase() || '',
-      address: formData.address || '',
-      age: formData.age || '',
-      dateOfBirth: formatDate(formData.dateOfBirth) || '',
-      placeOfBirth: formData.placeOfBirth || '',
-      nationality: formData.nationality || '',
-      civilStatus: formData.civilStatus || '',
-      motherName: formData.motherName || '',
-      fatherName: formData.fatherName || '',
-      yearsOfStay: formData.yearsOfStay || '',
-      purpose: purpose || '',
+    let data = {
       signedDate: signedDate,
-      // Add any additional fields needed by your template
+      purpose: purpose || '',
     };
+    
+    // Add document type specific data
+    if (documentType === 'certificate_of_residency') {
+      data = {
+        ...data,
+        fullName: formData.fullName?.toUpperCase() || '',
+        address: formData.address || '',
+        age: formData.age || '',
+        dateOfBirth: formatDate(formData.dateOfBirth) || '',
+        placeOfBirth: formData.placeOfBirth || '',
+        nationality: formData.nationality || '',
+        civilStatus: formData.civilStatus || '',
+        motherName: formData.motherName || '',
+        fatherName: formData.fatherName || '',
+        yearsOfStay: formData.yearsOfStay || '',
+      };
+    } 
+    else if (documentType === 'barangay_clearance') {
+      // Determine pronoun based on gender
+      const gender = formData.gender?.toLowerCase() || 'male';
+      const genderPronoun = gender === 'male' ? 'he' : 'she';
+      const genderPossessive = gender === 'male' ? 'his' : 'her';
+      const genderObject = gender === 'male' ? 'him' : 'her';
+      
+      data = {
+        ...data,
+        clearanceNumber: clearanceNumber || '', // Use admin-provided clearance number
+        fullName: formData.fullName?.toUpperCase() || '',
+        address: formData.address || '',
+        gender: genderObject, // For pronoun in template (him/her)
+        genderPronoun: genderPronoun, // For pronoun in template (he/she)
+        genderPossessive: genderPossessive, // For possessive pronoun in template (his/her)
+      };
+    }
     
     // Render document with data
     doc.render(data);
