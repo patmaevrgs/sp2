@@ -768,6 +768,30 @@ function AdminRequestForms() {
               </>
             )}
             
+            {/* Certificate of Indigency fields */}
+            {selectedRequest.documentType === 'certificate_of_indigency' && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Full Name:</strong> {selectedRequest.formData.fullName}</Typography>
+                  <Typography variant="body2"><strong>Age:</strong> {selectedRequest.formData.age}</Typography>
+                  <Typography variant="body2"><strong>Address:</strong> {selectedRequest.formData.address}</Typography>
+                  <Typography variant="body2"><strong>Certificate For:</strong> {selectedRequest.formData.isSelf ? 'Self' : 'Other Person'}</Typography>
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  {!selectedRequest.formData.isSelf ? (
+                    <>
+                      <Typography variant="body2"><strong>Recipient:</strong> {selectedRequest.formData.guardian}</Typography>
+                      <Typography variant="body2"><strong>Relationship:</strong> {selectedRequest.formData.guardianRelation}</Typography>
+                    </>
+                  ) : (
+                    <Typography variant="body2"><strong>Recipient:</strong> Self (Same as applicant)</Typography>
+                  )}
+                  <Typography variant="body2"><strong>Purpose:</strong> {selectedRequest.purpose}</Typography>
+                </Grid>
+              </>
+            )}
+
             {selectedRequest.adminComment && (
               <Grid item xs={12}>
                 <Card sx={{ mt: 2, bgcolor: '#f5f5f5' }}>
@@ -1018,6 +1042,47 @@ function AdminRequestForms() {
                         </Typography>
                         <Typography variant="body2">
                           <strong>Purpose:</strong> {selectedRequest.purpose}
+                        </Typography>
+                      </>
+                    )}
+
+                    {selectedRequest.documentType === 'certificate_of_indigency' && (
+                      <>
+                        <Typography variant="body2">
+                          <strong>Name:</strong> {selectedRequest.formData.fullName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Age:</strong> {selectedRequest.formData.age} years old
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Address:</strong> {selectedRequest.formData.address}, Barangay Maahas, Los Baños, Laguna
+                        </Typography>
+                        
+                        <Typography variant="body2">
+                          <strong>Certificate For:</strong> {selectedRequest.formData.isSelf ? 'Self' : 'Other Person'}
+                        </Typography>
+                        
+                        {!selectedRequest.formData.isSelf ? (
+                          <>
+                            <Typography variant="body2">
+                              <strong>Recipient:</strong> {selectedRequest.formData.guardian}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Relationship:</strong> {selectedRequest.formData.guardianRelation}
+                            </Typography>
+                          </>
+                        ) : (
+                          <Typography variant="body2">
+                            <strong>Recipient:</strong> Self (Same as applicant)
+                          </Typography>
+                        )}
+                        
+                        <Typography variant="body2">
+                          <strong>Purpose:</strong> {selectedRequest.purpose}
+                        </Typography>
+                        
+                        <Typography variant="body2" sx={{ mt: 2 }}>
+                          <strong>Document Format:</strong> This certificate will be generated in Filipino with proper formatting.
                         </Typography>
                       </>
                     )}

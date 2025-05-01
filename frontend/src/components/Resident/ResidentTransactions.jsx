@@ -1581,6 +1581,47 @@ const ResidentTransaction = () => {
                           </Grid>
                         </>
                       )}
+                      {/* certificate of indigency details */}
+                      {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Age:</strong> {selectedTransaction.referenceDetails.formData.age} years old
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Certificate For:</strong> {selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'}
+                            </Typography>
+                            
+                            {!selectedTransaction.referenceDetails.formData.isSelf ? (
+                              <>
+                                <Typography variant="body2">
+                                  <strong>Recipient:</strong> {selectedTransaction.referenceDetails.formData.guardian}
+                                </Typography>
+                                <Typography variant="body2">
+                                  <strong>Relationship:</strong> {selectedTransaction.referenceDetails.formData.guardianRelation}
+                                </Typography>
+                              </>
+                            ) : (
+                              <Typography variant="body2">
+                                <strong>Recipient:</strong> Self (Same as applicant)
+                              </Typography>
+                            )}
+                            
+                            <Typography variant="body2">
+                              <strong>Purpose:</strong> {selectedTransaction.referenceDetails.purpose}
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
                     </>
                   )}
                 </>

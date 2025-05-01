@@ -22,6 +22,9 @@ export const generateDocument = async (req, res) => {
       case 'barangay_clearance':
         templatePath = path.resolve(__dirname, '../templates/barangay_clearance_template.docx');
         break;
+      case 'certificate_of_indigency':
+        templatePath = path.resolve(__dirname, '../templates/certificate_of_indigency_template.docx');
+        break;
       // Add other document types here as needed
       default:
         return res.status(400).json({
@@ -76,9 +79,65 @@ export const generateDocument = async (req, res) => {
     const year = currentDate.getFullYear();
     const signedDate = `${dayWithSuffix} day of ${formattedMonth}, ${year}`;
     
+    // Format age in words (for Certificate of Indigency)
+    const ageInWords = (age) => {
+      const ageNum = parseInt(age);
+      // Filipino number words (for common ages)
+      const tagalogNumbers = {
+        1: 'isa', 2: 'dalawa', 3: 'tatlo', 4: 'apat', 5: 'lima',
+        6: 'anim', 7: 'pito', 8: 'walo', 9: 'siyam', 10: 'sampu',
+        11: 'labing-isa', 12: 'labing-dalawa', 13: 'labing-tatlo', 
+        14: 'labing-apat', 15: 'labing-lima', 16: 'labing-anim',
+        17: 'labing-pito', 18: 'labing-walo', 19: 'labing-siyam',
+        20: 'dalawampu', 30: 'tatlumpu', 40: 'apatnapu', 
+        50: 'limampu', 60: 'animnapu', 70: 'pitumpu',
+        80: 'walumpu', 90: 'siyamnapu', 100: 'isandaan'
+      };
+      
+      // If we have a direct translation
+      if (tagalogNumbers[ageNum]) {
+        return tagalogNumbers[ageNum];
+      }
+      
+      // Handle ages 21-99 not included above
+      if (ageNum > 20 && ageNum < 100) {
+        const tens = Math.floor(ageNum / 10) * 10;
+        const ones = ageNum % 10;
+        
+        if (ones === 0) {
+          return tagalogNumbers[tens];
+        } else {
+          return `${tagalogNumbers[tens]} at ${tagalogNumbers[ones]}`;
+        }
+      }
+      
+      // If we can't translate to Filipino, just return the number
+      return age;
+    };
+    
+    // Get Filipino date format
+    const getFilipinoDate = () => {
+      const day = currentDate.getDate();
+      const month = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
+      const year = currentDate.getFullYear();
+      
+      // Filipino month names
+      const filipinoMonths = [
+        '', 'Enero', 'Pebrero', 'Marso', 'Abril', 'Mayo', 'Hunyo',
+        'Hulyo', 'Agosto', 'Setyembre', 'Oktubre', 'Nobyembre', 'Disyembre'
+      ];
+      
+      return `${day} ng ${filipinoMonths[month]}, ${year}`;
+    };
+    
     // Prepare data for template
     let data = {
       signedDate: signedDate,
+      currentDay: currentDate.getDate(),
+      currentMonth: formattedMonth,
+      currentYear: year,
+      fullDate: `${formattedMonth} ${currentDate.getDate()}, ${year}`,
+      filipinoDate: getFilipinoDate(),
       purpose: purpose || '',
     };
     
@@ -113,6 +172,28 @@ export const generateDocument = async (req, res) => {
         gender: genderObject, // For pronoun in template (him/her)
         genderPronoun: genderPronoun, // For pronoun in template (he/she)
         genderPossessive: genderPossessive, // For possessive pronoun in template (his/her)
+      };
+    }
+    else if (documentType === 'certificate_of_indigency') {
+      // If the certificate is for self-use (isSelf is true), modify the template text
+      const isSelf = formData.isSelf === true;
+      
+      data = {
+        ...data,
+        fullName: formData.fullName?.toUpperCase() || '',
+        address: formData.address || '',
+        age: formData.age || '',
+        ageInWords: ageInWords(formData.age) || '',
+        guardian: formData.guardian?.toUpperCase() || (isSelf ? formData.fullName?.toUpperCase() : ''),
+        guardianRelation: formData.guardianRelation || (isSelf ? 'SARILI (SELF)' : ''),
+        // Add a flag for self application to potentially modify template text
+        isSelf: isSelf,
+        // For self application, change the text "Ipinagkakaloob ko ang pagpapatunay na ito kay"
+        recipientText: isSelf ? 
+          'Ipinagkakaloob ko ang pagpapatunay na ito sa kanya mismo' : 
+          'Ipinagkakaloob ko ang pagpapatunay na ito kay',
+        // Add the guardianRelationText variable
+        guardianRelationText: isSelf ? '' : ` (${formData.guardianRelation})`
       };
     }
     

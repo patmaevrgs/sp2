@@ -15,7 +15,10 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
-  Divider
+  Divider,
+  RadioGroup,
+  Radio,
+  FormControlLabel
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
@@ -28,8 +31,9 @@ function RequestIndigency() {
     fullName: '',
     age: '',
     address: '',
-    guardian: '', // Parent/Guardian name
-    guardianRelation: '', // Relationship to guardian
+    isSelf: false, // New property to track if certificate is for self
+    guardian: '', // Will be auto-filled with fullName if isSelf is true
+    guardianRelation: '', // Will be set to "SARILI (SELF)" if isSelf is true
     purpose: ''
   });
   
@@ -60,10 +64,20 @@ function RequestIndigency() {
   // Handle form field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
+    
+    // Special handling for fullName field when isSelf is true
+    if (name === 'fullName' && formData.isSelf) {
+      setFormData({
+        ...formData,
+        [name]: value,
+        guardian: value // Auto-update guardian when fullName changes and isSelf is true
+      });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
     
     // Clear error for the field being updated
     if (errors[name]) {
@@ -78,14 +92,24 @@ function RequestIndigency() {
   const validateForm = () => {
     const newErrors = {};
     
-    // Required fields validation
-    const requiredFields = ['fullName', 'age', 'address', 'guardian', 'guardianRelation', 'purpose'];
+    // Required fields validation - always required
+    const alwaysRequiredFields = ['fullName', 'age', 'address', 'purpose'];
     
-    requiredFields.forEach(field => {
+    alwaysRequiredFields.forEach(field => {
       if (!formData[field]) {
         newErrors[field] = 'This field is required';
       }
     });
+    
+    // Guardian fields only required if not for self
+    if (!formData.isSelf) {
+      if (!formData.guardian) {
+        newErrors.guardian = 'This field is required';
+      }
+      if (!formData.guardianRelation) {
+        newErrors.guardianRelation = 'This field is required';
+      }
+    }
     
     // Age validation - must be a positive number
     if (formData.age && (isNaN(formData.age) || parseInt(formData.age) <= 0)) {
@@ -130,6 +154,9 @@ function RequestIndigency() {
         formData: {
           ...formData,
           fullName: formData.fullName.toUpperCase(), // Ensure name is in uppercase
+          // Make sure guardian is updated if this is a self-application
+          guardian: formData.isSelf ? formData.fullName.toUpperCase() : formData.guardian.toUpperCase(),
+          guardianRelation: formData.isSelf ? 'SARILI (SELF)' : formData.guardianRelation
         },
         purpose: finalPurpose
       };
@@ -247,53 +274,93 @@ function RequestIndigency() {
                 />
               </Grid>
               
-              {/* Guardian Information */}
+              {/* Recipient Information */}
               <Grid item xs={12}>
                 <Typography variant="h6" gutterBottom>
-                  Guardian/Parent Information
+                  Recipient Information
+                </Typography>
+                <Typography variant="body2" color="textSecondary" gutterBottom>
+                  Who will be using this certificate? (If for yourself, select "Self")
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
               </Grid>
-              
-              {/* Guardian Name */}
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  id="guardian"
-                  name="guardian"
-                  label="Guardian/Parent Name"
-                  value={formData.guardian}
-                  onChange={handleChange}
-                  error={!!errors.guardian}
-                  helperText={errors.guardian || "Enter the full name of your guardian or parent"}
-                  variant="outlined"
-                />
-              </Grid>
-              
-              {/* Relationship to Guardian */}
-              <Grid item xs={12} sm={6}>
-                <FormControl fullWidth required error={!!errors.guardianRelation}>
-                  <InputLabel id="relation-label">Relationship to Guardian</InputLabel>
-                  <Select
-                    labelId="relation-label"
-                    id="guardianRelation"
-                    name="guardianRelation"
-                    value={formData.guardianRelation}
-                    onChange={handleChange}
-                    label="Relationship to Guardian"
+
+              {/* Self or Other Selection */}
+              <Grid item xs={12}>
+                <FormControl component="fieldset">
+                  <RadioGroup
+                    row
+                    name="isSelf"
+                    value={formData.isSelf ? 'self' : 'other'}
+                    onChange={(e) => {
+                      const isSelf = e.target.value === 'self';
+                      setFormData({
+                        ...formData,
+                        isSelf: isSelf,
+                        // If self is selected, pre-fill guardian with full name and clear errors
+                        guardian: isSelf ? formData.fullName : '',
+                        guardianRelation: isSelf ? 'SARILI (SELF)' : '',
+                      });
+                      // Clear any errors for these fields
+                      if (errors.guardian || errors.guardianRelation) {
+                        setErrors({
+                          ...errors,
+                          guardian: '',
+                          guardianRelation: ''
+                        });
+                      }
+                    }}
                   >
-                    {relationOptions.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {errors.guardianRelation && (
-                    <FormHelperText>{errors.guardianRelation}</FormHelperText>
-                  )}
+                    <FormControlLabel value="self" control={<Radio />} label="Self (For my own use)" />
+                    <FormControlLabel value="other" control={<Radio />} label="Other Person" />
+                  </RadioGroup>
                 </FormControl>
               </Grid>
+
+              {/* Guardian fields - shown only if "Other" is selected */}
+              {formData.isSelf !== true && (
+                <>
+                  {/* Guardian Name */}
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      required
+                      fullWidth
+                      id="guardian"
+                      name="guardian"
+                      label="Recipient Name"
+                      value={formData.guardian}
+                      onChange={handleChange}
+                      error={!!errors.guardian}
+                      helperText={errors.guardian || "Enter the full name of the person who will use this certificate"}
+                      variant="outlined"
+                    />
+                  </Grid>
+                  
+                  {/* Relationship to Guardian */}
+                  <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth required error={!!errors.guardianRelation}>
+                      <InputLabel id="relation-label">Relationship to Recipient</InputLabel>
+                      <Select
+                        labelId="relation-label"
+                        id="guardianRelation"
+                        name="guardianRelation"
+                        value={formData.guardianRelation}
+                        onChange={handleChange}
+                        label="Relationship to Recipient"
+                      >
+                        {relationOptions.map((option) => (
+                          <MenuItem key={option} value={option}>
+                            {option}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {errors.guardianRelation && (
+                        <FormHelperText>{errors.guardianRelation}</FormHelperText>
+                      )}
+                    </FormControl>
+                  </Grid>
+                </>
+              )}
               
               {/* Purpose */}
               <Grid item xs={12}>
