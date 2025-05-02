@@ -768,6 +768,31 @@ function AdminRequestForms() {
               </>
             )}
             
+            {/* Lot Ownership fields */}
+            {selectedRequest && selectedRequest.documentType === 'lot_ownership' && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>TD Number:</strong> {selectedRequest.formData.tdNumber}</Typography>
+                  <Typography variant="body2"><strong>Survey Number:</strong> {selectedRequest.formData.surveyNumber}</Typography>
+                  <Typography variant="body2"><strong>Lot Area:</strong> {selectedRequest.formData.lotArea} {
+                    (() => {
+                      switch(selectedRequest.formData.areaUnit) {
+                        case 'square_meters': return 'square meters';
+                        case 'square_feet': return 'square feet';
+                        case 'hectares': return 'hectares';
+                        default: return selectedRequest.formData.areaUnit;
+                      }
+                    })()
+                  }</Typography>
+                  <Typography variant="body2"><strong>Property Location:</strong> {selectedRequest.formData.lotLocation}, Barangay Maahas, Los Baños, Laguna</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Owner Name:</strong> {selectedRequest.formData.fullName}</Typography>
+                  <Typography variant="body2"><strong>Owner Address:</strong> {selectedRequest.formData.ownerAddress}</Typography>
+                </Grid>
+              </>
+            )}
+
             {/* Certificate of Indigency fields */}
             {selectedRequest.documentType === 'certificate_of_indigency' && (
               <>
@@ -1083,6 +1108,37 @@ function AdminRequestForms() {
                         
                         <Typography variant="body2" sx={{ mt: 2 }}>
                           <strong>Document Format:</strong> This certificate will be generated in Filipino with proper formatting.
+                        </Typography>
+                      </>
+                    )}
+                    {selectedRequest && selectedRequest.documentType === 'lot_ownership' && (
+                      <>
+                        <Typography variant="body2">
+                          <strong>TD Number:</strong> {selectedRequest.formData.tdNumber}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Survey Number:</strong> {selectedRequest.formData.surveyNumber}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Lot Area:</strong> {selectedRequest.formData.lotArea} {
+                            (() => {
+                              switch(selectedRequest.formData.areaUnit) {
+                                case 'square_meters': return 'square meters';
+                                case 'square_feet': return 'square feet';
+                                case 'hectares': return 'hectares';
+                                default: return selectedRequest.formData.areaUnit;
+                              }
+                            })()
+                          }
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Property Location:</strong> {selectedRequest.formData.lotLocation}, Barangay Maahas, Los Baños, Laguna
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Owner Name:</strong> {selectedRequest.formData.fullName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Owner Address:</strong> {selectedRequest.formData.ownerAddress}
                         </Typography>
                       </>
                     )}

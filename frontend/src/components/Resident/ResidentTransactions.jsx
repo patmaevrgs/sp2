@@ -1581,6 +1581,44 @@ const ResidentTransaction = () => {
                           </Grid>
                         </>
                       )}
+                      {/* Lot Ownership Details */}
+                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'lot_ownership' && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>TD Number:</strong> {selectedTransaction.referenceDetails.formData.tdNumber}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Survey Number:</strong> {selectedTransaction.referenceDetails.formData.surveyNumber}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Lot Area:</strong> {selectedTransaction.referenceDetails.formData.lotArea} {
+                                (() => {
+                                  const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
+                                  switch(areaUnit) {
+                                    case 'square_meters': return 'square meters';
+                                    case 'square_feet': return 'square feet';
+                                    case 'hectares': return 'hectares';
+                                    default: return areaUnit;
+                                  }
+                                })()
+                              }
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Property Location:</strong> {selectedTransaction.referenceDetails.formData.lotLocation}, Barangay Maahas, Los Baños, Laguna
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Owner Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Owner Address:</strong> {selectedTransaction.referenceDetails.formData.ownerAddress}
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
                       {/* certificate of indigency details */}
                       {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (
                         <>

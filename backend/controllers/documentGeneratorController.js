@@ -25,7 +25,9 @@ export const generateDocument = async (req, res) => {
       case 'certificate_of_indigency':
         templatePath = path.resolve(__dirname, '../templates/certificate_of_indigency_template.docx');
         break;
-      // Add other document types here as needed
+      case 'lot_ownership':
+        templatePath = path.resolve(__dirname, '../templates/lot_ownership_template.docx');
+        break;
       default:
         return res.status(400).json({
           success: false,
@@ -194,6 +196,33 @@ export const generateDocument = async (req, res) => {
           'Ipinagkakaloob ko ang pagpapatunay na ito kay',
         // Add the guardianRelationText variable
         guardianRelationText: isSelf ? '' : ` (${formData.guardianRelation})`
+      };
+    }
+    else if (documentType === 'lot_ownership') {
+      // Get area unit in readable format
+      const areaUnitText = (() => {
+        switch(formData.areaUnit) {
+          case 'square_meters': 
+            return 'square meters';
+          case 'square_feet': 
+            return 'square feet';
+          case 'hectares': 
+            return 'hectares';
+          default: 
+            return formData.areaUnit;
+        }
+      })();
+      
+      data = {
+        ...data,
+        tdNumber: formData.tdNumber || '',
+        surveyNumber: formData.surveyNumber || '',
+        lotArea: formData.lotArea || '',
+        areaUnit: areaUnitText,
+        lotLocation: formData.lotLocation || '',
+        fullName: formData.fullName?.toUpperCase() || '',
+        ownerAddress: formData.ownerAddress || '',
+        signedDate: signedDate
       };
     }
     
