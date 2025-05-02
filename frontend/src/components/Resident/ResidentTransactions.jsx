@@ -1505,7 +1505,22 @@ const ResidentTransaction = () => {
                           <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId || 'N/A'}
                         </Typography>
                         <Typography variant="body2">
-                          <strong>Purpose:</strong> {selectedTransaction.referenceDetails.purpose}
+                          <strong>Purpose:</strong> {
+                            selectedTransaction.referenceDetails.documentType === 'digging_permit' && 
+                            selectedTransaction.referenceDetails.formData && 
+                            selectedTransaction.referenceDetails.formData.diggingPurpose
+                              ? (() => {
+                                  const purpose = selectedTransaction.referenceDetails.formData.diggingPurpose;
+                                  switch(purpose) {
+                                    case 'water_supply': return 'Water Supply Connection';
+                                    case 'electrical': return 'Electrical Connection';
+                                    case 'drainage': return 'Drainage System';
+                                    case 'other': return 'Other';
+                                    default: return purpose;
+                                  }
+                                })()
+                              : selectedTransaction.referenceDetails.purpose
+                          }
                         </Typography>
                         <Typography variant="body2">
                           <strong>Status:</strong> {
@@ -1658,6 +1673,28 @@ const ResidentTransaction = () => {
                         </>
                       )}
 
+                      {/* Digging Permit Details */}
+                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'digging_permit' && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Company:</strong> {selectedTransaction.referenceDetails.formData.companyName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Application Details:</strong> {selectedTransaction.referenceDetails.formData.applicationDetails}
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
 
                       {/* certificate of indigency details */}
                       {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (

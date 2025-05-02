@@ -572,9 +572,21 @@ function AdminRequestForms() {
                           <TableCell>{request.formData.fullName}</TableCell>
                           <TableCell>{formatDate(request.createdAt)}</TableCell>
                           <TableCell>
-                            {request.purpose.length > 30
-                              ? `${request.purpose.substring(0, 30)}...`
-                              : request.purpose}
+                            {request.documentType === 'digging_permit' && request.formData.diggingPurpose
+                              ? (() => {
+                                  const purpose = request.formData.diggingPurpose;
+                                  switch(purpose) {
+                                    case 'water_supply': return 'Water Supply Connection';
+                                    case 'electrical': return 'Electrical Connection';
+                                    case 'drainage': return 'Drainage System';
+                                    case 'other': return 'Other';
+                                    default: return purpose;
+                                  }
+                                })()
+                              : (request.purpose.length > 30
+                                  ? `${request.purpose.substring(0, 30)}...`
+                                  : request.purpose)
+                            }
                           </TableCell>
                           <TableCell>{getStatusChip(request.status)}</TableCell>
                           <TableCell>
@@ -719,7 +731,20 @@ function AdminRequestForms() {
             </Grid>
             
             <Grid item xs={12} sm={6}>
-              <Typography variant="body2"><strong>Purpose:</strong> {selectedRequest.purpose}</Typography>
+              <Typography variant="body2"><strong>Purpose:</strong> {
+                selectedRequest.documentType === 'digging_permit' && selectedRequest.formData.diggingPurpose
+                  ? (() => {
+                      const purpose = selectedRequest.formData.diggingPurpose;
+                      switch(purpose) {
+                        case 'water_supply': return 'Water Supply Connection';
+                        case 'electrical': return 'Electrical Connection';
+                        case 'drainage': return 'Drainage System';
+                        case 'other': return 'Other';
+                        default: return purpose;
+                      }
+                    })()
+                  : selectedRequest.purpose
+              }</Typography>
               {selectedRequest.processedBy && (
                 <Typography variant="body2">
                   <strong>Processed By:</strong> {selectedRequest.processedBy.firstName} {selectedRequest.processedBy.lastName}
@@ -814,6 +839,20 @@ function AdminRequestForms() {
                       }
                     })()
                   }</Typography>
+                </Grid>
+              </>
+            )}
+
+            {/* Digging Permit fields */}
+            {selectedRequest && selectedRequest.documentType === 'digging_permit' && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Full Name:</strong> {selectedRequest.formData.fullName}</Typography>
+                  <Typography variant="body2"><strong>Address:</strong> {selectedRequest.formData.address}, Barangay Maahas, Los Baños, Laguna</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Company:</strong> {selectedRequest.formData.companyName}</Typography>
+                  <Typography variant="body2"><strong>Application Details:</strong> {selectedRequest.formData.applicationDetails}</Typography>
                 </Grid>
               </>
             )}
@@ -1195,6 +1234,36 @@ function AdminRequestForms() {
                               }
                             })()
                           }
+                        </Typography>
+                      </>
+                    )}
+                    {selectedRequest && selectedRequest.documentType === 'digging_permit' && (
+                      <>
+                        <Typography variant="body2">
+                          <strong>Full Name:</strong> {selectedRequest.formData.fullName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Address:</strong> {selectedRequest.formData.address}, Barangay Maahas, Los Baños, Laguna
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Digging Purpose:</strong> {
+                            (() => {
+                              const purpose = selectedRequest.formData.diggingPurpose;
+                              switch(purpose) {
+                                case 'water_supply': return 'Water Supply Connection';
+                                case 'electrical': return 'Electrical Connection';
+                                case 'drainage': return 'Drainage System';
+                                case 'other': return 'Other';
+                                default: return purpose;
+                              }
+                            })()
+                          }
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Company:</strong> {selectedRequest.formData.companyName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Application Details:</strong> {selectedRequest.formData.applicationDetails}
                         </Typography>
                       </>
                     )}

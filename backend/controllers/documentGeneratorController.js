@@ -31,6 +31,9 @@ export const generateDocument = async (req, res) => {
       case 'fencing_permit':
         templatePath = path.resolve(__dirname, '../templates/fencing_permit_template.docx');
         break;
+      case 'digging_permit':
+        templatePath = path.resolve(__dirname, '../templates/digging_permit_template.docx');
+        break;
       default:
         return res.status(400).json({
           success: false,
@@ -255,6 +258,20 @@ export const generateDocument = async (req, res) => {
         areaUnit: areaUnitText,
         signedDate: signedDate
         // The purpose is fixed as "installation of Fence" in the template
+      };
+    }
+    else if (documentType === 'digging_permit') {
+      // Format digging purpose text
+      const purposeText = formData.purposeText || 'to dig across the road';
+      const applicationText = formData.applicationText || '';
+      
+      data = {
+        ...data,
+        fullName: formData.fullName || '',
+        address: formData.address || '',
+        purposeText: purposeText,
+        applicationText: applicationText,
+        signedDate: signedDate
       };
     }
 
