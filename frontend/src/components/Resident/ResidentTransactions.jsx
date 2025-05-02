@@ -1619,6 +1619,46 @@ const ResidentTransaction = () => {
                           </Grid>
                         </>
                       )}
+                      {/* Fencing Permit Details */}
+                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'fencing_permit' && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Residential Address:</strong> {selectedTransaction.referenceDetails.formData.residentAddress}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Property Location:</strong> {selectedTransaction.referenceDetails.formData.propertyLocation}, Barangay Maahas, Los Baños, Laguna
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Tax Declaration No.:</strong> {selectedTransaction.referenceDetails.formData.taxDeclarationNumber}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Property ID No.:</strong> {selectedTransaction.referenceDetails.formData.propertyIdentificationNumber}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Property Area:</strong> {selectedTransaction.referenceDetails.formData.propertyArea} {
+                                (() => {
+                                  const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
+                                  switch(areaUnit) {
+                                    case 'square_meters': return 'square meters';
+                                    case 'square_feet': return 'square feet';
+                                    case 'hectares': return 'hectares';
+                                    default: return areaUnit;
+                                  }
+                                })()
+                              }
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
+
+
                       {/* certificate of indigency details */}
                       {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (
                         <>

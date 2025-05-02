@@ -28,6 +28,9 @@ export const generateDocument = async (req, res) => {
       case 'lot_ownership':
         templatePath = path.resolve(__dirname, '../templates/lot_ownership_template.docx');
         break;
+      case 'fencing_permit':
+        templatePath = path.resolve(__dirname, '../templates/fencing_permit_template.docx');
+        break;
       default:
         return res.status(400).json({
           success: false,
@@ -226,6 +229,35 @@ export const generateDocument = async (req, res) => {
       };
     }
     
+    else if (documentType === 'fencing_permit') {
+      // Get area unit in readable format
+      const areaUnitText = (() => {
+        switch(formData.areaUnit) {
+          case 'square_meters': 
+            return 'square meters';
+          case 'square_feet': 
+            return 'square feet';
+          case 'hectares': 
+            return 'hectares';
+          default: 
+            return formData.areaUnit;
+        }
+      })();
+      
+      data = {
+        ...data,
+        fullName: formData.fullName || '',
+        residentAddress: formData.residentAddress || '',
+        propertyLocation: formData.propertyLocation || '', // Changed from propertyAddress
+        taxDeclarationNumber: formData.taxDeclarationNumber || '',
+        propertyIdentificationNumber: formData.propertyIdentificationNumber || '',
+        propertyArea: formData.propertyArea || '',
+        areaUnit: areaUnitText,
+        signedDate: signedDate
+        // The purpose is fixed as "installation of Fence" in the template
+      };
+    }
+
     // Render document with data
     doc.render(data);
     

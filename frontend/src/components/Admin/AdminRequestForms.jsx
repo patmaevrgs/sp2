@@ -792,6 +792,31 @@ function AdminRequestForms() {
                 </Grid>
               </>
             )}
+            
+            {/* Fencing Permit fields */}
+            {selectedRequest && selectedRequest.documentType === 'fencing_permit' && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Full Name:</strong> {selectedRequest.formData.fullName}</Typography>
+                  <Typography variant="body2"><strong>Residential Address:</strong> {selectedRequest.formData.residentAddress}</Typography>
+                  <Typography variant="body2"><strong>Property Location:</strong> {selectedRequest.formData.propertyLocation}, Barangay Maahas, Los Baños, Laguna</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Tax Declaration No.:</strong> {selectedRequest.formData.taxDeclarationNumber}</Typography>
+                  <Typography variant="body2"><strong>Property ID No.:</strong> {selectedRequest.formData.propertyIdentificationNumber}</Typography>
+                  <Typography variant="body2"><strong>Property Area:</strong> {selectedRequest.formData.propertyArea} {
+                    (() => {
+                      switch(selectedRequest.formData.areaUnit) {
+                        case 'square_meters': return 'square meters';
+                        case 'square_feet': return 'square feet';
+                        case 'hectares': return 'hectares';
+                        default: return selectedRequest.formData.areaUnit;
+                      }
+                    })()
+                  }</Typography>
+                </Grid>
+              </>
+            )}
 
             {/* Certificate of Indigency fields */}
             {selectedRequest.documentType === 'certificate_of_indigency' && (
@@ -1139,6 +1164,37 @@ function AdminRequestForms() {
                         </Typography>
                         <Typography variant="body2">
                           <strong>Owner Address:</strong> {selectedRequest.formData.ownerAddress}
+                        </Typography>
+                      </>
+                    )}
+                    {selectedRequest && selectedRequest.documentType === 'fencing_permit' && (
+                      <>
+                        <Typography variant="body2">
+                          <strong>Full Name:</strong> {selectedRequest.formData.fullName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Residential Address:</strong> {selectedRequest.formData.residentAddress}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Property Location:</strong> {selectedRequest.formData.propertyLocation}, Barangay Maahas, Los Baños, Laguna
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Tax Declaration No.:</strong> {selectedRequest.formData.taxDeclarationNumber}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Property ID No.:</strong> {selectedRequest.formData.propertyIdentificationNumber}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Property Area:</strong> {selectedRequest.formData.propertyArea} {
+                            (() => {
+                              switch(selectedRequest.formData.areaUnit) {
+                                case 'square_meters': return 'square meters';
+                                case 'square_feet': return 'square feet';
+                                case 'hectares': return 'hectares';
+                                default: return selectedRequest.formData.areaUnit;
+                              }
+                            })()
+                          }
                         </Typography>
                       </>
                     )}

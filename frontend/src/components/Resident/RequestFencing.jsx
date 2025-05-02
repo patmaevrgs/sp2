@@ -31,7 +31,7 @@ function RequestFencing() {
     residentAddress: '',
     
     // Property details
-    propertyAddress: '',
+    propertyLocation: '',
     taxDeclarationNumber: '',
     propertyIdentificationNumber: '',
     propertyArea: '',
@@ -72,7 +72,7 @@ function RequestFencing() {
           formData: {
             fullName: formData.fullName,
             residentAddress: formData.residentAddress,
-            propertyAddress: formData.propertyAddress,
+            propertyLocation: formData.propertyLocation,
             taxDeclarationNumber: formData.taxDeclarationNumber,
             propertyIdentificationNumber: formData.propertyIdentificationNumber,
             propertyArea: formData.propertyArea,
@@ -99,7 +99,7 @@ function RequestFencing() {
       setFormData({
         fullName: '',
         residentAddress: '',
-        propertyAddress: '',
+        propertyLocation: '',
         taxDeclarationNumber: '',
         propertyIdentificationNumber: '',
         propertyArea: '',
@@ -108,7 +108,7 @@ function RequestFencing() {
 
       // Navigate to transactions page after 2 seconds
       setTimeout(() => {
-        navigate('/residenttransaction');
+        navigate('/resident/transactions');
       }, 2000);
 
     } catch (error) {
@@ -150,128 +150,139 @@ function RequestFencing() {
         </Card>
         
         <Box component="form" onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
+          {/* Personal Information Section */}
+          <Card variant="outlined" sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                 Personal Information
               </Typography>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                label="Full Name"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="e.g., Mylen S. Billena"
-                helperText="Your complete name with middle initial if applicable"
-              />
-            </Grid>
-            
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                label="Residential Address"
-                name="residentAddress"
-                value={formData.residentAddress}
-                onChange={handleChange}
-                placeholder="e.g., 1848 Hillside Village, Tuntungin, Los Baños, Laguna"
-                helperText="Your current residential address"
-              />
-            </Grid>
-            
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+              <Divider sx={{ mb: 2 }} />
+              
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <TextField
+                    required
+                    fullWidth
+                    label="Full Name"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    placeholder="e.g., Mylen S. Billena"
+                    helperText="Your complete name with middle initial if applicable"
+                  />
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <TextField
+                    required
+                    fullWidth
+                    label="Residential Address"
+                    name="residentAddress"
+                    value={formData.residentAddress}
+                    onChange={handleChange}
+                    placeholder="e.g., 1848 Hillside Village, Tuntungin, Los Baños, Laguna"
+                    helperText="Your current residential address"
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+          
+          {/* Property Details Section */}
+          <Card variant="outlined" sx={{ mb: 3 }}>
+            <CardContent>
+              <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                 Property Details
               </Typography>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <TextField
-                required
-                fullWidth
-                label="Property Address"
-                name="propertyAddress"
-                value={formData.propertyAddress}
-                onChange={handleChange}
-                placeholder="e.g., Anestville Barangay Maahas, Los Baños, Laguna"
-                helperText="Address of the property where fence will be installed"
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Tax Declaration Number"
-                name="taxDeclarationNumber"
-                value={formData.taxDeclarationNumber}
-                onChange={handleChange}
-                placeholder="e.g., 11-0008-05359"
-                helperText="Tax Declaration Number of the property"
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Property Identification Number"
-                name="propertyIdentificationNumber"
-                value={formData.propertyIdentificationNumber}
-                onChange={handleChange}
-                placeholder="e.g., 923-11-0008-016-20"
-                helperText="PIN of the property"
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6}>
-              <TextField
-                required
-                fullWidth
-                label="Property Area"
-                name="propertyArea"
-                type="number"
-                value={formData.propertyArea}
-                onChange={handleChange}
-                placeholder="e.g., 170"
-                helperText="Size of the property"
-              />
-            </Grid>
-            
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth required>
-                <InputLabel id="area-unit-label">Area Unit</InputLabel>
-                <Select
-                  labelId="area-unit-label"
-                  name="areaUnit"
-                  value={formData.areaUnit}
-                  onChange={handleChange}
-                  label="Area Unit"
-                >
-                  <MenuItem value="square_meters">Square Meters</MenuItem>
-                  <MenuItem value="square_feet">Square Feet</MenuItem>
-                  <MenuItem value="hectares">Hectares</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            <Grid item xs={12} sx={{ mt: 2 }}>
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                disabled={loading}
-                sx={{ py: 1.5 }}
-              >
-                {loading ? <CircularProgress size={24} /> : 'Submit Request'}
-              </Button>
-            </Grid>
-          </Grid>
+              <Divider sx={{ mb: 2 }} />
+              
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <TextField
+                    required
+                    fullWidth
+                    label="Property Location in Barangay Maahas"
+                    name="propertyLocation"
+                    value={formData.propertyLocation}
+                    onChange={handleChange}
+                    placeholder="e.g., Anestville, Purok 4"
+                    helperText="Specific location within Barangay Maahas, Los Baños, Laguna"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    required
+                    fullWidth
+                    label="Tax Declaration Number"
+                    name="taxDeclarationNumber"
+                    value={formData.taxDeclarationNumber}
+                    onChange={handleChange}
+                    placeholder="e.g., 11-0008-05359"
+                    helperText="Tax Declaration Number of the property"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    required
+                    fullWidth
+                    label="Property Identification Number"
+                    name="propertyIdentificationNumber"
+                    value={formData.propertyIdentificationNumber}
+                    onChange={handleChange}
+                    placeholder="e.g., 923-11-0008-016-20"
+                    helperText="PIN of the property"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    required
+                    fullWidth
+                    label="Property Area"
+                    name="propertyArea"
+                    type="number"
+                    value={formData.propertyArea}
+                    onChange={handleChange}
+                    placeholder="e.g., 170"
+                    helperText="Size of the property"
+                  />
+                </Grid>
+                
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth required>
+                    <InputLabel id="area-unit-label">Area Unit</InputLabel>
+                    <Select
+                      labelId="area-unit-label"
+                      name="areaUnit"
+                      value={formData.areaUnit}
+                      onChange={handleChange}
+                      label="Area Unit"
+                    >
+                      <MenuItem value="square_meters">Square Meters</MenuItem>
+                      <MenuItem value="square_feet">Square Feet</MenuItem>
+                      <MenuItem value="hectares">Hectares</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+          
+          {/* Submit Button */}
+          <Box sx={{ mt: 3 }}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={loading}
+              sx={{ py: 1.5 }}
+            >
+              {loading ? <CircularProgress size={24} /> : 'Submit Request'}
+            </Button>
+          </Box>
         </Box>
       </Paper>
       
