@@ -1722,6 +1722,49 @@ const ResidentTransaction = () => {
                         </>
                       )}
 
+                      {/* No Objection Certificate Details */}
+                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'no_objection_certificate' && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Activity Type:</strong> {
+                                (() => {
+                                  const objectType = selectedTransaction.referenceDetails.formData.objectType;
+                                  switch(objectType) {
+                                    case 'tree_cutting': return 'Tree Cutting';
+                                    case 'construction': return 'Construction';
+                                    case 'event': return 'Event/Gathering';
+                                    case 'business': return 'Business Operation';
+                                    case 'other': return 'Other Activity';
+                                    default: return objectType;
+                                  }
+                                })()
+                              }
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Details:</strong> {selectedTransaction.referenceDetails.formData.objectDetails}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Quantity:</strong> {selectedTransaction.referenceDetails.formData.quantity}
+                            </Typography>
+                            {selectedTransaction.referenceDetails.formData.objectType === 'other' && (
+                              <Typography variant="body2">
+                                <strong>Additional Info:</strong> {selectedTransaction.referenceDetails.formData.additionalInfo}
+                              </Typography>
+                            )}
+                          </Grid>
+                        </>
+                      )}
+
                       {/* certificate of indigency details */}
                       {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (
                         <>

@@ -858,6 +858,36 @@ function AdminRequestForms() {
               </>
             )}
 
+            {/* No Objection Certificate fields */}
+            {selectedRequest && selectedRequest.documentType === 'no_objection_certificate' && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Full Name:</strong> {selectedRequest.formData.fullName}</Typography>
+                  <Typography variant="body2"><strong>Address:</strong> {selectedRequest.formData.address}, Barangay Maahas, Los Baños, Laguna</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Activity Type:</strong> {
+                    (() => {
+                      const objectType = selectedRequest.formData.objectType;
+                      switch(objectType) {
+                        case 'tree_cutting': return 'Tree Cutting';
+                        case 'construction': return 'Construction';
+                        case 'event': return 'Event/Gathering';
+                        case 'business': return 'Business Operation';
+                        case 'other': return 'Other Activity';
+                        default: return objectType;
+                      }
+                    })()
+                  }</Typography>
+                  <Typography variant="body2"><strong>Details:</strong> {selectedRequest.formData.objectDetails}</Typography>
+                  <Typography variant="body2"><strong>Quantity:</strong> {selectedRequest.formData.quantity}</Typography>
+                  {selectedRequest.formData.objectType === 'other' && (
+                    <Typography variant="body2"><strong>Additional Info:</strong> {selectedRequest.formData.additionalInfo}</Typography>
+                  )}
+                </Grid>
+              </>
+            )}
+
             {/* Business Clearance fields */}
             {selectedRequest && selectedRequest.documentType === 'business_clearance' && (
               <>
@@ -1318,6 +1348,45 @@ function AdminRequestForms() {
                             Default amount is ₱300.00. You can modify the amount if needed.
                           </Typography>
                         </Box>
+                      </>
+                    )}
+                    {selectedRequest && selectedRequest.documentType === 'no_objection_certificate' && (
+                      <>
+                        <Typography variant="body2">
+                          <strong>Full Name:</strong> {selectedRequest.formData.fullName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Address:</strong> {selectedRequest.formData.address}, Barangay Maahas, Los Baños, Laguna
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Activity Type:</strong> {
+                            (() => {
+                              const objectType = selectedRequest.formData.objectType;
+                              switch(objectType) {
+                                case 'tree_cutting': return 'Tree Cutting';
+                                case 'construction': return 'Construction';
+                                case 'event': return 'Event/Gathering';
+                                case 'business': return 'Business Operation';
+                                case 'other': return 'Other Activity';
+                                default: return objectType;
+                              }
+                            })()
+                          }
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Details:</strong> {selectedRequest.formData.objectDetails}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Quantity:</strong> {selectedRequest.formData.quantity}
+                        </Typography>
+                        {selectedRequest.formData.objectType === 'other' && (
+                          <Typography variant="body2">
+                            <strong>Additional Info:</strong> {selectedRequest.formData.additionalInfo}
+                          </Typography>
+                        )}
+                        <Typography variant="body2" sx={{ mt: 2, fontStyle: 'italic' }}>
+                          <strong>Certificate Text:</strong> {`This is to further certify that ${selectedRequest.formData.fullName}, ${selectedRequest.purpose}`}
+                        </Typography>
                       </>
                     )}
                   </Grid>

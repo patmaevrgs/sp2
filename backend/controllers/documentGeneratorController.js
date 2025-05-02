@@ -37,6 +37,9 @@ export const generateDocument = async (req, res) => {
       case 'business_clearance':
         templatePath = path.resolve(__dirname, '../templates/business_clearance_template.docx');
         break;
+      case 'no_objection_certificate':
+        templatePath = path.resolve(__dirname, '../templates/no_objection_certificate_template.docx');
+        break;
       default:
         return res.status(400).json({
           success: false,
@@ -292,7 +295,19 @@ export const generateDocument = async (req, res) => {
         signedDate: signedDate
       };
     }
-    
+    else if (documentType === 'no_objection_certificate') {
+      // Format the purpose text based on the object type
+      const purposeText = purpose || 'will proceed with the stated activity. This office has no objection as part of local permitting requirements.';
+      
+      data = {
+        ...data,
+        fullName: formData.fullName || '',
+        address: formData.address || '',
+        purposeText: purposeText,
+        signedDate: signedDate
+      };
+    }
+
     // Render document with data
     doc.render(data);
     
