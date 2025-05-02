@@ -1695,6 +1695,32 @@ const ResidentTransaction = () => {
                           </Grid>
                         </>
                       )}
+                      
+                      {/* Business Clearance Details */}
+                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'business_clearance' && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Business Name:</strong> {selectedTransaction.referenceDetails.formData.businessName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Business Address:</strong> {selectedTransaction.referenceDetails.formData.businessAddress}, Barangay Maahas, Los Baños, Laguna
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Line of Business:</strong> {selectedTransaction.referenceDetails.formData.lineOfBusiness}
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Business Status:</strong> {selectedTransaction.referenceDetails.formData.businessStatus}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Amount:</strong> ₱{selectedTransaction.referenceDetails.formData.amount}
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
 
                       {/* certificate of indigency details */}
                       {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (

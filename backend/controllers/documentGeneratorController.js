@@ -34,6 +34,9 @@ export const generateDocument = async (req, res) => {
       case 'digging_permit':
         templatePath = path.resolve(__dirname, '../templates/digging_permit_template.docx');
         break;
+      case 'business_clearance':
+        templatePath = path.resolve(__dirname, '../templates/business_clearance_template.docx');
+        break;
       default:
         return res.status(400).json({
           success: false,
@@ -275,6 +278,21 @@ export const generateDocument = async (req, res) => {
       };
     }
 
+    else if (documentType === 'business_clearance') {
+      // Allow admin to update the amount value through the req.body
+      const amount = req.body.amount || formData.amount || '300.00';
+      
+      data = {
+        ...data,
+        businessName: formData.businessName || '',
+        businessAddress: formData.businessAddress || '',
+        lineOfBusiness: formData.lineOfBusiness || '',
+        businessStatus: formData.businessStatus || 'NEW',
+        amount: amount,
+        signedDate: signedDate
+      };
+    }
+    
     // Render document with data
     doc.render(data);
     

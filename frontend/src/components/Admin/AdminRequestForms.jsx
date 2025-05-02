@@ -52,6 +52,7 @@ function AdminRequestForms() {
   const [error, setError] = useState(null);
   const [docxGenerating, setDocxGenerating] = useState(false);
   const [clearanceNumber, setClearanceNumber] = useState('');
+  const [amountField, setAmountField] = useState('');
   
   // Pagination
   const [page, setPage] = useState(0);
@@ -857,6 +858,21 @@ function AdminRequestForms() {
               </>
             )}
 
+            {/* Business Clearance fields */}
+            {selectedRequest && selectedRequest.documentType === 'business_clearance' && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Business Name:</strong> {selectedRequest.formData.businessName}</Typography>
+                  <Typography variant="body2"><strong>Business Address:</strong> {selectedRequest.formData.businessAddress}, Barangay Maahas, Los Baños, Laguna</Typography>
+                  <Typography variant="body2"><strong>Line of Business:</strong> {selectedRequest.formData.lineOfBusiness}</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Business Status:</strong> {selectedRequest.formData.businessStatus}</Typography>
+                  <Typography variant="body2"><strong>Amount:</strong> ₱{selectedRequest.formData.amount}</Typography>
+                </Grid>
+              </>
+            )}
+
             {/* Certificate of Indigency fields */}
             {selectedRequest.documentType === 'certificate_of_indigency' && (
               <>
@@ -1265,6 +1281,43 @@ function AdminRequestForms() {
                         <Typography variant="body2">
                           <strong>Application Details:</strong> {selectedRequest.formData.applicationDetails}
                         </Typography>
+                      </>
+                    )}
+                    {selectedRequest && selectedRequest.documentType === 'business_clearance' && (
+                      <>
+                        <Typography variant="body2">
+                          <strong>Business Name:</strong> {selectedRequest.formData.businessName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Business Address:</strong> {selectedRequest.formData.businessAddress}, Barangay Maahas, Los Baños, Laguna
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Line of Business:</strong> {selectedRequest.formData.lineOfBusiness}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Business Status:</strong> {selectedRequest.formData.businessStatus}
+                        </Typography>
+                        
+                        {/* Add amount field that admin can modify */}
+                        <Box sx={{ my: 2, p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            Fee Details:
+                          </Typography>
+                          <TextField
+                            fullWidth
+                            label="Amount (₱)"
+                            value={amountField || selectedRequest.formData.amount}
+                            onChange={(e) => setAmountField(e.target.value)}
+                            placeholder="e.g., 300.00"
+                            sx={{ mb: 1 }}
+                            InputProps={{
+                              startAdornment: <Typography variant="body1">₱</Typography>
+                            }}
+                          />
+                          <Typography variant="caption" color="textSecondary">
+                            Default amount is ₱300.00. You can modify the amount if needed.
+                          </Typography>
+                        </Box>
                       </>
                     )}
                   </Grid>
