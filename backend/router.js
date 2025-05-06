@@ -51,6 +51,11 @@ import {
   updateDocumentRequestStatus,
   cancelDocumentRequest
 } from './controllers/documentRequestController.js';
+import { 
+  getUserProfile, 
+  updateUserProfile, 
+  updateUserPassword 
+} from './controllers/userController.js';
 import multer from 'multer';
 import { generateDocument } from './controllers/documentGeneratorController.js';
 
@@ -68,6 +73,11 @@ router.post('/signup', signUp);
 router.post('/login', login);
 router.post('/checkifloggedin', checkIfLoggedIn);
 router.post('/addadmin', addAdmin);
+
+// User Profile Routes
+router.get('/profile', getUserProfile);
+router.put('/profile/update', updateUserProfile);
+router.put('/profile/password', updateUserPassword);
 
 // Announcements
 router.post('/announcements', upload.array('files'), createAnnouncement);

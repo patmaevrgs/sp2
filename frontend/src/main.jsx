@@ -19,6 +19,7 @@ import Announcements from './components/Resident/Announcements.jsx';
 import Services from './components/Resident/Services.jsx';
 import FAQs from './components/Resident/FAQs.jsx';
 import Contact from './components/Resident/Contact.jsx';
+import ResidentProfile from './components/Resident/ResidentProfile.jsx';
 import ResidentHome from './components/Resident/ResidentHome.jsx';
 import ResidentTransactions from './components/Resident/ResidentTransactions.jsx';
 import ResidentAnnouncements from './components/Resident/ResidentAnnouncements.jsx';
@@ -107,6 +108,7 @@ const router = createBrowserRouter([
   { path: '/signup', element: <SignUp />, loader: checkIfLoggedInOnHome},
   { path: '/resident', element: <ResidentRoot />, loader: checkIfLoggedInOnResidentPage, children:[
     { path: '/resident', element: <ResidentHome />},
+    { path: '/resident/profile', element: <ResidentProfile />},
     { path: '/resident/announcements', element: <ResidentAnnouncements />},
     { path: '/resident/transactions', element: <ResidentTransactions />},
     { path: '/resident/faqs', element: <ResidentFAQs />},

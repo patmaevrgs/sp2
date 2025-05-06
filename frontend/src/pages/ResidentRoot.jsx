@@ -23,7 +23,6 @@ function ResidentRoot() {
     localStorage.removeItem('firstName');
     localStorage.removeItem('email');
     localStorage.removeItem('user');
-    localStorage.removeItem('cart');
     navigate('/');
   };
 
