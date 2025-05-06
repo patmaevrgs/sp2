@@ -11,35 +11,85 @@ import {
   Button,
   Chip,
   Link,
-  Divider
+  Divider,
+  Paper,
+  CardHeader,
+  Avatar
 } from '@mui/material';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ImageIcon from '@mui/icons-material/Image';
 import VideocamIcon from '@mui/icons-material/Videocam';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import EventIcon from '@mui/icons-material/Event';
+import WarningIcon from '@mui/icons-material/Warning';
+import InfoIcon from '@mui/icons-material/Info';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import AnnouncementIcon from '@mui/icons-material/Announcement';
 
 const ResidentAnnouncements = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  // Get icon for announcement type
+  const getTypeIcon = (typeValue) => {
+    switch(typeValue) {
+      case 'General': return <NotificationsIcon />;
+      case 'Event': return <EventIcon />;
+      case 'Emergency': return <WarningIcon />;
+      case 'Notice': return <InfoIcon />;
+      case 'Other': return <MoreHorizIcon />;
+      default: return <NotificationsIcon />;
+    }
+  };
+
+  // Get color for announcement type
+  const getTypeColor = (typeValue) => {
+    switch(typeValue) {
+      case 'General': return 'primary';
+      case 'Event': return 'secondary';
+      case 'Emergency': return 'error';
+      case 'Notice': return 'info';
+      case 'Other': return 'default';
+      default: return 'primary';
+    }
+  };
+
+  // Get avatar background color based on announcement type
+  const getAvatarBgColor = (typeValue) => {
+    switch(typeValue) {
+      case 'General': return '#1976d2'; // primary
+      case 'Event': return '#9c27b0'; // secondary
+      case 'Emergency': return '#d32f2f'; // error
+      case 'Notice': return '#0288d1'; // info
+      case 'Other': return '#757575'; // default
+      default: return '#1976d2';
+    }
+  };
 
   useEffect(() => {
-    // Fetching announcements from the backend without the /api prefix
+    // Fetching announcements from the backend
     fetch('http://localhost:3002/announcements', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
-      // Adding credentials to include cookies if necessary (if you're using sessions)
       credentials: 'include',
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch announcements');
+        }
+        return res.json();
+      })
       .then((data) => {
         console.log('API response:', data);
-        // Adjust this line if your response is nested or has a different structure
         setAnnouncements(Array.isArray(data) ? data.reverse() : []); // Show latest first
         setLoading(false);
       })
       .catch((err) => {
         console.error('Error fetching announcements:', err);
+        setError('Failed to load announcements. Please try again later.');
         setLoading(false);
       });
   }, []);
@@ -130,7 +180,8 @@ const ResidentAnnouncements = () => {
   return (
     <Container sx={{ mt: 4, mb: 4 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" gutterBottom component="div">
+        <AnnouncementIcon fontSize="large" sx={{ mr: 1 }} />
+        <Typography variant="h4" component="div">
           Barangay Announcements
         </Typography>
       </Box>
@@ -139,49 +190,71 @@ const ResidentAnnouncements = () => {
         <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
           <CircularProgress />
         </Box>
-      ) : (
-        announcements.length > 0 ? (
-          announcements.map((announcement) => (
-            <Card key={announcement._id} sx={{ mb: 3, boxShadow: 3 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Brgy Maahas Update
-                </Typography>
-                
-                <Typography variant="body1" paragraph>
-                  {announcement.content}
-                </Typography>
-                
-                {/* Render media content */}
-                {renderMedia(announcement)}
-                
-                <Divider sx={{ my: 2 }} />
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Posted: {new Date(announcement.postedAt).toLocaleString()}
-                    {announcement.editedAt && (
-                      <span> (edited: {new Date(announcement.editedAt).toLocaleString()})</span>
-                    )}
+      ) : error ? (
+        <Paper sx={{ p: 3, bgcolor: '#fff8f8', mb: 3 }}>
+          <Typography color="error">{error}</Typography>
+        </Paper>
+      ) : announcements.length > 0 ? (
+        announcements.map((announcement) => (
+          <Card key={announcement._id} sx={{ mb: 3, boxShadow: 3, overflow: 'visible' }}>
+            <CardHeader
+              avatar={
+                <Avatar 
+                  sx={{ 
+                    bgcolor: getAvatarBgColor(announcement.type || 'General'),
+                  }}
+                >
+                  {getTypeIcon(announcement.type || 'General')}
+                </Avatar>
+              }
+              title={
+                <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                  <Typography variant="h6" component="span">
+                    {announcement.title || 'Brgy Maahas Update'}
                   </Typography>
+                  <Chip
+                    label={announcement.type || 'General'}
+                    color={getTypeColor(announcement.type || 'General')}
+                    size="small"
+                  />
                 </Box>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '200px',
-            bgcolor: '#f5f5f5',
-            borderRadius: 1
-          }}>
-            <Typography variant="h6" color="text.secondary">
-              No announcements available.
-            </Typography>
-          </Box>
-        )
+              }
+              subheader={new Date(announcement.postedAt).toLocaleString()}
+            />
+            <CardContent>
+              <Typography variant="body1" paragraph>
+                {announcement.content}
+              </Typography>
+              
+              {/* Render media content */}
+              {renderMedia(announcement)}
+              
+              <Divider sx={{ my: 2 }} />
+              
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="caption" color="text.secondary">
+                  {announcement.editedAt && (
+                    <span>Last updated: {new Date(announcement.editedAt).toLocaleString()}</span>
+                  )}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        ))
+      ) : (
+        <Paper sx={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          height: '200px',
+          p: 3,
+          bgcolor: '#f5f5f5',
+          borderRadius: 1
+        }}>
+          <Typography variant="h6" color="text.secondary">
+            No announcements available.
+          </Typography>
+        </Paper>
       )}
     </Container>
   );

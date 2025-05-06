@@ -16,7 +16,11 @@ import {
   IconButton,
   CircularProgress,
   Alert,
-  useMediaQuery
+  useMediaQuery,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -27,8 +31,15 @@ import VideocamIcon from '@mui/icons-material/Videocam';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import CloseIcon from '@mui/icons-material/Close';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import EventIcon from '@mui/icons-material/Event';
+import WarningIcon from '@mui/icons-material/Warning';
+import InfoIcon from '@mui/icons-material/Info';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 
 function AdminAnnouncements() {
+  const [title, setTitle] = useState('Brgy Maahas Update'); // New title state
+  const [type, setType] = useState('General'); // New type state
   const [content, setContent] = useState('');
   const [announcements, setAnnouncements] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -49,6 +60,33 @@ function AdminAnnouncements() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+
+  // Announcement type options
+  const announcementTypes = [
+    { value: 'General', label: 'General', icon: <NotificationsIcon /> },
+    { value: 'Event', label: 'Event', icon: <EventIcon /> },
+    { value: 'Emergency', label: 'Emergency', icon: <WarningIcon /> },
+    { value: 'Notice', label: 'Notice', icon: <InfoIcon /> },
+    { value: 'Other', label: 'Other', icon: <MoreHorizIcon /> }
+  ];
+
+  // Get icon for announcement type
+  const getTypeIcon = (typeValue) => {
+    const typeObj = announcementTypes.find(t => t.value === typeValue);
+    return typeObj ? typeObj.icon : <NotificationsIcon />;
+  };
+
+  // Get color for announcement type
+  const getTypeColor = (typeValue) => {
+    switch(typeValue) {
+      case 'General': return 'primary';
+      case 'Event': return 'secondary';
+      case 'Emergency': return 'error';
+      case 'Notice': return 'info';
+      case 'Other': return 'default';
+      default: return 'primary';
+    }
+  };
 
   useEffect(() => {
     // Get current admin's full name from localStorage
@@ -159,7 +197,11 @@ function AdminAnnouncements() {
   };
 
   const handlePost = async () => {
-    if (!content.trim() && selectedFiles.length === 0) return;
+    if ((!content.trim() && selectedFiles.length === 0) || !title.trim()) {
+      setError("Title and either content or files are required.");
+      return;
+    }
+    
     if (!currentAdmin) {
       setError("You must be logged in to post.");
       return;
@@ -177,8 +219,10 @@ function AdminAnnouncements() {
     try {
       // Create FormData
       const formData = new FormData();
+      formData.append('title', title); // Add title to form data
       formData.append('content', content);
-      formData.append('postedBy', currentAdmin); // Use full name
+      formData.append('postedBy', currentAdmin);
+      formData.append('type', type); // Add type to form data
       
       // Add selected files
       selectedFiles.forEach(file => {
@@ -208,7 +252,9 @@ function AdminAnnouncements() {
       }
 
       // Reset form
+      setTitle('Brgy Maahas Update');
       setContent('');
+      setType('General');
       setEditingId(null);
       setSelectedFiles([]);
       setPreviewImages([]);
@@ -258,7 +304,9 @@ function AdminAnnouncements() {
   };
 
   const startEdit = (announcement) => {
+    setTitle(announcement.title || 'Brgy Maahas Update');
     setContent(announcement.content);
+    setType(announcement.type || 'General');
     setEditingId(announcement._id);
     
     // Set existing files
@@ -278,7 +326,9 @@ function AdminAnnouncements() {
   };
 
   const resetForm = () => {
+    setTitle('Brgy Maahas Update');
     setContent('');
+    setType('General');
     setEditingId(null);
     setSelectedFiles([]);
     setPreviewImages([]);
@@ -308,6 +358,37 @@ function AdminAnnouncements() {
             {error}
           </Alert>
         )}
+        
+        {/* Title input field */}
+        <TextField
+          fullWidth
+          label="Announcement Title"
+          variant="outlined"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          sx={{ mb: 2 }}
+        />
+        
+        {/* Announcement Type Selector */}
+        <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
+          <InputLabel id="announcement-type-label">Announcement Type</InputLabel>
+          <Select
+            labelId="announcement-type-label"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            label="Announcement Type"
+          >
+            {announcementTypes.map((type) => (
+              <MenuItem key={type.value} value={type.value}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{ mr: 1 }}>{type.icon}</Box>
+                  {type.label}
+                </Box>
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
         
         {/* Text content */}
         <TextField
@@ -543,7 +624,7 @@ function AdminAnnouncements() {
             variant="contained"
             color="primary"
             onClick={handlePost}
-            disabled={submitLoading || (!content.trim() && selectedFiles.length === 0 && 
+            disabled={submitLoading || !title.trim() || (!content.trim() && selectedFiles.length === 0 && 
                       !existingImages.length && !existingVideos.length && !existingFiles.length)}
             startIcon={submitLoading ? <CircularProgress size={20} /> : null}
           >
@@ -579,9 +660,19 @@ function AdminAnnouncements() {
             <Grid item xs={12} key={announcement._id}>
               <Paper elevation={2} sx={{ overflow: 'hidden' }}>
                 <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Brgy Maahas Update
-                  </Typography>
+                  {/* Announcement Type Chip */}
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, alignItems: 'flex-start' }}>
+                    <Typography variant="h6" gutterBottom>
+                      {announcement.title || 'Brgy Maahas Update'}
+                    </Typography>
+                    <Chip
+                      icon={getTypeIcon(announcement.type || 'General')}
+                      label={announcement.type || 'General'}
+                      color={getTypeColor(announcement.type || 'General')}
+                      size="small"
+                      sx={{ ml: 1 }}
+                    />
+                  </Box>
                   
                   <Typography variant="body1" paragraph>
                     {announcement.content}

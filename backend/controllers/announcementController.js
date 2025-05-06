@@ -14,14 +14,19 @@ if (!fs.existsSync(uploadsDir)) {
 }
 
 // Helper function to log admin actions
-const logAdminAction = async (adminName, action, details, entityId = null) => {
+const logAdminAction = async (adminName, action, details, entityId = null, entityType = 'Announcement') => {
   try {
+    // Check if entityId is a MongoDB ObjectId or a service ID string
+    const isMongoId = /^[0-9a-fA-F]{24}$/.test(entityId);
+    
     const newLog = new UserLog({
       adminName,
       action,
       details,
       timestamp: new Date(),
-      entityId
+      entityType, // Add the entity type parameter
+      // Set the appropriate ID field based on the ID format
+      ...(isMongoId ? { mongoId: entityId, entityType } : { entityId: entityId || 'N/A' })
     });
     await newLog.save();
   } catch (error) {
@@ -32,7 +37,7 @@ const logAdminAction = async (adminName, action, details, entityId = null) => {
 // Create a new announcement
 export const createAnnouncement = async (req, res) => {
   try {
-    const { content, postedBy } = req.body;
+    const { content, postedBy, title, type } = req.body;
     const uploadedFiles = [];
     
     // Handle file uploads if files exist in request
@@ -68,6 +73,7 @@ export const createAnnouncement = async (req, res) => {
     const links = req.body.links ? JSON.parse(req.body.links) : [];
     
     const newAnnouncement = new Announcement({
+      title: title || 'Brgy Maahas Update',
       content,
       postedBy,
       images,
@@ -75,6 +81,7 @@ export const createAnnouncement = async (req, res) => {
       files,
       links,
       postedAt: new Date(),
+      type: type || 'General'
     });
     
     await newAnnouncement.save();
@@ -86,8 +93,9 @@ export const createAnnouncement = async (req, res) => {
     await logAdminAction(
       postedBy, 
       'CREATE_ANNOUNCEMENT', 
-      `Created announcement "${content.substring(0, 30)}..."${fileInfo}`,
-      newAnnouncement._id
+      `Created announcement "${title || 'Brgy Maahas Update'}: ${content.substring(0, 30)}..."${fileInfo}`,
+      newAnnouncement._id,
+      'Announcement' // Add the entity type here
     );
     
     res.status(201).json(newAnnouncement);
@@ -140,8 +148,9 @@ export const deleteAnnouncement = async (req, res) => {
     await logAdminAction(
       adminName, 
       'DELETE_ANNOUNCEMENT', 
-      `Deleted announcement "${announcement.content.substring(0, 30)}..."`,
-      id
+      `Deleted announcement "${announcement.title}: ${announcement.content.substring(0, 30)}..."`,
+      id,
+      'Announcement' // Add the entity type here
     );
     
     res.status(200).json({ message: 'Announcement deleted' });
@@ -155,7 +164,7 @@ export const deleteAnnouncement = async (req, res) => {
 export const updateAnnouncement = async (req, res) => {
   try {
     const { id } = req.params;
-    const { content, keepImages, keepVideos, keepFiles, links, postedBy } = req.body;
+    const { content, keepImages, keepVideos, keepFiles, links, postedBy, title, type } = req.body;
     
     if (!postedBy) {
       return res.status(400).json({ message: 'Admin name (postedBy) is required for logging' });
@@ -226,12 +235,14 @@ export const updateAnnouncement = async (req, res) => {
     const updatedAnnouncement = await Announcement.findByIdAndUpdate(
       id,
       {
+        title: title || announcement.title,
         content,
         images: [...imagesToKeep, ...newImages],
         videos: [...videosToKeep, ...newVideos],
         files: [...filesToKeep, ...newFiles],
         links: parsedLinks,
         editedAt: new Date(),
+        type: type || announcement.type
       },
       { new: true }
     );
@@ -241,8 +252,9 @@ export const updateAnnouncement = async (req, res) => {
     await logAdminAction(
       postedBy, 
       'UPDATE_ANNOUNCEMENT', 
-      `Updated announcement "${content.substring(0, 30)}..." - ${fileInfo}`,
-      id
+      `Updated announcement "${updatedAnnouncement.title}: ${content.substring(0, 30)}..." - ${fileInfo}`,
+      id,
+      'Announcement' // Add the entity type here
     );
   
     res.status(200).json(updatedAnnouncement);

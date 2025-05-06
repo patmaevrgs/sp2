@@ -62,6 +62,29 @@ const ResidentTransaction = () => {
   // Get userId from localStorage
   const userId = localStorage.getItem('user');
   
+  const SERVICE_TYPES = {
+    AMBULANCE: 'ambulance_booking',
+    COURT: 'court_reservation',
+    INFRASTRUCTURE: 'infrastructure_report',
+    PROJECT_PROPOSAL: 'project_proposal',
+    DOCUMENT: 'document_request',
+    OTHER: 'other'
+  };
+  
+  const STATUS = {
+    PENDING: 'pending',
+    APPROVED: 'approved',
+    BOOKED: 'booked',
+    COMPLETED: 'completed',
+    CANCELLED: 'cancelled',
+    REJECTED: 'rejected',
+    NEEDS_APPROVAL: 'needs_approval',
+    IN_PROGRESS: 'in_progress',
+    IN_REVIEW: 'in_review',
+    CONSIDERED: 'considered',
+    RESOLVED: 'resolved'
+  };
+
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [feedbackReportId, setFeedbackReportId] = useState(null);
@@ -81,6 +104,15 @@ const ResidentTransaction = () => {
   const [openDieselDialog, setOpenDieselDialog] = useState(false);
   const [dieselResponseLoading, setDieselResponseLoading] = useState(false);
   
+  // Add this helper function below your state declarations
+  const formatStatusText = (status) => {
+  if (!status) return '';
+  // Convert snake_case to Title Case
+  return status.split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
   // For responsive design
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -197,7 +229,7 @@ const ResidentTransaction = () => {
     }
   };
 
-  // ServiceIdCell component
+  // ServiceIdCell component for displaying service IDs in the table
   const ServiceIdCell = ({ transaction }) => {
     const [serviceId, setServiceId] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -205,30 +237,27 @@ const ResidentTransaction = () => {
     useEffect(() => {
       // Only fetch if we have a referenceId and the service type is one we can handle
       if (transaction.referenceId && 
-          (transaction.serviceType === 'ambulance_booking' || 
-          transaction.serviceType === 'court_reservation' ||
-          transaction.serviceType === 'infrastructure_report' ||
-          transaction.serviceType === 'project_proposal' ||
-          transaction.serviceType === 'document_request')) {
+          [SERVICE_TYPES.AMBULANCE, SERVICE_TYPES.COURT, SERVICE_TYPES.INFRASTRUCTURE, 
+          SERVICE_TYPES.PROJECT_PROPOSAL, SERVICE_TYPES.DOCUMENT].includes(transaction.serviceType)) {
         
         setLoading(true);
         
         // Determine the correct endpoint based on service type
         let endpoint;
         switch(transaction.serviceType) {
-          case 'ambulance_booking':
+          case SERVICE_TYPES.AMBULANCE:
             endpoint = `http://localhost:3002/ambulance/${transaction.referenceId}`;
             break;
-          case 'court_reservation':
+          case SERVICE_TYPES.COURT:
             endpoint = `http://localhost:3002/court/${transaction.referenceId}`;
             break;
-          case 'infrastructure_report':
+          case SERVICE_TYPES.INFRASTRUCTURE:
             endpoint = `http://localhost:3002/reports/${transaction.referenceId}`;
             break;
-          case 'project_proposal':
+          case SERVICE_TYPES.PROJECT_PROPOSAL:
             endpoint = `http://localhost:3002/proposals/${transaction.referenceId}`;
             break;
-          case 'document_request':
+          case SERVICE_TYPES.DOCUMENT:
             endpoint = `http://localhost:3002/documents/${transaction.referenceId}`;
             break;
           default:
@@ -239,16 +268,16 @@ const ResidentTransaction = () => {
           fetch(endpoint)
             .then(res => res.ok ? res.json() : null)
             .then(data => {
-              // For reports, the data structure might be different
-              if (transaction.serviceType === 'infrastructure_report' && data && data.report) {
+              // For reports and other specialized services, the data structure might be different
+              if (transaction.serviceType === SERVICE_TYPES.INFRASTRUCTURE && data && data.report) {
                 if (data.report.serviceId) {
                   setServiceId(data.report.serviceId);
                 }
-              } else if (transaction.serviceType === 'project_proposal' && data && data.proposal) {
+              } else if (transaction.serviceType === SERVICE_TYPES.PROJECT_PROPOSAL && data && data.proposal) {
                 if (data.proposal.serviceId) {
                   setServiceId(data.proposal.serviceId);
                 }
-              } else if (transaction.serviceType === 'document_request' && data && data.documentRequest) {
+              } else if (transaction.serviceType === SERVICE_TYPES.DOCUMENT && data && data.documentRequest) {
                 if (data.documentRequest.serviceId) {
                   setServiceId(data.documentRequest.serviceId);
                 }
@@ -269,11 +298,8 @@ const ResidentTransaction = () => {
     }, [transaction]);
 
     // Don't show anything for service types we don't handle
-    if (transaction.serviceType !== 'ambulance_booking' && 
-        transaction.serviceType !== 'court_reservation' &&
-        transaction.serviceType !== 'infrastructure_report' &&
-        transaction.serviceType !== 'project_proposal' &&
-        transaction.serviceType !== 'document_request') {
+    if (![SERVICE_TYPES.AMBULANCE, SERVICE_TYPES.COURT, SERVICE_TYPES.INFRASTRUCTURE,
+          SERVICE_TYPES.PROJECT_PROPOSAL, SERVICE_TYPES.DOCUMENT].includes(transaction.serviceType)) {
       return <span>-</span>;
     }
 
@@ -284,9 +310,9 @@ const ResidentTransaction = () => {
         ) : (
           serviceId || 
           transaction.details?.serviceId || 
-          (transaction.serviceType === 'infrastructure_report' && transaction.referenceDetails?.serviceId) ||
-          (transaction.serviceType === 'project_proposal' && transaction.referenceDetails?.serviceId) ||
-          (transaction.serviceType === 'document_request' && transaction.referenceDetails?.serviceId) ||
+          (transaction.serviceType === SERVICE_TYPES.INFRASTRUCTURE && transaction.referenceDetails?.serviceId) ||
+          (transaction.serviceType === SERVICE_TYPES.PROJECT_PROPOSAL && transaction.referenceDetails?.serviceId) ||
+          (transaction.serviceType === SERVICE_TYPES.DOCUMENT && transaction.referenceDetails?.serviceId) ||
           'N/A'
         )}
       </>
@@ -488,170 +514,173 @@ const ResidentTransaction = () => {
     let color = 'default';
     let label = status;
     
-    // Special case for document requests - map transaction status back to document request status
-    if (serviceType === 'document_request') {
-      // If we have the reference details with the original status, use that
-      if (transaction && transaction.referenceDetails && transaction.referenceDetails.status) {
+    // Document Request status mapping
+    if (serviceType === SERVICE_TYPES.DOCUMENT) {
+      // Use reference details status if available
+      if (transaction?.referenceDetails?.status) {
         const docStatus = transaction.referenceDetails.status;
         
         switch (docStatus) {
-          case 'pending':
+          case STATUS.PENDING:
             color = 'warning';
             label = 'Pending';
             break;
-          case 'in_progress':
+          case STATUS.IN_PROGRESS:
             color = 'primary';
             label = 'In Progress';
             break;
-          case 'completed':
+          case STATUS.COMPLETED:
             color = 'success';
             label = 'Completed';
             break;
-          case 'rejected':
+          case STATUS.REJECTED:
             color = 'error';
             label = 'Rejected';
             break;
-          case 'cancelled':
+          case STATUS.CANCELLED:
             color = 'default';
             label = 'Cancelled';
             break;
           default:
             color = 'default';
-            label = docStatus.replace('_', ' ');
+            label = formatStatusText(docStatus);
         }
         
         return <Chip size="small" label={label} color={color} />;
       }
       
-      // If we don't have reference details yet, map from transaction status
+      // If reference details not available, map from transaction status
       switch (status) {
-        case 'pending':
+        case STATUS.PENDING:
           color = 'warning';
           label = 'Pending';
           break;
-        case 'approved':
+        case STATUS.APPROVED:
           color = 'primary';
           label = 'In Progress';
           break;
-        case 'completed':
+        case STATUS.COMPLETED:
           color = 'success';
           label = 'Completed';
           break;
-        case 'cancelled':
-          color = 'error';
-          label = 'Rejected/Cancelled';
-          break;
-        default:
-          color = 'default';
-          label = status.replace('_', ' ');
-      }
-      
-      return <Chip size="small" label={label} color={color} />;
-    }
-    
-    // Special case for project proposals
-    if (serviceType === 'project_proposal') {
-      switch (status) {
-        case 'pending':
-          color = 'warning';
-          label = 'Pending';
-          break;
-        case 'approved': // This maps to 'considered' in proposal terms
-          color = 'primary';
-          label = 'Considered';
-          break;
-        case 'completed': // This maps to 'approved' in proposal terms
-          color = 'success';
-          label = 'Approved';
-          break;
-        case 'cancelled': // This maps to 'rejected' in proposal terms
-          color = 'error';
-          label = 'Rejected';
-          break;
-        case 'needs_approval':
-          color = 'info';
-          label = 'In Review';
-          break;
-        default:
-          color = 'default';
-          label = status.replace('_', ' ');
-      }
-      
-      return <Chip size="small" label={label} color={color} />;
-    }
-
-    // Special case for infrastructure reports
-    if (serviceType === 'infrastructure_report') {
-      // Map transaction status back to Report status
-      switch (status) {
-        case 'pending':
-          color = 'warning';
-          label = 'Pending';
-          break;
-        case 'approved':
-          color = 'primary';
-          label = 'In Progress';
-          break;
-        case 'completed':
-          color = 'success';
-          label = 'Resolved';
-          break;
-        case 'cancelled':
+        case STATUS.CANCELLED:
+        case STATUS.REJECTED:
           color = 'error';
           label = 'Cancelled';
           break;
         default:
           color = 'default';
+          label = formatStatusText(status);
+      }
+      
+      return <Chip size="small" label={label} color={color} />;
+    }
+    
+    // Project Proposal status mapping
+    if (serviceType === SERVICE_TYPES.PROJECT_PROPOSAL) {
+      switch (status) {
+        case STATUS.PENDING:
+          color = 'warning';
+          label = 'Pending';
+          break;
+        case STATUS.APPROVED: // Maps to 'considered' in proposal terms
+          color = 'primary';
+          label = 'Considered';
+          break;
+        case STATUS.COMPLETED: // Maps to 'approved' in proposal terms
+          color = 'success';
+          label = 'Approved';
+          break;
+        case STATUS.CANCELLED: // Maps to 'rejected' in proposal terms
+        case STATUS.REJECTED:
+          color = 'error';
+          label = 'Rejected';
+          break;
+        case STATUS.NEEDS_APPROVAL:
+          color = 'info';
+          label = 'In Review';
+          break;
+        default:
+          color = 'default';
+          label = formatStatusText(status);
+      }
+      
+      return <Chip size="small" label={label} color={color} />;
+    }
+  
+    // Infrastructure Report status mapping
+    if (serviceType === SERVICE_TYPES.INFRASTRUCTURE) {
+      // Map transaction status back to Report status
+      switch (status) {
+        case STATUS.PENDING:
+          color = 'warning';
+          label = 'Pending';
+          break;
+        case STATUS.APPROVED:
+          color = 'primary';
+          label = 'In Progress';
+          break;
+        case STATUS.COMPLETED:
+          color = 'success';
+          label = 'Resolved';
+          break;
+        case STATUS.CANCELLED:
+        case STATUS.REJECTED:
+          color = 'error';
+          label = 'Cancelled';
+          break;
+        default:
+          color = 'default';
+          label = formatStatusText(status);
       }
       return <Chip size="small" label={label} color={color} />;
     }
-
-    // Regular transaction status handling
+  
+    // Regular transaction status handling for other service types
     switch (status) {
-      case 'pending':
+      case STATUS.PENDING:
         color = 'warning';
+        label = 'Pending';
         break;
-      case 'approved':
-      case 'booked':
+      case STATUS.APPROVED:
+      case STATUS.BOOKED:
         color = 'primary';
-        // Display 'Approved' for both 'approved' and 'booked' statuses
-        label = status === 'booked' ? 'Approved' : status;
+        label = 'Approved';
         break;
-      case 'completed':
+      case STATUS.COMPLETED:
         color = 'success';
+        label = 'Completed';
         break;
-      case 'cancelled':
+      case STATUS.CANCELLED:
+      case STATUS.REJECTED:
         color = 'error';
+        label = 'Cancelled';
         break;
-      case 'rejected': // Also handle 'rejected' status
-        color = 'error';
-        // Display 'Cancelled' for both 'cancelled' and 'rejected' statuses
-        label = status === 'rejected' ? 'Cancelled' : status;
-        break;
-      case 'needs_approval':
+      case STATUS.NEEDS_APPROVAL:
         color = 'info';
         label = 'Needs Approval';
         break;
       default:
         color = 'default';
+        label = formatStatusText(status);
     }
-
-    return <Chip size="small" label={label.replace('_', ' ')} color={color} />;
+  
+    return <Chip size="small" label={label} color={color} />;
   };
 
   const getServiceTypeLabel = (type) => {
     switch (type) {
-      case 'ambulance_booking':
+      case SERVICE_TYPES.AMBULANCE:
         return 'Ambulance Booking';
-      case 'court_reservation':
+      case SERVICE_TYPES.COURT:
         return 'Court Reservation';
-      case 'infrastructure_report':
+      case SERVICE_TYPES.INFRASTRUCTURE:
         return 'Infrastructure Report';
-      case 'project_proposal':
+      case SERVICE_TYPES.PROJECT_PROPOSAL:
         return 'Project Proposal';
-      case 'document_request':
+      case SERVICE_TYPES.DOCUMENT:
         return 'Document Request';
-      case 'other':
+      case SERVICE_TYPES.OTHER:
         return 'Other Service';
       default:
         return type;
@@ -676,58 +705,83 @@ const ResidentTransaction = () => {
     }
   };
 
-  // Updated canCancel function to handle document requests
+  // Function to check if a transaction can be cancelled
   const canCancel = (transaction) => {
     // For document requests
-    if (transaction.serviceType === 'document_request') {
+    if (transaction.serviceType === SERVICE_TYPES.DOCUMENT) {
       // If we have reference details with original status
       if (transaction.referenceDetails && transaction.referenceDetails.status) {
         // Only allow cancellation if status is 'pending'
-        return transaction.referenceDetails.status === 'pending';
+        return transaction.referenceDetails.status === STATUS.PENDING;
       }
       // Otherwise use transaction status
-      return transaction.status === 'pending';
+      return transaction.status === STATUS.PENDING;
     }
     
-    // For project proposals
-    if (transaction.serviceType === 'project_proposal') {
-      // Get actual status from either details or transaction status
-      const proposalStatus = transaction.details && transaction.details.proposalStatus 
-        ? transaction.details.proposalStatus 
-        : transaction.status;
-        
-      // Only allow cancellation if proposal is not approved or rejected
-      return !['approved', 'rejected', 'completed', 'cancelled'].includes(proposalStatus);
+    // Special case for project proposals
+    if (transaction.serviceType === SERVICE_TYPES.PROJECT_PROPOSAL) {
+      // First check if referenceDetails has a status
+      if (transaction.referenceDetails && transaction.referenceDetails.status) {
+        const status = transaction.referenceDetails.status.toLowerCase();
+        // If status contains "reject" or "cancel" or is "approved" or "completed", don't allow cancellation
+        if (status.includes('reject') || status.includes('cancel') || 
+            status === 'approved' || status === 'completed') {
+          return false;
+        }
+      }
+      
+      // Then check details.proposalStatus
+      if (transaction.details && transaction.details.proposalStatus) {
+        const status = transaction.details.proposalStatus.toLowerCase();
+        // If status contains "reject" or "cancel" or is "approved" or "completed", don't allow cancellation
+        if (status.includes('reject') || status.includes('cancel') || 
+            status === 'approved' || status === 'completed') {
+          return false;
+        }
+      }
+      
+      // Finally check transaction status
+      const status = transaction.status.toLowerCase();
+      // If status contains "reject" or "cancel" or is "approved" or "completed", don't allow cancellation
+      if (status.includes('reject') || status.includes('cancel') || 
+          status === 'approved' || status === 'completed') {
+        return false;
+      }
+      
+      // If none of the above conditions were met, allow cancellation
+      return true;
     }
     
     // Special case for infrastructure reports
-    if (transaction.serviceType === 'infrastructure_report') {
+    if (transaction.serviceType === SERVICE_TYPES.INFRASTRUCTURE) {
       // Only allow cancellation if status is 'pending' 
-      return transaction.status === 'pending';
+      return transaction.status === STATUS.PENDING;
     }
     
     // For other transaction types
-    return ['pending', 'needs_approval', 'booked', 'approved'].includes(transaction.status)
-      && transaction.status !== 'completed';
+    return [STATUS.PENDING, STATUS.NEEDS_APPROVAL, STATUS.BOOKED, STATUS.APPROVED].includes(transaction.status)
+      && transaction.status !== STATUS.COMPLETED;
   };
 
   const filteredTransactions = filter === 'all' 
   ? transactions 
   : transactions.filter(transaction => {
       if (filter === 'active') {
-        return ['pending', 'booked', 'needs_approval', 'approved'].includes(transaction.status);
+        return [STATUS.PENDING, STATUS.BOOKED, STATUS.NEEDS_APPROVAL, STATUS.APPROVED, STATUS.IN_PROGRESS].includes(transaction.status);
       } else if (filter === 'ambulance') {
-        return transaction.serviceType === 'ambulance_booking';
+        return transaction.serviceType === SERVICE_TYPES.AMBULANCE;
       } else if (filter === 'document') {
-        return transaction.serviceType === 'document_request';
+        return transaction.serviceType === SERVICE_TYPES.DOCUMENT;
       } else if (filter === 'court') {
-        return transaction.serviceType === 'court_reservation';
+        return transaction.serviceType === SERVICE_TYPES.COURT;
       } else if (filter === 'infrastructure') {
-        return transaction.serviceType === 'infrastructure_report';
+        return transaction.serviceType === SERVICE_TYPES.INFRASTRUCTURE;
+      } else if (filter === 'project_proposal') {
+        return transaction.serviceType === SERVICE_TYPES.PROJECT_PROPOSAL;
       } else if (filter === 'approved') {
-        return transaction.status === 'approved' || transaction.status === 'booked';
+        return [STATUS.APPROVED, STATUS.BOOKED].includes(transaction.status);
       } else if (filter === 'booked') {
-        return transaction.status === 'booked' || transaction.status === 'approved';
+        return [STATUS.BOOKED, STATUS.APPROVED].includes(transaction.status);
       } else {
         return transaction.status === filter;
       }
@@ -839,9 +893,39 @@ const ResidentTransaction = () => {
                           variant="outlined"
                         />
                       )}
-                      {transaction.serviceType === 'ambulance_booking' && transaction.details && (
+                      {/* Display consistent transaction details based on service type */}
+                      {transaction.serviceType === SERVICE_TYPES.AMBULANCE && transaction.details && (
                         <Typography component="div" variant="body2" sx={{ mt: 1 }}>
-                          {transaction.details.patientName} • {transaction.details.destination}
+                          {transaction.details.patientName || 'Patient N/A'} • {transaction.details.destination || 'Destination N/A'}
+                        </Typography>
+                      )}
+                      {transaction.serviceType === SERVICE_TYPES.COURT && transaction.details && (
+                        <Typography component="div" variant="body2" sx={{ mt: 1 }}>
+                          {formatDate(transaction.details.reservationDate)} • {transaction.details.courtName || 'Court'}
+                        </Typography>
+                      )}
+                      {transaction.serviceType === SERVICE_TYPES.INFRASTRUCTURE && transaction.details && (
+                        <Typography component="div" variant="body2" sx={{ mt: 1 }}>
+                          {transaction.details.issueType || 'Report'} • {transaction.details.location || 'Location N/A'}
+                        </Typography>
+                      )}
+                      {transaction.serviceType === SERVICE_TYPES.PROJECT_PROPOSAL && transaction.details && (
+                        <Typography component="div" variant="body2" sx={{ mt: 1 }}>
+                          {transaction.details.projectTitle || 'Project Proposal'}
+                        </Typography>
+                      )}
+                      {transaction.serviceType === SERVICE_TYPES.DOCUMENT && transaction.details && (
+                        <Typography component="div" variant="body2" sx={{ mt: 1 }}>
+                          {(() => {
+                            const docType = transaction.details.documentType;
+                            switch(docType) {
+                              case 'barangay_id': return 'Barangay ID';
+                              case 'barangay_clearance': return 'Barangay Clearance';
+                              case 'business_clearance': return 'Business Clearance';
+                              case 'certificate_of_indigency': return 'Certificate of Indigency';
+                              default: return docType?.replace('_', ' ') || 'Document';
+                            }
+                          })()}
                         </Typography>
                       )}
                     </>
@@ -1132,14 +1216,16 @@ const ResidentTransaction = () => {
             onChange={handleFilterChange}
           >
             <MenuItem value="all">All Transactions</MenuItem>
+            <MenuItem value="active">Active Transactions</MenuItem>
+            <Divider />
             <MenuItem value="ambulance">Ambulance Bookings</MenuItem>
-            <MenuItem value="document">Document Requests</MenuItem>
             <MenuItem value="court">Court Reservations</MenuItem>
+            <MenuItem value="document">Document Requests</MenuItem>
             <MenuItem value="infrastructure">Infrastructure Reports</MenuItem>
+            <MenuItem value="project_proposal">Project Proposals</MenuItem>
             <Divider />
             <MenuItem value="pending">Pending</MenuItem>
             <MenuItem value="approved">Approved</MenuItem>
-            <MenuItem value="booked">Booked</MenuItem>
             <MenuItem value="completed">Completed</MenuItem>
             <MenuItem value="cancelled">Cancelled</MenuItem>
           </Select>
@@ -1191,33 +1277,79 @@ const ResidentTransaction = () => {
                   )}
                 </TableCell>
                 <TableCell>
-                  {transaction.serviceType === 'ambulance_booking' && transaction.details && (
+                  {/* Ambulance booking details */}
+                  {transaction.serviceType === SERVICE_TYPES.AMBULANCE && transaction.details && (
                     <>
                       <Typography variant="body2">
-                        <strong>Patient:</strong> {transaction.details.patientName}
+                        <strong>Patient:</strong> {transaction.details.patientName || 'N/A'}
                       </Typography>
                       <Typography variant="body2">
-                        <strong>Destination:</strong> {transaction.details.destination}
+                        <strong>Destination:</strong> {transaction.details.destination || 'N/A'}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Pickup Date:</strong> {formatDate(transaction.details.pickupDate)}
                       </Typography>
                     </>
                   )}
-                  {transaction.serviceType === 'court_reservation' && transaction.details && (
+                  
+                  {/* Court reservation details */}
+                  {transaction.serviceType === SERVICE_TYPES.COURT && transaction.details && (
                     <>
                       <Typography variant="body2">
-                        <strong>Court:</strong> {transaction.details.courtName}
+                        <strong>Purpose:</strong> {transaction.details.purpose || 'N/A'}
                       </Typography>
                       <Typography variant="body2">
                         <strong>Date:</strong> {formatDate(transaction.details.reservationDate)}
                       </Typography>
                     </>
                   )}
-                  {transaction.serviceType === 'infrastructure_report' && transaction.details && (
+                  
+                  {/* Infrastructure report details */}
+                  {transaction.serviceType === SERVICE_TYPES.INFRASTRUCTURE && transaction.details && (
                     <>
                       <Typography variant="body2">
                         <strong>Issue:</strong> {transaction.details.issueType || 'N/A'}
                       </Typography>
                       <Typography variant="body2">
                         <strong>Location:</strong> {transaction.details.location || 'N/A'}
+                      </Typography>
+                    </>
+                  )}
+                  
+                  {/* Project proposal details */}
+                  {transaction.serviceType === SERVICE_TYPES.PROJECT_PROPOSAL && transaction.details && (
+                    <>
+                      <Typography variant="body2">
+                        <strong>Title:</strong> {transaction.details.projectTitle || 'N/A'}
+                      </Typography>
+                    </>
+                  )}
+                  
+                  {/* Document request details */}
+                  {transaction.serviceType === SERVICE_TYPES.DOCUMENT && transaction.details && (
+                    <>
+                      <Typography variant="body2">
+                        <strong>Type:</strong> {
+                          (() => {
+                            const docType = transaction.details.documentType;
+                            switch(docType) {
+                              case 'barangay_id': return 'Barangay ID';
+                              case 'barangay_clearance': return 'Barangay Clearance';
+                              case 'business_clearance': return 'Business Clearance';
+                              case 'lot_ownership': return 'Lot Ownership';
+                              case 'digging_permit': return 'Digging Permit';
+                              case 'fencing_permit': return 'Fencing Permit';
+                              case 'request_for_assistance': return 'Request for Assistance';
+                              case 'certificate_of_indigency': return 'Certificate of Indigency';
+                              case 'certificate_of_residency': return 'Certificate of Residency';
+                              case 'no_objection_certificate': return 'No Objection Certificate';
+                              default: return docType ? docType.replace('_', ' ') : 'N/A';
+                            }
+                          })()
+                        }
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Purpose:</strong> {transaction.details.purpose || transaction.referenceDetails?.purpose || 'N/A'}
                       </Typography>
                     </>
                   )}
