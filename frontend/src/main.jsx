@@ -5,6 +5,7 @@ import SignUp from './components/SignUp';
 import SignIn from './components/SignIn';
 import AdminRoot from './pages/AdminRoot';
 import AdminHome from './components/Admin/AdminHome.jsx';
+import AdminProfile from './components/Admin/AdminProfile.jsx';
 import AdminAnnouncements from './components/Admin/AdminAnnouncements.jsx';
 import AdminAccounts from './components/Admin/AdminAccounts.jsx';
 import AdminDatabase from './components/Admin/AdminDatabase.jsx';
@@ -130,6 +131,7 @@ const router = createBrowserRouter([
   ]},
   { path: '/admin', element: <AdminRoot />, loader: checkIfLoggedInOnDash, children:[
     {path: '/admin', element: <AdminHome />},
+    {path: '/admin/profile', element: <AdminProfile />},
     {path: '/admin/announcements', element: <AdminAnnouncements />},
     {path: '/admin/accounts', element: <AdminAccounts />},
     {path: '/admin/database', element: <AdminDatabase />},
