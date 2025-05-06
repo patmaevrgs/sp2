@@ -643,8 +643,6 @@ const ResidentTransaction = () => {
     switch (type) {
       case 'ambulance_booking':
         return 'Ambulance Booking';
-      case 'payment':
-        return 'Payment';
       case 'court_reservation':
         return 'Court Reservation';
       case 'infrastructure_report':
@@ -724,8 +722,6 @@ const ResidentTransaction = () => {
         return transaction.serviceType === 'document_request';
       } else if (filter === 'court') {
         return transaction.serviceType === 'court_reservation';
-      } else if (filter === 'payment') {
-        return transaction.serviceType === 'payment';
       } else if (filter === 'infrastructure') {
         return transaction.serviceType === 'infrastructure_report';
       } else if (filter === 'approved') {
@@ -792,11 +788,9 @@ const ResidentTransaction = () => {
               onChange={handleFilterChange}
             >
               <MenuItem value="all">All Transactions</MenuItem>
-              <MenuItem value="active">Active Requests</MenuItem>
               <MenuItem value="ambulance">Ambulance Bookings</MenuItem>
               <MenuItem value="document">Document Requests</MenuItem>
               <MenuItem value="court">Court Reservations</MenuItem>
-              <MenuItem value="payment">Payments</MenuItem>
               <Divider />
               <MenuItem value="pending">Pending</MenuItem>
               <MenuItem value="approved">Approved</MenuItem>
@@ -1138,12 +1132,10 @@ const ResidentTransaction = () => {
             onChange={handleFilterChange}
           >
             <MenuItem value="all">All Transactions</MenuItem>
-            <MenuItem value="active">Active Requests</MenuItem>
             <MenuItem value="ambulance">Ambulance Bookings</MenuItem>
             <MenuItem value="document">Document Requests</MenuItem>
             <MenuItem value="court">Court Reservations</MenuItem>
             <MenuItem value="infrastructure">Infrastructure Reports</MenuItem>
-            <MenuItem value="payment">Payments</MenuItem>
             <Divider />
             <MenuItem value="pending">Pending</MenuItem>
             <MenuItem value="approved">Approved</MenuItem>
@@ -1630,6 +1622,39 @@ const ResidentTransaction = () => {
                           </Grid>
                         </>
                       )}
+
+                      {/* Barangay ID Details */}
+                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'barangay_id' && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>First Name:</strong> {selectedTransaction.referenceDetails.formData.firstName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Middle Name:</strong> {selectedTransaction.referenceDetails.formData.middleName || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Last Name:</strong> {selectedTransaction.referenceDetails.formData.lastName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Date of Birth:</strong> {selectedTransaction.referenceDetails.formData.birthDate}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Emergency Contact Name:</strong> {selectedTransaction.referenceDetails.formData.emergencyContactName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Emergency Contact Number:</strong> {selectedTransaction.referenceDetails.formData.emergencyContactNumber}
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
+
                       {/* Fencing Permit Details */}
                       {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'fencing_permit' && (
                         <>

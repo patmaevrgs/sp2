@@ -43,6 +43,9 @@ export const generateDocument = async (req, res) => {
       case 'request_for_assistance':
         templatePath = path.resolve(__dirname, '../templates/request_for_assistance_template.docx');
         break;
+      case 'barangay_id':
+        templatePath = path.resolve(__dirname, '../templates/barangay_id_template.docx');
+        break;
       default:
         return res.status(400).json({
           success: false,
@@ -367,6 +370,24 @@ export const generateDocument = async (req, res) => {
       };
     }
 
+    else if (documentType === 'barangay_id') {
+      // Allow admin to update the ID number value through the req.body
+      const idNumber = req.body.idNumber || '';
+      
+      data = {
+        ...data,
+        idNumber: idNumber, // This is provided by admin when generating
+        firstName: formData.firstName?.toUpperCase() || '',
+        middleName: formData.middleName?.toUpperCase() || '',
+        lastName: formData.lastName?.toUpperCase() || '',
+        address: formData.address || '',
+        birthDate: formData.birthDate || '',
+        emergencyContactName: formData.emergencyContactName || '',
+        emergencyContactNumber: formData.emergencyContactNumber || '',
+        fullDate: `${formattedMonth} ${currentDate.getDate()}, ${year}`,
+      };
+    }
+    
     // Render document with data
     doc.render(data);
     

@@ -53,6 +53,7 @@ function AdminRequestForms() {
   const [docxGenerating, setDocxGenerating] = useState(false);
   const [clearanceNumber, setClearanceNumber] = useState('');
   const [amountField, setAmountField] = useState('');
+  const [idNumber, setIdNumber] = useState('');
   
   // Pagination
   const [page, setPage] = useState(0);
@@ -343,6 +344,11 @@ function AdminRequestForms() {
         requestBody.clearanceNumber = clearanceNumber;
       }
       
+      // Add ID number for barangay ID
+      if (selectedRequest.documentType === 'barangay_id') {
+        requestBody.idNumber = idNumber;
+      }
+
       // Generate a DOCX document
       const response = await fetch('http://localhost:3002/documents/generate', {
         method: 'POST',
@@ -388,6 +394,10 @@ function AdminRequestForms() {
       // Reset clearance number after successful generation
       if (selectedRequest.documentType === 'barangay_clearance') {
         setClearanceNumber('');
+      }
+      
+      if (selectedRequest.documentType === 'barangay_id') {
+        setIdNumber('');
       }
       
       // Close the print preview dialog after successful generation
@@ -782,6 +792,23 @@ function AdminRequestForms() {
               </>
             )}
             
+            {/* Barangay ID fields */}
+            {selectedRequest && selectedRequest.documentType === 'barangay_id' && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>First Name:</strong> {selectedRequest.formData.firstName}</Typography>
+                  <Typography variant="body2"><strong>Middle Name:</strong> {selectedRequest.formData.middleName || 'N/A'}</Typography>
+                  <Typography variant="body2"><strong>Last Name:</strong> {selectedRequest.formData.lastName}</Typography>
+                  <Typography variant="body2"><strong>Address:</strong> {selectedRequest.formData.address}, Barangay Maahas, Los Baños, Laguna</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Date of Birth:</strong> {selectedRequest.formData.birthDate}</Typography>
+                  <Typography variant="body2"><strong>Emergency Contact:</strong> {selectedRequest.formData.emergencyContactName}</Typography>
+                  <Typography variant="body2"><strong>Emergency Contact #:</strong> {selectedRequest.formData.emergencyContactNumber}</Typography>
+                </Grid>
+              </>
+            )}
+
             {/* Barangay Clearance fields */}
             {selectedRequest.documentType === 'barangay_clearance' && (
               <>
@@ -1227,6 +1254,49 @@ function AdminRequestForms() {
                         <Typography variant="body2">
                           <strong>Purpose:</strong> {selectedRequest.purpose}
                         </Typography>
+                      </>
+                    )}
+
+                    {selectedRequest && selectedRequest.documentType === 'barangay_id' && (
+                      <>
+                        <Typography variant="body2">
+                          <strong>Name:</strong> {selectedRequest.formData.firstName} {selectedRequest.formData.middleName ? selectedRequest.formData.middleName + ' ' : ''}{selectedRequest.formData.lastName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Address:</strong> {selectedRequest.formData.address}, Barangay Maahas, Los Baños, Laguna
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Date of Birth:</strong> {selectedRequest.formData.birthDate}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Emergency Contact:</strong> {selectedRequest.formData.emergencyContactName}, {selectedRequest.formData.emergencyContactNumber}
+                        </Typography>
+                        
+                        {/* ID Number input field - For Barangay ID */}
+                        <Box sx={{ my: 3, p: 3, border: '1px solid #e0e0e0', borderRadius: 1 }}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            Barangay ID Details:
+                          </Typography>
+                          <TextField
+                            required
+                            fullWidth
+                            label="ID Number"
+                            value={idNumber}
+                            onChange={(e) => setIdNumber(e.target.value)}
+                            placeholder="e.g., 246"
+                            helperText="Enter the Barangay ID number"
+                            sx={{ mb: 1 }}
+                          />
+                          <Typography variant="caption" color="textSecondary">
+                            This ID number will be printed on the resident's Barangay ID.
+                          </Typography>
+                        </Box>
+                        
+                        <Alert severity="warning" sx={{ my: 2 }}>
+                          <Typography variant="body2">
+                            <strong>Reminder:</strong> Inform the resident to bring a 1x1 ID picture for attachment and to sign the ID upon pickup at the Barangay Hall.
+                          </Typography>
+                        </Alert>
                       </>
                     )}
 
