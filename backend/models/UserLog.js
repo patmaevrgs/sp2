@@ -19,7 +19,10 @@ const userLogSchema = new mongoose.Schema({
   },
   // Optional reference to the related entity (like announcement ID)
   entityId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String  // For service IDs like PRJ123456
+  },
+  mongoId: {
+    type: mongoose.Schema.Types.ObjectId,  // For MongoDB references
     refPath: 'entityType'
   },
   entityType: {

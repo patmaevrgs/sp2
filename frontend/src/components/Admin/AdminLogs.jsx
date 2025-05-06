@@ -25,7 +25,8 @@ import {
   Divider,
   IconButton,
   useMediaQuery,
-  Pagination
+  Pagination,
+  Tooltip
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -35,6 +36,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import EventNoteIcon from '@mui/icons-material/EventNote';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 function AdminLogs() {
   const [logs, setLogs] = useState([]);
@@ -50,6 +52,7 @@ function AdminLogs() {
   const [uniqueActions, setUniqueActions] = useState([]);
   const [currentAdmin, setCurrentAdmin] = useState('');
   const [filterExpanded, setFilterExpanded] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
 
   // For pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -157,6 +160,8 @@ function AdminLogs() {
       case 'DELETE_ANNOUNCEMENT': return 'Deleted Announcement';
       case 'UPDATE_REPORT_STATUS': return 'Updated Report Status';
       case 'CANCEL_REPORT': return 'Cancelled Report';
+      case 'UPDATE_PROPOSAL_STATUS': return 'Updated Proposal Status';
+      case 'UPDATE_DOCUMENT_REQUEST_STATUS': return 'Updated Document Request';
       default: return action.replace(/_/g, ' ').toLowerCase();
     }
   };
@@ -169,8 +174,38 @@ function AdminLogs() {
       case 'DELETE_ANNOUNCEMENT': return 'error';
       case 'UPDATE_REPORT_STATUS': return 'info';
       case 'CANCEL_REPORT': return 'error';
+      case 'UPDATE_PROPOSAL_STATUS': return 'success';
+      case 'UPDATE_DOCUMENT_REQUEST_STATUS': return 'secondary';
       default: return 'default';
     }
+  };
+
+  // Extract service ID from details string if present
+  const extractServiceId = (details) => {
+    // First try to match Service ID pattern
+    const serviceIdRegex = /\(Service ID: ([a-zA-Z0-9-]+)\)/i;
+    const serviceIdMatch = details.match(serviceIdRegex);
+    
+    if (serviceIdMatch) {
+      return serviceIdMatch[1];
+    }
+    
+    // If no Service ID is found, try to match the MongoDB ID pattern
+    const idRegex = /\(ID: ([a-f\d]{24})\)/i;
+    const idMatch = details.match(idRegex);
+    return idMatch ? idMatch[1] : null;
+  };
+
+  // Copy ID to clipboard
+  const copyToClipboard = (id) => {
+    navigator.clipboard.writeText(id)
+      .then(() => {
+        setCopiedId(id);
+        setTimeout(() => setCopiedId(null), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy: ', err);
+      });
   };
 
   // Pagination logic
@@ -389,24 +424,50 @@ function AdminLogs() {
                         <TableCell>Admin</TableCell>
                         <TableCell>Action</TableCell>
                         <TableCell>Details</TableCell>
+                        <TableCell>Service ID</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {currentLogs.map((log) => (
-                        <TableRow key={log._id} hover>
-                          <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
-                          <TableCell>{log.adminName}</TableCell>
-                          <TableCell>
-                            <Chip 
-                              label={getActionLabel(log.action)}
-                              size="small"
-                              color={getActionColor(log.action)}
-                              variant="outlined"
-                            />
-                          </TableCell>
-                          <TableCell>{log.details}</TableCell>
-                        </TableRow>
-                      ))}
+                      {currentLogs.map((log) => {
+                        const serviceId = extractServiceId(log.details);
+                        return (
+                          <TableRow key={log._id} hover>
+                            <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
+                            <TableCell>{log.adminName}</TableCell>
+                            <TableCell>
+                              <Chip 
+                                label={getActionLabel(log.action)}
+                                size="small"
+                                color={getActionColor(log.action)}
+                                variant="outlined"
+                              />
+                            </TableCell>
+                            <TableCell>{log.details}</TableCell>
+                            <TableCell>
+                              {serviceId ? (
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                  <Typography variant="body2" sx={{ mr: 1 }}>
+                                    {serviceId.length > 10 ? `${serviceId.substring(0, 8)}...` : serviceId}
+                                  </Typography>
+                                  <Tooltip title={copiedId === serviceId ? "Copied!" : "Copy ID"}>
+                                    <IconButton 
+                                      size="small" 
+                                      onClick={() => copyToClipboard(serviceId)}
+                                      color={copiedId === serviceId ? "success" : "default"}
+                                    >
+                                      <ContentCopyIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                </Box>
+                              ) : (
+                                <Typography variant="body2" color="text.secondary">
+                                  -
+                                </Typography>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -415,33 +476,53 @@ function AdminLogs() {
               {/* Card view for mobile */}
               {isMobile && (
                 <Box sx={{ mb: 3 }}>
-                  {currentLogs.map((log) => (
-                    <Card key={log._id} sx={{ mb: 2 }}>
-                      <CardContent>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, flexWrap: 'wrap' }}>
-                          <Typography variant="body2" color="text.secondary">
-                            {new Date(log.timestamp).toLocaleString()}
+                  {currentLogs.map((log) => {
+                    const serviceId = extractServiceId(log.details);
+                    return (
+                      <Card key={log._id} sx={{ mb: 2 }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, flexWrap: 'wrap' }}>
+                            <Typography variant="body2" color="text.secondary">
+                              {new Date(log.timestamp).toLocaleString()}
+                            </Typography>
+                            <Chip 
+                              label={getActionLabel(log.action)}
+                              size="small"
+                              color={getActionColor(log.action)}
+                            />
+                          </Box>
+                          
+                          <Divider sx={{ mb: 1 }} />
+                          
+                          <Typography variant="subtitle2" gutterBottom>
+                            <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 0.5 }} />
+                            {log.adminName}
                           </Typography>
-                          <Chip 
-                            label={getActionLabel(log.action)}
-                            size="small"
-                            color={getActionColor(log.action)}
-                          />
-                        </Box>
-                        
-                        <Divider sx={{ mb: 1 }} />
-                        
-                        <Typography variant="subtitle2" gutterBottom>
-                          <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 0.5 }} />
-                          {log.adminName}
-                        </Typography>
-                        
-                        <Typography variant="body2">
-                          {log.details}
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  ))}
+                          
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            {log.details}
+                          </Typography>
+                          
+                          {serviceId && (
+                            <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                              <Typography variant="caption" sx={{ mr: 1 }}>
+                                ID: {serviceId.length > 10 ? `${serviceId.substring(0, 8)}...` : serviceId}
+                              </Typography>
+                              <Tooltip title={copiedId === serviceId ? "Copied!" : "Copy ID"}>
+                                <IconButton 
+                                  size="small" 
+                                  onClick={() => copyToClipboard(serviceId)}
+                                  color={copiedId === serviceId ? "success" : "default"}
+                                >
+                                  <ContentCopyIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </Box>
               )}
               

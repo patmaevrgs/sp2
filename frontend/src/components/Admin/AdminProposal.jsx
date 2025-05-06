@@ -134,6 +134,19 @@ function AdminProposal() {
     setUpdateLoading(true);
     
     try {
+      // Get admin's name from localStorage
+      const firstName = localStorage.getItem("firstName") || '';
+      const lastName = localStorage.getItem("lastName") || '';
+      let adminName = '';
+      
+      if (firstName && lastName) {
+        adminName = `${firstName} ${lastName}`;
+      } else if (localStorage.getItem("fullName")) {
+        adminName = localStorage.getItem("fullName");
+      } else {
+        adminName = localStorage.getItem("user") || "Unknown Admin";
+      }
+
       const response = await fetch(`http://localhost:3002/proposals/${selectedProposal._id}/status`, {
         method: 'PATCH',
         headers: {
@@ -141,7 +154,8 @@ function AdminProposal() {
         },
         body: JSON.stringify({
           status: statusValue,
-          adminComment: adminComment
+          adminComment: adminComment,
+          adminName: adminName
         })
       });
       
@@ -187,8 +201,27 @@ function AdminProposal() {
     setDeleteLoading(true);
     
     try {
+       // Get admin's name from localStorage
+      const firstName = localStorage.getItem("firstName") || '';
+      const lastName = localStorage.getItem("lastName") || '';
+      let adminName = '';
+      
+      if (firstName && lastName) {
+        adminName = `${firstName} ${lastName}`;
+      } else if (localStorage.getItem("fullName")) {
+        adminName = localStorage.getItem("fullName");
+      } else {
+        adminName = localStorage.getItem("user") || "Unknown Admin";
+      }
+
       const response = await fetch(`http://localhost:3002/proposals/${selectedProposal._id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          adminName: adminName // Send admin name with delete request
+        })
       });
       
       const data = await response.json();

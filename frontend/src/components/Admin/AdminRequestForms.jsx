@@ -260,6 +260,19 @@ function AdminRequestForms() {
     setStatusUpdateLoading(true);
     
     try {
+      // Get admin's name from localStorage
+      const firstName = localStorage.getItem("firstName") || '';
+      const lastName = localStorage.getItem("lastName") || '';
+      let adminName = '';
+      
+      if (firstName && lastName) {
+        adminName = `${firstName} ${lastName}`;
+      } else if (localStorage.getItem("fullName")) {
+        adminName = localStorage.getItem("fullName");
+      } else {
+        adminName = localStorage.getItem("user") || "Unknown Admin";
+      }
+
       const response = await fetch(`http://localhost:3002/documents/${selectedRequest._id}/status`, {
         method: 'PATCH',
         headers: {
@@ -268,7 +281,8 @@ function AdminRequestForms() {
         body: JSON.stringify({
           status: newStatus,
           adminComment: adminComment,
-          userId: localStorage.getItem('user') // Admin ID
+          userId: localStorage.getItem('user'), // Admin ID
+          adminName: adminName
         })
       });
       
@@ -399,7 +413,7 @@ function AdminRequestForms() {
       if (selectedRequest.documentType === 'barangay_id') {
         setIdNumber('');
       }
-      
+
       // Close the print preview dialog after successful generation
       setOpenPrintPreview(false);
     } catch (error) {

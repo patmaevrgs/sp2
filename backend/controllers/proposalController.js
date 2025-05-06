@@ -5,9 +5,34 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import Transaction from '../models/Transaction.js';
+import UserLog from '../models/UserLog.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const createAdminLog = async (adminName, action, details, entityId) => {
+  try {
+    const response = await fetch('http://localhost:3002/logs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        adminName,
+        action,
+        details,
+        entityId,
+        entityType: 'ProjectProposal'
+      })
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to create admin log:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error creating admin log:', error);
+  }
+};
 
 // Create a new project proposal
 export const createProposal = async (req, res) => {
@@ -206,7 +231,7 @@ export const getProposalById = async (req, res) => {
 export const updateProposalStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, adminComment } = req.body;
+    const { status, adminComment, adminName } = req.body;
     
     // Get admin ID from authenticated user
     const adminId = req.userId;
@@ -222,7 +247,7 @@ export const updateProposalStatus = async (req, res) => {
     
     // Find the proposal
     const proposal = await ProjectProposal.findById(id);
-    
+
     if (!proposal) {
       return res.status(404).json({ 
         success: false, 
@@ -230,6 +255,8 @@ export const updateProposalStatus = async (req, res) => {
       });
     }
     
+    const previousStatus = proposal.status;
+
     // Update fields
     if (status) proposal.status = status;
     if (adminComment !== undefined) proposal.adminComment = adminComment;
@@ -239,6 +266,19 @@ export const updateProposalStatus = async (req, res) => {
     proposal.updatedAt = Date.now();
     
     await proposal.save();
+
+    // Create admin log for the status update
+    try {
+      const logAction = 'UPDATE_PROPOSAL_STATUS';
+      const logDetails = `Updated project proposal "${proposal.projectTitle}" (Service ID: ${proposal.serviceId}) status from ${previousStatus} to ${status}`;
+      
+      if (adminName) {
+        await createAdminLog(adminName, logAction, logDetails, proposal.serviceId);
+      }
+    } catch (logError) {
+      console.warn('Error creating log for proposal update:', logError);
+      // Continue even if logging fails
+    }
     
     // Also update the related transaction
     // Find and update the related transaction 
@@ -402,7 +442,8 @@ export const cancelProposal = async (req, res) => {
 export const deleteProposal = async (req, res) => {
   try {
     const { id } = req.params;
-    
+    const { adminName } = req.body;
+
     const proposal = await ProjectProposal.findById(id);
     
     if (!proposal) {
@@ -420,6 +461,19 @@ export const deleteProposal = async (req, res) => {
       }
     }
     
+    // Create admin log for the deletion
+    try {
+      const logAction = 'DELETE_PROPOSAL';
+      const logDetails = `Deleted project proposal "${proposal.projectTitle}" (Service ID: ${proposal.serviceId})`;
+      
+      if (adminName) {
+        await createAdminLog(adminName, logAction, logDetails, proposal.serviceId);
+      }
+    } catch (logError) {
+      console.warn('Error creating log for proposal deletion:', logError);
+      // Continue even if logging fails
+    }
+
     await ProjectProposal.findByIdAndDelete(id);
     
     return res.status(200).json({

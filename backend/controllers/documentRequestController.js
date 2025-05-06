@@ -1,6 +1,31 @@
 import DocumentRequest from '../models/DocumentRequest.js';
 import Transaction from '../models/Transaction.js';
 import mongoose from 'mongoose';
+import UserLog from '../models/UserLog.js';
+
+const createAdminLog = async (adminName, action, details, entityId) => {
+  try {
+    const response = await fetch('http://localhost:3002/logs', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        adminName,
+        action,
+        details,
+        entityId,
+        entityType: 'DocumentRequest'
+      })
+    });
+    
+    if (!response.ok) {
+      console.error('Failed to create admin log:', response.statusText);
+    }
+  } catch (error) {
+    console.error('Error creating admin log:', error);
+  }
+};
 
 // Create a document request
 export const createDocumentRequest = async (req, res) => {
@@ -130,7 +155,7 @@ export const getDocumentRequestById = async (req, res) => {
 export const updateDocumentRequestStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, adminComment } = req.body;
+    const { status, adminComment, adminName } = req.body;
     
     // Get admin ID from authenticated user
     const adminId = req.userId;
@@ -154,6 +179,9 @@ export const updateDocumentRequestStatus = async (req, res) => {
       });
     }
     
+    // Store the original status before updating
+    const previousStatus = documentRequest.status;
+
     // Update fields
     documentRequest.status = status;
     if (adminComment !== undefined) documentRequest.adminComment = adminComment;
@@ -164,6 +192,19 @@ export const updateDocumentRequestStatus = async (req, res) => {
     
     await documentRequest.save();
     
+    // Create admin log for the status update
+    try {
+      const logAction = 'UPDATE_DOCUMENT_REQUEST_STATUS';
+      const logDetails = `Updated document request for ${documentRequest.documentType} (Service ID: ${documentRequest.serviceId}) status from ${previousStatus} to ${status}`;
+      
+      if (adminName) {
+        await createAdminLog(adminName, logAction, logDetails, documentRequest.serviceId);
+      }
+    } catch (logError) {
+      console.warn('Error creating log for document request update:', logError);
+      // Continue even if logging fails
+    }
+
     // Update the corresponding transaction
     const transaction = await Transaction.findOne({
       serviceType: 'document_request',
