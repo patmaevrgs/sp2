@@ -250,10 +250,10 @@ export const updateReportStatus = async (req, res) => {
     // Create admin log for the status update
     if (adminName) {
       const logAction = 'UPDATE_REPORT_STATUS';
-      const logDetails = `Updated infrastructure report status from ${previousStatus} to ${status}. Report Type: ${report.issueType}, Location: ${report.location}`;
+      const logDetails = `Updated infrastructure report status from ${previousStatus} to ${status}. Report Type: ${report.issueType}, Location: ${report.location} (Service ID: ${report.serviceId || reportId})`;
       
       // Using axios would be more appropriate, but we'll create a direct call to your API
-      await createAdminLog(adminName, logAction, logDetails, reportId);
+      await createAdminLog(adminName, logAction, logDetails, report.serviceId || reportId);
     }
     
     res.status(200).json({ success: true, report: updatedReport });
@@ -325,9 +325,9 @@ export const cancelReport = async (req, res) => {
     // Create admin log if this was cancelled by admin
     if (adminName) {
       const logAction = 'CANCEL_REPORT';
-      const logDetails = `Cancelled infrastructure report. Report Type: ${report.issueType}, Location: ${report.location}`;
+      const logDetails = `Cancelled infrastructure report. Report Type: ${report.issueType}, Location: ${report.location} (Service ID: ${report.serviceId || reportId})`;
       
-      await createAdminLog(adminName, logAction, logDetails, reportId);
+      await createAdminLog(adminName, logAction, logDetails, report.serviceId || reportId);
     }
 
     res.status(200).json({ 

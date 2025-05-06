@@ -271,6 +271,11 @@ function AdminCourt() {
       const token = localStorage.getItem('token');
       const status = actionType === 'approve' ? 'approved' : 'rejected';
       
+      // Get admin name
+      const firstName = localStorage.getItem("firstName") || '';
+      const lastName = localStorage.getItem("lastName") || '';
+      const adminName = `${firstName} ${lastName}`;
+
       console.log(`Processing reservation ${selectedReservation._id} with status: ${status}`);
       
       // Update reservation status
@@ -282,7 +287,8 @@ function AdminCourt() {
         },
         body: JSON.stringify({
           status,
-          adminComment
+          adminComment,
+          adminName
         })
       });
       
@@ -297,10 +303,6 @@ function AdminCourt() {
       setReservations(reservations.map(res => 
         res._id === selectedReservation._id ? data : res
       ));
-      
-      // Log the admin action
-      const actionDetails = `${actionType === 'approve' ? 'Approved' : 'Rejected'} court reservation for ${selectedReservation.representativeName} on ${format(new Date(selectedReservation.reservationDate), 'MMM d, yyyy')}`;
-      await logAdminAction(`court_reservation_${status}`, actionDetails, selectedReservation._id);
       
       setSuccess(`Reservation ${actionType === 'approve' ? 'approved' : 'rejected'} successfully`);
       

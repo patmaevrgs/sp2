@@ -1,6 +1,46 @@
 import CourtReservation from '../models/CourtReservation.js';
 import Transaction from '../models/Transaction.js';
+import UserLog from '../models/UserLog.js';
+import { format } from 'date-fns';
 import mongoose from 'mongoose';
+
+const createAdminLog = async (adminName, action, details, entityId, entityType = 'CourtReservation') => {
+  try {
+    const newLog = new UserLog({
+      adminName,
+      action,
+      details,
+      entityId,
+      entityType
+    });
+    
+    await newLog.save();
+    return true;
+  } catch (error) {
+    console.error('Error creating admin log:', error);
+    return false;
+  }
+};
+
+// Helper functions for court logging
+const getCourtLogActionType = (status) => {
+  switch (status) {
+    case 'approved': return 'COURT_RESERVATION_APPROVED';
+    case 'rejected': return 'COURT_RESERVATION_REJECTED';
+    case 'cancelled': return 'COURT_RESERVATION_CANCELLED';
+    default: return 'COURT_RESERVATION_UPDATED';
+  }
+};
+
+// Helper to get the correct verb based on status change
+const getStatusActionVerb = (newStatus, oldStatus) => {
+  switch (newStatus) {
+    case 'approved': return 'Approved';
+    case 'rejected': return 'Rejected';
+    case 'cancelled': return 'Cancelled';
+    default: return 'Updated';
+  }
+};
 
 // Create a new court reservation
 export const createCourtReservation = async (req, res) => {
@@ -200,11 +240,10 @@ export const getCourtReservationById = async (req, res) => {
 };
 
 // Update a court reservation's status (for admin use)
-// Update a court reservation's status (for admin use)
 export const updateCourtReservationStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, adminComment, adminId } = req.body;
+    const { status, adminComment, adminId, adminName } = req.body;
     
     console.log('Incoming update request:', { 
       id, 
@@ -216,8 +255,6 @@ export const updateCourtReservationStatus = async (req, res) => {
     
     // Get admin ID from authenticated user or request body
     const processedBy = req.userId || adminId;
-    
-    console.log('Processed By:', processedBy);
     
     // Validate status
     const validStatuses = ['pending', 'approved', 'cancelled', 'rejected'];
@@ -256,23 +293,16 @@ export const updateCourtReservationStatus = async (req, res) => {
       });
     }
     
-    // Detailed logging of current reservation state
-    console.log('Current Reservation State:', {
-      currentStatus: reservation.status,
-      currentAdminComment: reservation.adminComment
-    });
-    
+    const previousStatus = reservation.status;
     // Update fields
     if (status) reservation.status = status;
     if (adminComment !== undefined) {
       reservation.adminComment = adminComment;
-      console.log('Setting admin comment:', adminComment);
     }
     
     // Set processed by admin
     if (processedBy) {
       reservation.processedBy = processedBy;
-      console.log('Setting processed by:', processedBy);
     }
     reservation.updatedAt = Date.now();
     
@@ -289,6 +319,21 @@ export const updateCourtReservationStatus = async (req, res) => {
       });
     }
     
+    // Create admin log for the status update
+    if (adminName) {
+      const actionType = getCourtLogActionType(status);
+      const formattedDate = format(new Date(reservation.reservationDate), 'MMM d, yyyy');
+      const logDetails = `${getStatusActionVerb(status, previousStatus)} court reservation for ${reservation.representativeName} on ${formattedDate} (Service ID: ${reservation.serviceId || id})`;
+      
+      await createAdminLog(
+        adminName,
+        actionType,
+        logDetails,
+        reservation.serviceId || id,
+        'Other'
+      );
+    }
+
     // Update corresponding transaction
     const transaction = await Transaction.findOne({
       serviceType: 'court_reservation',

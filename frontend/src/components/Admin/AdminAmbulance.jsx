@@ -312,13 +312,19 @@ const AdminAmbulance = () => {
       // Get admin ID from localStorage
       const adminId = localStorage.getItem('userId') || localStorage.getItem('user');
       
+      // Get admin name
+      const firstName = localStorage.getItem("firstName") || '';
+      const lastName = localStorage.getItem("lastName") || '';
+      const adminName = `${firstName} ${lastName}`;
+
       if (!adminId) {
         throw new Error('Admin ID not found. Please log in again.');
       }
       
       const updateData = { 
         status,
-        adminId // Include adminId in the request body
+        adminId, // Include adminId in the request body
+        adminName
       };
       
       if (comment !== null) updateData.adminComment = comment;
@@ -336,9 +342,6 @@ const AdminAmbulance = () => {
         throw new Error('Failed to update booking status');
       }
       
-      // Create admin log
-      createAdminLog(id, status, comment);
-      
       // Refresh bookings
       fetchBookings();
       
@@ -347,28 +350,6 @@ const AdminAmbulance = () => {
       console.error('Error updating booking status:', error);
       setError(error.message || 'Failed to update booking status');
       return false;
-    }
-  };
-  
-  // Create admin log
-  const createAdminLog = async (bookingId, action, details) => {
-    try {
-      const logData = {
-        adminName,
-        action: getActionType(action),
-        details: getActionDetails(action, details),
-        entityId: bookingId
-      };
-      
-      await fetch('http://localhost:3002/logs', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(logData)
-      });
-    } catch (error) {
-      console.error('Error creating admin log:', error);
     }
   };
   

@@ -27,7 +27,7 @@ const userLogSchema = new mongoose.Schema({
   },
   entityType: {
     type: String,
-    enum: ['Announcement', 'Report', 'ProjectProposal', 'DocumentRequest', 'Other'],
+    enum: ['Announcement', 'Report', 'ProjectProposal', 'DocumentRequest', 'AmbulanceBooking', 'CourtReservation', 'Other'],
     default: 'Other'
   }
 });

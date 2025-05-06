@@ -162,9 +162,22 @@ function AdminLogs() {
       case 'CANCEL_REPORT': return 'Cancelled Report';
       case 'UPDATE_PROPOSAL_STATUS': return 'Updated Proposal Status';
       case 'UPDATE_DOCUMENT_REQUEST_STATUS': return 'Updated Document Request';
+      case 'DELETE_PROPOSAL': return 'Deleted Proposal';
+      // Add new action types for ambulance bookings
+      case 'AMBULANCE_BOOKING_ACCEPTED': return 'Accepted Ambulance Booking';
+      case 'AMBULANCE_BOOKING_CANCELLED': return 'Cancelled Ambulance Booking';
+      case 'AMBULANCE_BOOKING_COMPLETED': return 'Completed Ambulance Booking';
+      case 'AMBULANCE_BOOKING_NEEDS_APPROVAL': return 'Requested Diesel Cost Approval';
+      case 'AMBULANCE_BOOKING_UPDATED': return 'Updated Ambulance Booking';
+      // Add new action types for court reservations
+      case 'COURT_RESERVATION_APPROVED': return 'Approved Court Reservation';
+      case 'COURT_RESERVATION_REJECTED': return 'Rejected Court Reservation';
+      case 'COURT_RESERVATION_CANCELLED': return 'Cancelled Court Reservation';
+      case 'COURT_RESERVATION_UPDATED': return 'Updated Court Reservation';
       default: return action.replace(/_/g, ' ').toLowerCase();
     }
   };
+  
   
   // Get action chip color
   const getActionColor = (action) => {
@@ -176,6 +189,18 @@ function AdminLogs() {
       case 'CANCEL_REPORT': return 'error';
       case 'UPDATE_PROPOSAL_STATUS': return 'success';
       case 'UPDATE_DOCUMENT_REQUEST_STATUS': return 'secondary';
+      case 'DELETE_PROPOSAL': return 'error';
+      // Add colors for ambulance booking actions
+      case 'AMBULANCE_BOOKING_ACCEPTED': return 'success';
+      case 'AMBULANCE_BOOKING_CANCELLED': return 'error';
+      case 'AMBULANCE_BOOKING_COMPLETED': return 'primary';
+      case 'AMBULANCE_BOOKING_NEEDS_APPROVAL': return 'warning';
+      case 'AMBULANCE_BOOKING_UPDATED': return 'info';
+      // Add colors for court reservation actions
+      case 'COURT_RESERVATION_APPROVED': return 'success';
+      case 'COURT_RESERVATION_REJECTED': return 'error';
+      case 'COURT_RESERVATION_CANCELLED': return 'error';
+      case 'COURT_RESERVATION_UPDATED': return 'info';
       default: return 'default';
     }
   };

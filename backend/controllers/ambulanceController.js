@@ -1,6 +1,69 @@
 import AmbulanceBooking from '../models/AmbulanceBooking.js';
+import { format } from 'date-fns';
+import UserLog from '../models/UserLog.js';
 import mongoose from 'mongoose';
 import { createTransactionFromBooking } from '../controllers/transactionController.js';
+
+const createAdminLog = async (adminName, action, details, entityId, entityType = 'AmbulanceBooking') => {
+  try {
+    const newLog = new UserLog({
+      adminName,
+      action,
+      details,
+      entityId,
+      entityType
+    });
+    
+    await newLog.save();
+    return true;
+  } catch (error) {
+    console.error('Error creating admin log:', error);
+    return false;
+  }
+};
+
+// Helper functions for logging
+const getLogActionType = (status) => {
+  switch (status) {
+    case 'booked': return 'AMBULANCE_BOOKING_ACCEPTED';
+    case 'cancelled': return 'AMBULANCE_BOOKING_CANCELLED';
+    case 'completed': return 'AMBULANCE_BOOKING_COMPLETED';
+    case 'needs_approval': return 'AMBULANCE_BOOKING_NEEDS_APPROVAL';
+    default: return 'AMBULANCE_BOOKING_UPDATED';
+  }
+};
+
+const getLogDetails = (booking, status, adminComment) => {
+  if (!booking) return '';
+  
+  let actionDetails = '';
+  switch (status) {
+    case 'booked':
+      actionDetails = `Accepted ambulance booking for ${booking.patientName}`;
+      break;
+    case 'cancelled':
+      actionDetails = `Cancelled ambulance booking for ${booking.patientName}`;
+      break;
+    case 'completed':
+      actionDetails = `Marked ambulance booking as completed for ${booking.patientName}`;
+      break;
+    case 'needs_approval':
+      actionDetails = `Requested diesel cost approval for ${booking.patientName}'s ambulance booking`;
+      break;
+    default:
+      actionDetails = `Updated ambulance booking for ${booking.patientName}`;
+  }
+  
+  if (booking.serviceId) {
+    actionDetails += ` (Service ID: ${booking.serviceId})`;
+  }
+  
+  if (adminComment) {
+    actionDetails += ` - ${adminComment}`;
+  }
+  
+  return actionDetails;
+};
 
 // Create a new ambulance booking
 export const createBooking = async (req, res) => {
@@ -115,7 +178,7 @@ export const getBookingById = async (req, res) => {
 export const updateBookingStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, adminComment, dieselCost, adminId } = req.body;
+    const { status, adminComment, dieselCost, adminId, adminName } = req.body;
     
     // Get admin ID from request body
     const processedBy = adminId || req.body.userId;
@@ -144,6 +207,20 @@ export const updateBookingStatus = async (req, res) => {
     
     await booking.save();
     
+    // Create admin log
+    if (adminName) {
+      const logAction = getLogActionType(status);
+      const logDetails = getLogDetails(booking, status, adminComment);
+      
+      await createAdminLog(
+        adminName,
+        logAction,
+        logDetails,
+        booking.serviceId || id,
+        'Other'
+      );
+    }
+
     // Update the transaction for this booking
     try {
       await createTransactionFromBooking(id);
