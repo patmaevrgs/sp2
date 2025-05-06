@@ -100,7 +100,6 @@ function AdminRequestForms() {
     certificate_of_indigency: 'Certificate of Indigency',
     certificate_of_residency: 'Certificate of Residency',
     no_objection_certificate: 'No Objection Certificate',
-    blotter_form: 'Blotter Form'
   };
   
   // Fetch all document requests
@@ -902,6 +901,56 @@ function AdminRequestForms() {
                 </Grid>
               </>
             )}
+            
+            {/* Request for Assistance fields */}
+            {selectedRequest && selectedRequest.documentType === 'request_for_assistance' && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Full Name:</strong> {selectedRequest.formData.fullName}</Typography>
+                  <Typography variant="body2"><strong>Address:</strong> {selectedRequest.formData.address}, Barangay Maahas, Los Baños, Laguna</Typography>
+                  <Typography variant="body2"><strong>Years of Stay:</strong> {selectedRequest.formData.yearsOfStay}</Typography>
+                  <Typography variant="body2"><strong>Marginalized Group:</strong> {
+                    (() => {
+                      const group = selectedRequest.formData.marginGroupType;
+                      switch(group) {
+                        case 'urban_poor': return 'Urban Poor';
+                        case 'senior_citizen': return 'Senior Citizen';
+                        case 'single_parent': return 'Single Parent';
+                        case 'pwd': return 'Person with Disability (PWD)';
+                        case 'indigenous': return 'Indigenous Person';
+                        case 'solo_parent': return 'Solo Parent';
+                        case 'other': return 'Other';
+                        default: return group;
+                      }
+                    })()
+                  }</Typography>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2"><strong>Request For:</strong> {selectedRequest.formData.isSelf ? 'Self' : 'Other Person'}</Typography>
+                  {!selectedRequest.formData.isSelf && (
+                    <>
+                      <Typography variant="body2"><strong>Beneficiary Name:</strong> {selectedRequest.formData.beneficiaryName}</Typography>
+                      <Typography variant="body2"><strong>Relationship:</strong> {selectedRequest.formData.beneficiaryRelation}</Typography>
+                    </>
+                  )}
+                  <Typography variant="body2"><strong>Assistance Type:</strong> {
+                    (() => {
+                      const type = selectedRequest.formData.assistanceType;
+                      switch(type) {
+                        case 'financial': return 'Financial Assistance';
+                        case 'medical': return 'Medical Assistance';
+                        case 'burial': return 'Burial Assistance';
+                        case 'educational': return 'Educational Assistance';
+                        case 'food': return 'Food Assistance';
+                        case 'housing': return 'Housing Assistance';
+                        case 'other': return selectedRequest.formData.otherAssistanceType || 'Other Assistance';
+                        default: return type;
+                      }
+                    })()
+                  }</Typography>
+                </Grid>
+              </>
+            )}
 
             {/* Certificate of Indigency fields */}
             {selectedRequest.documentType === 'certificate_of_indigency' && (
@@ -1386,6 +1435,63 @@ function AdminRequestForms() {
                         )}
                         <Typography variant="body2" sx={{ mt: 2, fontStyle: 'italic' }}>
                           <strong>Certificate Text:</strong> {`This is to further certify that ${selectedRequest.formData.fullName}, ${selectedRequest.purpose}`}
+                        </Typography>
+                      </>
+                    )}
+                    {selectedRequest && selectedRequest.documentType === 'request_for_assistance' && (
+                      <>
+                        <Typography variant="body2">
+                          <strong>Name:</strong> {selectedRequest.formData.fullName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Address:</strong> {selectedRequest.formData.address}, Barangay Maahas, Los Baños, Laguna
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Years of Stay:</strong> {selectedRequest.formData.yearsOfStay} years
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Marginalized Group:</strong> {
+                            (() => {
+                              const group = selectedRequest.formData.marginGroupType;
+                              switch(group) {
+                                case 'urban_poor': return 'URBAN POOR';
+                                case 'senior_citizen': return 'SENIOR CITIZEN';
+                                case 'single_parent': return 'SINGLE PARENT';
+                                case 'pwd': return 'PERSON WITH DISABILITY (PWD)';
+                                case 'indigenous': return 'INDIGENOUS PERSON';
+                                case 'solo_parent': return 'SOLO PARENT';
+                                case 'other': return 'OTHER';
+                                default: return group?.toUpperCase();
+                              }
+                            })()
+                          }
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Assistance Type:</strong> {
+                            (() => {
+                              const type = selectedRequest.formData.assistanceType;
+                              switch(type) {
+                                case 'financial': return 'Financial Assistance';
+                                case 'medical': return 'Medical Assistance';
+                                case 'burial': return 'Burial Assistance';
+                                case 'educational': return 'Educational Assistance';
+                                case 'food': return 'Food Assistance';
+                                case 'housing': return 'Housing Assistance';
+                                case 'other': return selectedRequest.formData.otherAssistanceType || 'Other Assistance';
+                                default: return type;
+                              }
+                            })()
+                          }
+                        </Typography>
+                        {!selectedRequest.formData.isSelf && (
+                          <>
+                            <Typography variant="body2">
+                              <strong>Beneficiary:</strong> {selectedRequest.formData.beneficiaryName} ({selectedRequest.formData.beneficiaryRelation})
+                            </Typography>
+                          </>
+                        )}
+                        <Typography variant="body2">
+                          <strong>Purpose:</strong> {selectedRequest.purpose}
                         </Typography>
                       </>
                     )}

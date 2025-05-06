@@ -1487,7 +1487,6 @@ const ResidentTransaction = () => {
                                 case 'certificate_of_indigency': return 'Certificate of Indigency';
                                 case 'certificate_of_residency': return 'Certificate of Residency';
                                 case 'no_objection_certificate': return 'No Objection Certificate';
-                                case 'blotter_form': return 'Blotter Form';
                                 default: return docType;
                               }
                             })()
@@ -1536,9 +1535,6 @@ const ResidentTransaction = () => {
                               }
                             })()
                           }
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>Date Requested:</strong> {format(new Date(selectedTransaction.referenceDetails.createdAt), 'MMM dd, yyyy')}
                         </Typography>
                       </Grid>
                       
@@ -1764,6 +1760,74 @@ const ResidentTransaction = () => {
                           </Grid>
                         </>
                       )}
+
+                      {/* Request for Assistance Details */}
+                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'request_for_assistance' && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Years of Stay:</strong> {selectedTransaction.referenceDetails.formData.yearsOfStay}
+                            </Typography>
+                            <Typography variant="body2">
+                              <strong>Marginalized Group:</strong> {
+                                (() => {
+                                  const group = selectedTransaction.referenceDetails.formData.marginGroupType;
+                                  switch(group) {
+                                    case 'urban_poor': return 'Urban Poor';
+                                    case 'senior_citizen': return 'Senior Citizen';
+                                    case 'single_parent': return 'Single Parent';
+                                    case 'pwd': return 'Person with Disability (PWD)';
+                                    case 'indigenous': return 'Indigenous Person';
+                                    case 'solo_parent': return 'Solo Parent';
+                                    case 'other': return 'Other';
+                                    default: return group;
+                                  }
+                                })()
+                              }
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2">
+                              <strong>Request For:</strong> {selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'}
+                            </Typography>
+                            {!selectedTransaction.referenceDetails.formData.isSelf && (
+                              <>
+                                <Typography variant="body2">
+                                  <strong>Beneficiary Name:</strong> {selectedTransaction.referenceDetails.formData.beneficiaryName}
+                                </Typography>
+                                <Typography variant="body2">
+                                  <strong>Relationship:</strong> {selectedTransaction.referenceDetails.formData.beneficiaryRelation}
+                                </Typography>
+                              </>
+                            )}
+                            <Typography variant="body2">
+                              <strong>Assistance Type:</strong> {
+                                (() => {
+                                  const type = selectedTransaction.referenceDetails.formData.assistanceType;
+                                  switch(type) {
+                                    case 'financial': return 'Financial Assistance';
+                                    case 'medical': return 'Medical Assistance';
+                                    case 'burial': return 'Burial Assistance';
+                                    case 'educational': return 'Educational Assistance';
+                                    case 'food': return 'Food Assistance';
+                                    case 'housing': return 'Housing Assistance';
+                                    case 'other': return selectedTransaction.referenceDetails.formData.otherAssistanceType || 'Other Assistance';
+                                    default: return type;
+                                  }
+                                })()
+                              }
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
+
 
                       {/* certificate of indigency details */}
                       {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (

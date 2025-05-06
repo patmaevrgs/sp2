@@ -40,6 +40,9 @@ export const generateDocument = async (req, res) => {
       case 'no_objection_certificate':
         templatePath = path.resolve(__dirname, '../templates/no_objection_certificate_template.docx');
         break;
+      case 'request_for_assistance':
+        templatePath = path.resolve(__dirname, '../templates/request_for_assistance_template.docx');
+        break;
       default:
         return res.status(400).json({
           success: false,
@@ -295,6 +298,62 @@ export const generateDocument = async (req, res) => {
         signedDate: signedDate
       };
     }
+
+    else if (documentType === 'request_for_assistance') {
+      // Format the marginalized group for display
+      const marginGroupText = (() => {
+        switch(formData.marginGroupType) {
+          case 'urban_poor': return 'URBAN POOR';
+          case 'senior_citizen': return 'SENIOR CITIZEN';
+          case 'single_parent': return 'SINGLE PARENT';
+          case 'pwd': return 'PERSON WITH DISABILITY (PWD)';
+          case 'indigenous': return 'INDIGENOUS PERSON';
+          case 'solo_parent': return 'SOLO PARENT';
+          case 'other': return 'OTHER';
+          default: return formData.marginGroupType?.toUpperCase() || 'URBAN POOR';
+        }
+      })();
+      
+      // Format assistance type for display
+      const assistanceTypeText = (() => {
+        switch(formData.assistanceType) {
+          case 'financial': return 'financial';
+          case 'medical': return 'medical';
+          case 'burial': return 'burial';
+          case 'educational': return 'educational';
+          case 'food': return 'food';
+          case 'housing': return 'housing';
+          case 'other': return formData.otherAssistanceType || 'assistance';
+          default: return formData.assistanceType || 'financial';
+        }
+      })();
+      
+      // Determine if the request is for self or other person
+      const isSelf = formData.isSelf === true;
+      
+      // Empty beneficiary fields if request is for self
+      const beneficiaryName = isSelf ? '' : (formData.beneficiaryName?.toUpperCase() || '');
+      const beneficiaryRelation = isSelf ? '' : (formData.beneficiaryRelation || '');
+      
+      // Set data for the template
+      data = {
+        ...data,
+        fullName: formData.fullName?.toUpperCase() || '',
+        address: formData.address || '',
+        yearsOfStay: formData.yearsOfStay || '',
+        marginGroupType: marginGroupText,
+        // For self, display "himself/herself" in the template
+        beneficiaryText: isSelf ? 'himself/herself.' : `(${beneficiaryRelation})`,
+        // For self, do not display beneficiary name and relation
+        beneficiaryName: beneficiaryName,
+        beneficiaryRelation: beneficiaryRelation,
+        // Hide beneficiary line if for self
+        showBeneficiary: !isSelf,
+        assistanceTypeText: assistanceTypeText,
+        signedDate: signedDate
+      };
+    }
+
     else if (documentType === 'no_objection_certificate') {
       // Format the purpose text based on the object type
       const purposeText = purpose || 'will proceed with the stated activity. This office has no objection as part of local permitting requirements.';

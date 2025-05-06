@@ -62,7 +62,6 @@ export default function ResidentNav({ title, name, func }) {
     { text: 'Certificate of Indigency', path: '/resident/services/request/indigency' },
     { text: 'Certificate of Residency', path: '/resident/services/request/residency' },
     { text: 'No Objection Certificate', path: '/resident/services/request/objection' },
-    { text: 'Blotter Form', path: '/resident/services/request/blotter' },
   ];
 
   const otherServicesLinks = [

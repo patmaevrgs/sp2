@@ -20,7 +20,6 @@ const documentRequestSchema = new mongoose.Schema({
       'certificate_of_indigency', 
       'certificate_of_residency', 
       'no_objection_certificate',
-      'blotter_form'
     ]
   },
   status: {

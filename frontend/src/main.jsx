@@ -38,7 +38,6 @@ import RequestAssistance from './components/Resident/RequestAssistance.jsx';
 import RequestIndigency from './components/Resident/RequestIndigency.jsx';
 import RequestResidency from './components/Resident/RequestResidency.jsx';
 import RequestObjection from './components/Resident/RequestObjection.jsx';
-import RequestBlotter from './components/Resident/RequestBlotter.jsx';
 import LandingRoot from './components/LandingRoot.jsx';
 import LandingPage from './components/LandingPage';
 
@@ -126,7 +125,6 @@ const router = createBrowserRouter([
     { path: '/resident/services/request/indigency', element: <RequestIndigency />},
     { path: '/resident/services/request/residency', element: <RequestResidency />},
     { path: '/resident/services/request/objection', element: <RequestObjection />},
-    { path: '/resident/services/request/blotter', element: <RequestBlotter />},
   ]},
   { path: '/admin', element: <AdminRoot />, loader: checkIfLoggedInOnDash, children:[
     {path: '/admin', element: <AdminHome />},
