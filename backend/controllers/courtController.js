@@ -330,7 +330,7 @@ export const updateCourtReservationStatus = async (req, res) => {
         actionType,
         logDetails,
         reservation.serviceId || id,
-        'Other'
+        'CourtReservation'
       );
     }
 

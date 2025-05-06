@@ -37,6 +37,7 @@ import EventNoteIcon from '@mui/icons-material/EventNote';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import CategoryIcon from '@mui/icons-material/Category';
 
 function AdminLogs() {
   const [logs, setLogs] = useState([]);
@@ -48,8 +49,10 @@ function AdminLogs() {
   const [endDate, setEndDate] = useState('');
   const [adminFilter, setAdminFilter] = useState('');
   const [actionFilter, setActionFilter] = useState('');
+  const [entityTypeFilter, setEntityTypeFilter] = useState(''); // New filter for entity type
   const [uniqueAdmins, setUniqueAdmins] = useState([]);
   const [uniqueActions, setUniqueActions] = useState([]);
+  const [uniqueEntityTypes, setUniqueEntityTypes] = useState([]); // New state for entity types
   const [currentAdmin, setCurrentAdmin] = useState('');
   const [filterExpanded, setFilterExpanded] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
@@ -63,6 +66,17 @@ function AdminLogs() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+
+  // The list of all possible entity types
+  const allEntityTypes = [
+    'Announcement',
+    'Report',
+    'ProjectProposal',
+    'DocumentRequest',
+    'AmbulanceBooking',
+    'CourtReservation',
+    'Other'
+  ];
 
   useEffect(() => {
     // Get current admin's full name from localStorage
@@ -92,6 +106,7 @@ function AdminLogs() {
       if (filters.endDate) params.append('endDate', filters.endDate);
       if (filters.adminName) params.append('adminName', filters.adminName);
       if (filters.action) params.append('action', filters.action);
+      if (filters.entityType) params.append('entityType', filters.entityType); // Add entity type to query params
       
       const queryString = params.toString() ? `?${params.toString()}` : '';
       const response = await fetch(`http://localhost:3002/logs${queryString}`);
@@ -106,12 +121,14 @@ function AdminLogs() {
       // Calculate total pages
       setTotalPages(Math.ceil(data.length / logsPerPage));
       
-      // Extract unique admins and actions for filters
+      // Extract unique admins, actions, and entity types for filters
       const admins = [...new Set(data.map(log => log.adminName))];
       const actions = [...new Set(data.map(log => log.action))];
+      const entityTypes = [...new Set(data.map(log => log.entityType))];
       
       setUniqueAdmins(admins);
       setUniqueActions(actions);
+      setUniqueEntityTypes(entityTypes);
       
       setError(null);
     } catch (err) {
@@ -134,7 +151,8 @@ function AdminLogs() {
       startDate,
       endDate,
       adminName: adminFilter,
-      action: actionFilter
+      action: actionFilter,
+      entityType: entityTypeFilter // Include entity type in filters
     };
     fetchLogs(filters);
     setCurrentPage(1); // Reset to first page when filtering
@@ -148,6 +166,7 @@ function AdminLogs() {
     setEndDate('');
     setAdminFilter('');
     setActionFilter('');
+    setEntityTypeFilter(''); // Clear entity type filter
     fetchLogs();
     setCurrentPage(1);
   };
@@ -178,7 +197,6 @@ function AdminLogs() {
     }
   };
   
-  
   // Get action chip color
   const getActionColor = (action) => {
     switch (action) {
@@ -201,6 +219,34 @@ function AdminLogs() {
       case 'COURT_RESERVATION_REJECTED': return 'error';
       case 'COURT_RESERVATION_CANCELLED': return 'error';
       case 'COURT_RESERVATION_UPDATED': return 'info';
+      default: return 'default';
+    }
+  };
+
+  // Get entity type label
+  const getEntityTypeLabel = (entityType) => {
+    switch(entityType) {
+      case 'Announcement': return 'Announcement';
+      case 'Report': return 'Infrastructure Report';
+      case 'ProjectProposal': return 'Project Proposal';
+      case 'DocumentRequest': return 'Document Request';
+      case 'AmbulanceBooking': return 'Ambulance Booking';
+      case 'CourtReservation': return 'Court Reservation';
+      case 'Other': return 'Other';
+      default: return entityType;
+    }
+  };
+
+  // Get entity type color
+  const getEntityTypeColor = (entityType) => {
+    switch(entityType) {
+      case 'Announcement': return 'primary';
+      case 'Report': return 'info';
+      case 'ProjectProposal': return 'success';
+      case 'DocumentRequest': return 'secondary';
+      case 'AmbulanceBooking': return 'error';
+      case 'CourtReservation': return 'warning';
+      case 'Other': return 'default';
       default: return 'default';
     }
   };
@@ -347,6 +393,23 @@ function AdminLogs() {
                   </Select>
                 </FormControl>
               </Grid>
+              
+              {/* New entity type filter */}
+              <Grid item xs={12} sm={6} md={3}>
+                <FormControl fullWidth size={isMobile ? "small" : "medium"}>
+                  <InputLabel>Service Type</InputLabel>
+                  <Select
+                    value={entityTypeFilter}
+                    label="Service Type"
+                    onChange={(e) => setEntityTypeFilter(e.target.value)}
+                  >
+                    <MenuItem value="">All Service Types</MenuItem>
+                    {allEntityTypes.map(type => (
+                      <MenuItem key={type} value={type}>{getEntityTypeLabel(type)}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
             </Grid>
             
             <Box sx={{ 
@@ -394,7 +457,12 @@ function AdminLogs() {
                   label={`Admin: ${adminFilter}`}
                   onDelete={() => {
                     setAdminFilter('');
-                    fetchLogs({ startDate, endDate, action: actionFilter });
+                    fetchLogs({ 
+                      startDate, 
+                      endDate, 
+                      action: actionFilter,
+                      entityType: entityTypeFilter 
+                    });
                   }}
                 />
               )}
@@ -406,7 +474,31 @@ function AdminLogs() {
                   label={`Action: ${getActionLabel(actionFilter)}`}
                   onDelete={() => {
                     setActionFilter('');
-                    fetchLogs({ startDate, endDate, adminName: adminFilter });
+                    fetchLogs({ 
+                      startDate, 
+                      endDate, 
+                      adminName: adminFilter,
+                      entityType: entityTypeFilter 
+                    });
+                  }}
+                />
+              )}
+              
+              {/* Entity type filter chip */}
+              {entityTypeFilter && (
+                <Chip 
+                  size="small" 
+                  icon={<CategoryIcon />} 
+                  label={`Service: ${getEntityTypeLabel(entityTypeFilter)}`}
+                  color={getEntityTypeColor(entityTypeFilter)}
+                  onDelete={() => {
+                    setEntityTypeFilter('');
+                    fetchLogs({ 
+                      startDate, 
+                      endDate, 
+                      adminName: adminFilter,
+                      action: actionFilter
+                    });
                   }}
                 />
               )}
@@ -419,7 +511,11 @@ function AdminLogs() {
                   onDelete={() => {
                     setStartDate('');
                     setEndDate('');
-                    fetchLogs({ adminName: adminFilter, action: actionFilter });
+                    fetchLogs({ 
+                      adminName: adminFilter, 
+                      action: actionFilter,
+                      entityType: entityTypeFilter
+                    });
                   }}
                 />
               )}
@@ -448,6 +544,7 @@ function AdminLogs() {
                         <TableCell>Date & Time</TableCell>
                         <TableCell>Admin</TableCell>
                         <TableCell>Action</TableCell>
+                        <TableCell>Service Type</TableCell> {/* New column for entity type */}
                         <TableCell>Details</TableCell>
                         <TableCell>Service ID</TableCell>
                       </TableRow>
@@ -464,6 +561,15 @@ function AdminLogs() {
                                 label={getActionLabel(log.action)}
                                 size="small"
                                 color={getActionColor(log.action)}
+                                variant="outlined"
+                              />
+                            </TableCell>
+                            {/* Entity type cell */}
+                            <TableCell>
+                              <Chip 
+                                label={getEntityTypeLabel(log.entityType)}
+                                size="small"
+                                color={getEntityTypeColor(log.entityType)}
                                 variant="outlined"
                               />
                             </TableCell>
@@ -523,6 +629,16 @@ function AdminLogs() {
                             <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 0.5 }} />
                             {log.adminName}
                           </Typography>
+                          
+                          {/* Entity type display in mobile view */}
+                          <Box sx={{ mb: 1, mt: 1 }}>
+                            <Chip 
+                              label={getEntityTypeLabel(log.entityType)}
+                              size="small"
+                              color={getEntityTypeColor(log.entityType)}
+                              variant="outlined"
+                            />
+                          </Box>
                           
                           <Typography variant="body2" sx={{ mb: 1 }}>
                             {log.details}

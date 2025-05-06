@@ -25,7 +25,7 @@ export const createLog = async (req, res) => {
 // Get all logs with optional filtering
 export const getLogs = async (req, res) => {
   try {
-    const { startDate, endDate, adminName, action } = req.query;
+    const { startDate, endDate, adminName, action, entityType } = req.query;
     
     // Build filter object based on query parameters
     const filter = {};
@@ -42,6 +42,9 @@ export const getLogs = async (req, res) => {
     
     // Action type filter
     if (action) filter.action = action;
+    
+    // Entity type filter
+    if (entityType) filter.entityType = entityType;
     
     // Fetch logs with applied filters, sort by newest first
     const logs = await UserLog.find(filter).sort({ timestamp: -1 });

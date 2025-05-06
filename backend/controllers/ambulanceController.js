@@ -217,7 +217,7 @@ export const updateBookingStatus = async (req, res) => {
         logAction,
         logDetails,
         booking.serviceId || id,
-        'Other'
+        'AmbulanceBooking'
       );
     }
 
