@@ -1,0 +1,873 @@
+import Resident from '../models/Resident.js';
+import User from '../models/User.js';
+import { createLog } from './userLogController.js';
+import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import fs from 'fs';
+
+// Helper to create log for resident database actions
+const logResidentAction = async (userId, action, details) => {
+    try {
+      // Get admin information first to get the name
+      const admin = await User.findById(userId);
+      if (!admin) {
+        console.error('Admin not found for logging');
+        return;
+      }
+      
+      // Now include the admin name in the log
+      await createLog({
+        body: {
+          userId,
+          action,
+          category: 'Database',
+          details,
+          adminName: `${admin.firstName} ${admin.lastName}` // Add admin name
+        }
+      }, { 
+        send: () => {},
+        status: () => ({ json: () => {} }) // Mock the res.status().json() method
+      });
+    } catch (error) {
+      console.error('Error creating log:', error);
+    }
+  };
+
+// Parse full name - updated to handle single NAME field
+const parseNameFromCSV = (name) => {
+    if (!name) return { firstName: '', middleName: '', lastName: '' };
+  
+    // Clean up the name string
+    const cleanName = name.replace(/\s+/g, ' ').trim();
+    
+    // For your case, we'll just store the full name in the lastName field
+    // and leave firstName and middleName empty or with placeholder values
+    return {
+      firstName: 'Resident', // Placeholder
+      middleName: '',
+      lastName: cleanName // Store full name in lastName for easier searching
+    };
+  };
+  
+
+// Simple CSV parser function
+const parseCSV = (csvText) => {
+  const lines = csvText.split('\n');
+  if (lines.length === 0) return [];
+  
+  // Extract headers from the first line
+  const headers = lines[0].split(',').map(header => header.trim());
+  
+  const results = [];
+  
+  // Process data rows
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue; // Skip empty lines
+    
+    // Split by comma, but handle quoted values
+    let values = [];
+    let inQuotes = false;
+    let currentValue = '';
+    
+    for (let j = 0; j < line.length; j++) {
+      const char = line[j];
+      
+      if (char === '"') {
+        inQuotes = !inQuotes;
+      } else if (char === ',' && !inQuotes) {
+        values.push(currentValue.trim());
+        currentValue = '';
+      } else {
+        currentValue += char;
+      }
+    }
+    
+    // Add the last value
+    values.push(currentValue.trim());
+    
+    // Create an object from headers and values
+    const row = {};
+    for (let j = 0; j < headers.length; j++) {
+      row[headers[j]] = values[j] || '';
+    }
+    
+    results.push(row);
+  }
+  
+  return results;
+};
+
+// Helper to get userId from JWT cookie
+const getUserIdFromCookie = (req) => {
+  try {
+    if (!req.cookies || !req.cookies.authToken) {
+      return null;
+    }
+    
+    const decoded = jwt.verify(req.cookies.authToken, 'THIS_IS_A_SECRET_STRING');
+    return decoded._id;
+  } catch (error) {
+    console.error('Error decoding auth token:', error);
+    return null;
+  }
+};
+
+// Get all residents with filtering options
+export const getAllResidents = async (req, res) => {
+  try {
+    const {
+      name,
+      address,
+      precinctLevel,
+      types,
+      isVoter,
+      isVerified,
+      page = 1,
+      limit = 10,
+      sortBy = 'lastName',
+      order = 'asc'
+    } = req.query;
+
+    // Build filter object
+    const filter = {};
+    
+    if (name) {
+      const nameRegex = new RegExp(name, 'i');
+      filter.$or = [
+        { firstName: nameRegex },
+        { middleName: nameRegex },
+        { lastName: nameRegex }
+      ];
+    }
+    
+    if (address) filter.address = new RegExp(address, 'i');
+    if (precinctLevel) filter.precinctLevel = precinctLevel;
+    
+    if (isVoter !== undefined) {
+      filter.isVoter = isVoter === 'true' || isVoter === true;
+    }
+    
+    if (isVerified !== undefined) {
+      filter.isVerified = isVerified === 'true' || isVerified === true;
+    }
+    
+    if (types) {
+      const typeList = types.split(',');
+      filter.types = { $in: typeList };
+    }
+
+    // Build sort object
+    const sort = {};
+    sort[sortBy] = order === 'desc' ? -1 : 1;
+
+    // Calculate pagination
+    const skip = (page - 1) * limit;
+
+    // Get total count for pagination
+    const total = await Resident.countDocuments(filter);
+    
+    // Execute query
+    const residents = await Resident.find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      data: residents,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Error getting residents:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error retrieving resident data',
+      error: error.message
+    });
+  }
+};
+
+// Get a single resident by ID
+export const getResidentById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid resident ID format'
+      });
+    }
+
+    const resident = await Resident.findById(id).lean();
+    
+    if (!resident) {
+      return res.status(404).json({
+        success: false,
+        message: 'Resident not found'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: resident
+    });
+  } catch (error) {
+    console.error('Error getting resident:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error retrieving resident data',
+      error: error.message
+    });
+  }
+};
+
+// Create a new resident (Modified version without password authentication)
+export const createResident = async (req, res) => {
+    try {
+      const { 
+        firstName, 
+        middleName, 
+        lastName, 
+        address, 
+        precinctLevel, 
+        contactNumber,
+        email,
+        types,
+        isVoter
+      } = req.body;
+  
+      // Check if required fields are present
+      if (!firstName || !lastName || !address) {
+        return res.status(400).json({
+          success: false,
+          message: 'First name, last name, and address are required'
+        });
+      }
+  
+      // Get user ID from cookie
+      const userId = getUserIdFromCookie(req);
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'User not authenticated'
+        });
+      }
+  
+      // Check for potential duplicates
+      const duplicateCheck = await Resident.findOne({
+        firstName: { $regex: new RegExp(`^${firstName}$`, 'i') },
+        lastName: { $regex: new RegExp(`^${lastName}$`, 'i') }
+      });
+  
+      // Create the new resident
+      const resident = new Resident({
+        firstName,
+        middleName: middleName || '',
+        lastName,
+        address,
+        precinctLevel,
+        contactNumber,
+        email,
+        types: types || [],
+        isVoter: isVoter || false,
+        isVerified: true, // Admin-created residents are verified by default
+        addedBy: userId,
+        updatedBy: userId
+      });
+  
+      const savedResident = await resident.save();
+  
+      // Log the action
+      await logResidentAction(
+        userId,
+        'CREATE',
+        `Created resident: ${firstName} ${lastName}`
+      );
+  
+      return res.status(201).json({
+        success: true,
+        data: savedResident,
+        hasDuplicate: !!duplicateCheck,
+        duplicateInfo: duplicateCheck ? {
+          _id: duplicateCheck._id,
+          name: `${duplicateCheck.firstName} ${duplicateCheck.lastName}`,
+          address: duplicateCheck.address
+        } : null
+      });
+    } catch (error) {
+      console.error('Error creating resident:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error creating resident',
+        error: error.message
+      });
+    }
+  };
+
+// Update a resident
+export const updateResident = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password, ...updateData } = req.body;
+    
+    // Require password for verification
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password is required to update resident information'
+      });
+    }
+
+    // Get user ID from cookie
+    const userId = getUserIdFromCookie(req);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+
+    const admin = await User.findById(userId);
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin account not found'
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid password'
+      });
+    }
+
+    // Check if resident exists
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid resident ID format'
+      });
+    }
+
+    const resident = await Resident.findById(id);
+    if (!resident) {
+      return res.status(404).json({
+        success: false,
+        message: 'Resident not found'
+      });
+    }
+
+    // Check for potential duplicates if name is changing
+    let duplicateCheck = null;
+    if (
+      (updateData.firstName && updateData.firstName !== resident.firstName) || 
+      (updateData.lastName && updateData.lastName !== resident.lastName)
+    ) {
+      const firstName = updateData.firstName || resident.firstName;
+      const lastName = updateData.lastName || resident.lastName;
+      
+      duplicateCheck = await Resident.findOne({
+        _id: { $ne: id }, // Exclude current resident
+        firstName: { $regex: new RegExp(`^${firstName}$`, 'i') },
+        lastName: { $regex: new RegExp(`^${lastName}$`, 'i') }
+      });
+    }
+
+    // Apply updates and add updatedBy field
+    updateData.updatedBy = userId;
+    
+    const updatedResident = await Resident.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }
+    );
+
+    // Log the action
+    await logResidentAction(
+      userId,
+      'UPDATE',
+      `Updated resident: ${updatedResident.firstName} ${updatedResident.lastName}`
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: updatedResident,
+      hasDuplicate: !!duplicateCheck,
+      duplicateInfo: duplicateCheck ? {
+        _id: duplicateCheck._id,
+        name: `${duplicateCheck.firstName} ${duplicateCheck.lastName}`,
+        address: duplicateCheck.address
+      } : null
+    });
+  } catch (error) {
+    console.error('Error updating resident:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error updating resident',
+      error: error.message
+    });
+  }
+};
+
+// Delete a resident
+export const deleteResident = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+    
+    // Require password for verification
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password is required to delete a resident'
+      });
+    }
+
+    // Get user ID from cookie
+    const userId = getUserIdFromCookie(req);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+
+    const admin = await User.findById(userId);
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin account not found'
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid password'
+      });
+    }
+
+    // Check if resident exists
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid resident ID format'
+      });
+    }
+
+    const resident = await Resident.findById(id);
+    if (!resident) {
+      return res.status(404).json({
+        success: false,
+        message: 'Resident not found'
+      });
+    }
+
+    await Resident.findByIdAndDelete(id);
+
+    // Log the action
+    await logResidentAction(
+      userId,
+      'DELETE',
+      `Deleted resident: ${resident.firstName} ${resident.lastName}`
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Resident deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting resident:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error deleting resident',
+      error: error.message
+    });
+  }
+};
+
+// Register new resident request (from resident side)
+export const requestAddToDatabase = async (req, res) => {
+  try {
+    const { 
+      firstName, 
+      middleName, 
+      lastName, 
+      address, 
+      precinctLevel, 
+      contactNumber,
+      email,
+      types,
+      isVoter
+    } = req.body;
+
+    // Check if required fields are present
+    if (!firstName || !lastName || !address) {
+      return res.status(400).json({
+        success: false,
+        message: 'First name, last name, and address are required'
+      });
+    }
+
+    // Get user ID from cookie
+    const userId = getUserIdFromCookie(req);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+
+    // Check for potential duplicates
+    const duplicateCheck = await Resident.findOne({
+      firstName: { $regex: new RegExp(`^${firstName}$`, 'i') },
+      lastName: { $regex: new RegExp(`^${lastName}$`, 'i') }
+    });
+
+    // Create the new unverified resident
+    const resident = new Resident({
+      firstName,
+      middleName: middleName || '',
+      lastName,
+      address,
+      precinctLevel,
+      contactNumber,
+      email,
+      types: types || [],
+      isVoter: isVoter || false,
+      isVerified: false, // Resident-submitted requests are unverified by default
+      registeredBy: userId,
+      addedBy: userId
+    });
+
+    const savedResident = await resident.save();
+
+    return res.status(201).json({
+      success: true,
+      data: savedResident,
+      hasDuplicate: !!duplicateCheck,
+      message: 'Your request has been submitted and is pending approval.'
+    });
+  } catch (error) {
+    console.error('Error submitting resident request:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error submitting request',
+      error: error.message
+    });
+  }
+};
+
+// Verify a resident (approve request)
+export const verifyResident = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Get user ID from cookie
+    const userId = getUserIdFromCookie(req);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+    
+    // Check if resident exists
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid resident ID format'
+      });
+    }
+
+    const resident = await Resident.findById(id);
+    if (!resident) {
+      return res.status(404).json({
+        success: false,
+        message: 'Resident not found'
+      });
+    }
+
+    if (resident.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Resident is already verified'
+      });
+    }
+
+    const updatedResident = await Resident.findByIdAndUpdate(
+      id,
+      { 
+        isVerified: true,
+        updatedBy: userId
+      },
+      { new: true }
+    );
+
+    // Log the action
+    await logResidentAction(
+      userId,
+      'VERIFY',
+      `Verified resident: ${resident.firstName} ${resident.lastName}`
+    );
+
+    return res.status(200).json({
+      success: true,
+      data: updatedResident,
+      message: 'Resident verified successfully'
+    });
+  } catch (error) {
+    console.error('Error verifying resident:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error verifying resident',
+      error: error.message
+    });
+  }
+};
+
+// Reject a resident verification request
+export const rejectResidentRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Get user ID from cookie
+    const userId = getUserIdFromCookie(req);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+    
+    // Check if resident exists
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid resident ID format'
+      });
+    }
+
+    const resident = await Resident.findById(id);
+    if (!resident) {
+      return res.status(404).json({
+        success: false,
+        message: 'Resident request not found'
+      });
+    }
+
+    if (resident.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot reject an already verified resident'
+      });
+    }
+
+    await Resident.findByIdAndDelete(id);
+
+    // Log the action
+    await logResidentAction(
+      userId,
+      'REJECT',
+      `Rejected resident request: ${resident.firstName} ${resident.lastName}`
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Resident request rejected successfully'
+    });
+  } catch (error) {
+    console.error('Error rejecting resident request:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error rejecting resident request',
+      error: error.message
+    });
+  }
+};
+
+// Import residents from CSV - update to handle your specific CSV format
+export const importResidentsFromCSV = async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'No file uploaded'
+        });
+      }
+      
+      const { password } = req.body;
+      
+      // Require password for verification
+      if (!password) {
+        return res.status(400).json({
+          success: false,
+          message: 'Password is required to import residents'
+        });
+      }
+  
+      // Get user ID from cookie
+      const userId = getUserIdFromCookie(req);
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'User not authenticated'
+        });
+      }
+  
+      const admin = await User.findById(userId);
+      if (!admin) {
+        return res.status(404).json({
+          success: false,
+          message: 'Admin account not found'
+        });
+      }
+  
+      const isMatch = await bcrypt.compare(password, admin.password);
+      if (!isMatch) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid password'
+        });
+      }
+  
+      // Convert buffer to string and parse CSV
+      const csvText = req.file.buffer.toString('utf8');
+      const results = parseCSV(csvText);
+      
+      const duplicates = [];
+      let successCount = 0;
+      let errorCount = 0;
+  
+      // Get admin name for logging
+      const adminName = `${admin.firstName} ${admin.lastName}`;
+  
+      // Process each row
+      for (const row of results) {
+        try {
+          // Get name from the "NAME" field
+          const nameData = parseNameFromCSV(row.NAME || row.Name || row.name);
+          
+          // Skip rows with missing required fields
+          if (!nameData.lastName || !row.ADDRESS) {
+            errorCount++;
+            continue;
+          }
+  
+          // Check for duplicates - use full name
+          const duplicate = await Resident.findOne({
+            lastName: { $regex: new RegExp(`^${nameData.lastName}$`, 'i') },
+          });
+  
+          if (duplicate) {
+            duplicates.push({
+              rowData: row,
+              existingResident: {
+                _id: duplicate._id,
+                name: duplicate.lastName,
+                address: duplicate.address
+              }
+            });
+            continue;
+          }
+  
+          // Process types
+          let types = [];
+          if (row.TYPE || row.Types || row.types) {
+            types = (row.TYPE || row.Types || row.types).split(',').map(type => type.trim());
+          }
+  
+          // Create new resident
+          const resident = new Resident({
+            firstName: nameData.firstName,
+            middleName: nameData.middleName,
+            lastName: nameData.lastName, // Full name stored here
+            address: row.ADDRESS || '',
+            precinctLevel: row['PRECINCT LEVEL'] || '',
+            contactNumber: row['CONTACT NUMBER'] || row.CONTACT || '',
+            email: row.EMAIL || '',
+            types: types,
+            isVoter: row.VOTER === 'Yes' || row.VOTER === 'true' || row.VOTER === 'TRUE',
+            isVerified: true,
+            addedBy: userId,
+            updatedBy: userId
+          });
+  
+          await resident.save();
+          successCount++;
+        } catch (error) {
+          console.error('Error processing CSV row:', error);
+          errorCount++;
+        }
+      }
+  
+      // Log action without using createLog
+      console.log(`Import: Admin ${adminName} imported ${successCount} residents`);
+  
+      return res.status(200).json({
+        success: true,
+        message: `Successfully imported ${successCount} residents`,
+        errors: errorCount,
+        duplicates: duplicates
+      });
+    } catch (error) {
+      console.error('Error importing residents:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error importing residents',
+        error: error.message
+      });
+    }
+  };
+
+// Helper function to check potential duplicates - MODIFIED to support isVerified filter
+export const checkDuplicateResident = async (req, res) => {
+    try {
+      const { firstName, lastName, isVerified } = req.query;
+      
+      if (!firstName || !lastName) {
+        return res.status(400).json({
+          success: false,
+          message: 'First name and last name are required'
+        });
+      }
+  
+      // Build filter object
+      const filter = {
+        firstName: { $regex: new RegExp(`^${firstName}$`, 'i') },
+        lastName: { $regex: new RegExp(`^${lastName}$`, 'i') }
+      };
+      
+      // Add isVerified filter if provided
+      if (isVerified !== undefined) {
+        filter.isVerified = isVerified === 'true';
+      }
+  
+      const duplicates = await Resident.find(filter).lean();
+  
+      return res.status(200).json({
+        success: true,
+        hasDuplicates: duplicates.length > 0,
+        duplicates: duplicates
+      });
+    } catch (error) {
+      console.error('Error checking duplicates:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error checking for duplicate residents',
+        error: error.message
+      });
+    }
+  };

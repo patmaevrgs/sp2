@@ -56,6 +56,18 @@ import {
   updateUserProfile, 
   updateUserPassword 
 } from './controllers/userController.js';
+import {
+  getAllResidents,
+  getResidentById,
+  createResident,
+  updateResident,
+  deleteResident,
+  requestAddToDatabase,
+  verifyResident,
+  rejectResidentRequest,
+  importResidentsFromCSV,
+  checkDuplicateResident
+} from './controllers/residentController.js';
 import multer from 'multer';
 import { generateDocument } from './controllers/documentGeneratorController.js';
 
@@ -65,6 +77,22 @@ const router = Router();
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
+
+// Configure multer for CSV upload
+const csvStorage = multer.memoryStorage();
+const csvUpload = multer({
+  storage: csvStorage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'text/csv' || 
+        file.mimetype === 'application/vnd.ms-excel' ||
+        file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only CSV or Excel files are allowed'), false);
+    }
+  },
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
 });
 
@@ -141,6 +169,18 @@ router.patch('/documents/:id/cancel', cancelDocumentRequest);
 
 // Document Generation Route
 router.post('/documents/generate', generateDocument);
+
+// Resident Database Routes
+router.get('/residents', getAllResidents);
+router.get('/residents/:id', getResidentById);
+router.post('/residents', createResident);
+router.put('/residents/:id', updateResident);
+router.delete('/residents/:id', deleteResident);
+router.post('/residents/request', requestAddToDatabase);
+router.patch('/residents/:id/verify', verifyResident);
+router.patch('/residents/:id/reject', rejectResidentRequest);
+router.post('/residents/import', csvUpload.single('file'), importResidentsFromCSV);
+router.get('/residents/check-duplicate', checkDuplicateResident);
 
 // Serve static files
 import express from 'express';

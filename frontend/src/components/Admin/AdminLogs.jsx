@@ -193,6 +193,14 @@ function AdminLogs() {
       case 'COURT_RESERVATION_REJECTED': return 'Rejected Court Reservation';
       case 'COURT_RESERVATION_CANCELLED': return 'Cancelled Court Reservation';
       case 'COURT_RESERVATION_UPDATED': return 'Updated Court Reservation';
+      // Add resident database actions
+      case 'CREATE': return 'Created Resident';
+      case 'UPDATE': return 'Updated Resident';
+      case 'DELETE': return 'Deleted Resident';
+      case 'VERIFY': return 'Verified Resident';
+      case 'REJECT': return 'Rejected Resident Request';
+      case 'IMPORT': return 'Imported CSV to Database'
+
       default: return action.replace(/_/g, ' ').toLowerCase();
     }
   };
@@ -219,6 +227,15 @@ function AdminLogs() {
       case 'COURT_RESERVATION_REJECTED': return 'error';
       case 'COURT_RESERVATION_CANCELLED': return 'error';
       case 'COURT_RESERVATION_UPDATED': return 'info';
+
+      // Add resident database actions with appropriate colors
+      case 'CREATE': return 'primary';
+      case 'UPDATE': return 'warning';
+      case 'DELETE': return 'error';
+      case 'VERIFY': return 'success';
+      case 'REJECT': return 'error';
+      case 'IMPORT': return 'primary'
+
       default: return 'default';
     }
   };

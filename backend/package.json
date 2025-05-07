@@ -21,6 +21,7 @@
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
+    "csv-parser": "^3.2.0",
     "date-fns": "^4.1.0",
     "docxtemplater": "^3.61.1",
     "express": "^4.19.2",

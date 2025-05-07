@@ -22,6 +22,7 @@ import FAQs from './components/Resident/FAQs.jsx';
 import Contact from './components/Resident/Contact.jsx';
 import ResidentProfile from './components/Resident/ResidentProfile.jsx';
 import ResidentHome from './components/Resident/ResidentHome.jsx';
+import ResidentRegistration from './components/Resident/ResidentRegistration.jsx';
 import ResidentTransactions from './components/Resident/ResidentTransactions.jsx';
 import ResidentAnnouncements from './components/Resident/ResidentAnnouncements.jsx';
 import ResidentFAQs from './components/Resident/ResidentFAQs.jsx';
@@ -114,6 +115,7 @@ const router = createBrowserRouter([
     { path: '/resident/transactions', element: <ResidentTransactions />},
     { path: '/resident/faqs', element: <ResidentFAQs />},
     { path: '/resident/contact', element: <ResidentContact />},
+    { path: '/resident/register-database', element: <ResidentRegistration />},
     { path: '/resident/services/ambulance', element: <ResidentAmbulance />},
     { path: '/resident/services/court', element: <ResidentCourt />},
     { path: '/resident/services/report', element: <ResidentReport />},
