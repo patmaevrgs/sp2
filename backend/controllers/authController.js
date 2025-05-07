@@ -85,4 +85,20 @@ const addAdmin = async (req, res) => {
     }
 }
 
-export { signUp, login, checkIfLoggedIn, addAdmin };
+const addSuperAdmin = async (req, res) => {
+  const superAdminExists = await User.findOne({ userType: 'superadmin' });
+  if(!superAdminExists){
+      const hashedPassword = await bcrypt.hash('superadmin123', 10);
+      const superAdmin = new User({
+      firstName: 'Super',
+      middleName: 'Admin',
+      lastName: 'User',
+      email: 'superadmin@123.com',
+      userType: 'superadmin',
+      password: hashedPassword,
+      });
+      superAdmin.save();
+  }
+}
+
+export { signUp, login, checkIfLoggedIn, addAdmin, addSuperAdmin };

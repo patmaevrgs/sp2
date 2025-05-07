@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { signUp, login, checkIfLoggedIn, addAdmin } from './controllers/authController.js';
+import { signUp, login, checkIfLoggedIn, addAdmin, addSuperAdmin } from './controllers/authController.js';
 import { createAnnouncement, getAnnouncements, deleteAnnouncement, updateAnnouncement } from './controllers/announcementController.js';
 import { createLog, getLogs, deleteOldLogs } from './controllers/userLogController.js';
 import { 
@@ -54,7 +54,9 @@ import {
 import { 
   getUserProfile, 
   updateUserProfile, 
-  updateUserPassword 
+  updateUserPassword,
+  getAllUsers,
+  updateUserType
 } from './controllers/userController.js';
 import {
   getAllResidents,
@@ -181,6 +183,11 @@ router.patch('/residents/:id/verify', verifyResident);
 router.patch('/residents/:id/reject', rejectResidentRequest);
 router.post('/residents/import', csvUpload.single('file'), importResidentsFromCSV);
 router.get('/residents/check-duplicate', checkDuplicateResident);
+
+// Admin User Management Routes
+router.get('/users', getAllUsers);
+router.put('/users/updateType', updateUserType);
+router.post('/addsuperadmin', addSuperAdmin);
 
 // Serve static files
 import express from 'express';

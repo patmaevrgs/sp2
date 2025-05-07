@@ -2,7 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import router from './router.js';
-import { addAdmin } from './controllers/authController.js';
+import { addAdmin, addSuperAdmin } from './controllers/authController.js';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -37,6 +37,7 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.once('open', () => {
   console.log('Connected to MongoDB database');
   // Once connected, add admin user
+  addSuperAdmin();
   addAdmin();
 });
 

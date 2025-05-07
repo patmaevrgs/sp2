@@ -56,9 +56,9 @@ const checkIfLoggedInOnHome = async () => {
   console.log(`checkIfLoggedInHome: isLoggedIn: ${payload.isLoggedIn}, userType: ${payload.userType}`);
   
   if (payload.isLoggedIn) {
-    if(payload.userType=== "resident"){
+    if(payload.userType === "resident"){
       return redirect("/resident");
-    }else if(payload.userType=== "admin"){
+    } else if(payload.userType === "admin" || payload.userType === "superadmin"){
       return redirect("/admin");
     }
   } else {
@@ -75,7 +75,7 @@ const checkIfLoggedInOnDash = async () => {
 
   const payload = await res.json();
   console.log(`checkIfLoggedInOnDash: isLoggedIn: ${payload.isLoggedIn}, userType: ${payload.userType}`);
-    if (payload.isLoggedIn && payload.userType === "admin") {
+    if (payload.isLoggedIn && (payload.userType === "admin" || payload.userType === "superadmin")) {
       return true;
     } else {
       return redirect("/");

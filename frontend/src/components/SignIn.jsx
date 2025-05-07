@@ -29,6 +29,7 @@ export default function SignIn() {
     if (isLoggedIn) {
       if (userType === 'admin') navigate('/admin');
       else if (userType === 'resident') navigate('/resident');
+      else if (userType === 'superadmin') navigate('/admin')
     }
   }, [isLoggedIn, navigate, userType]);
 

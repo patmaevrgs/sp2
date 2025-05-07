@@ -2,6 +2,114 @@ import User from '../models/User.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
+// Get all users (for admin dashboard)
+const getAllUsers = async (req, res) => {
+  try {
+    // Check if user is logged in and is admin/superadmin
+    if (!req.cookies || !req.cookies.authToken) {
+      return res.status(401).json({ success: false, message: 'Unauthorized access' });
+    }
+    
+    try {
+      // Verify the token
+      const tokenPayload = jwt.verify(req.cookies.authToken, 'THIS_IS_A_SECRET_STRING');
+      const adminId = tokenPayload._id;
+
+      // Find the admin user to check their type
+      const adminUser = await User.findById(adminId);
+      if (!adminUser || (adminUser.userType !== 'admin' && adminUser.userType !== 'superadmin')) {
+        return res.status(403).json({ success: false, message: 'Unauthorized access' });
+      }
+
+      // Get all users, excluding password field
+      const users = await User.find({}, '-password');
+      
+      return res.status(200).json({
+        success: true,
+        users,
+        isSuper: adminUser.userType === 'superadmin' // Send flag if current user is superadmin
+      });
+    } catch (error) {
+      return res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return res.status(500).json({ success: false, message: 'Error fetching users' });
+  }
+};
+
+// Update user's userType (superadmin only)
+const updateUserType = async (req, res) => {
+  try {
+    // Check if user is logged in
+    if (!req.cookies || !req.cookies.authToken) {
+      return res.status(401).json({ success: false, message: 'Unauthorized access' });
+    }
+    
+    try {
+      // Verify the token
+      const tokenPayload = jwt.verify(req.cookies.authToken, 'THIS_IS_A_SECRET_STRING');
+      const adminId = tokenPayload._id;
+
+      // Find the admin to check if they're a superadmin
+      const adminUser = await User.findById(adminId);
+      if (!adminUser || adminUser.userType !== 'superadmin') {
+        return res.status(403).json({ success: false, message: 'Unauthorized: Superadmin access required' });
+      }
+
+      // Get the user ID and new userType from request body
+      const { userId, userType } = req.body;
+      
+      // Validate userType
+      if (!['resident', 'admin', 'superadmin'].includes(userType)) {
+        return res.status(400).json({ success: false, message: 'Invalid user type' });
+      }
+
+      // Find and update the user
+      const user = await User.findByIdAndUpdate(
+        userId,
+        { userType },
+        { new: true, select: '-password' }
+      );
+
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+
+      // Create log entry for this admin action
+      try {
+        await fetch('http://localhost:3002/logs', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // Include cookies
+          body: JSON.stringify({
+            action: `Updated user type`,
+            adminId: adminId,
+            adminName: `${adminUser.firstName} ${adminUser.lastName}`,
+            details: `Changed ${user.firstName} ${user.lastName}'s user type from ${user.userType} to ${userType}`
+          })
+        });
+      } catch (logError) {
+        console.error('Error creating log:', logError);
+        // Continue execution even if logging fails
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'User type updated successfully',
+        user
+      });
+    } catch (error) {
+      return res.status(401).json({ success: false, message: 'Invalid token' });
+    }
+  } catch (error) {
+    console.error('Error updating user type:', error);
+    return res.status(500).json({ success: false, message: 'Error updating user type' });
+  }
+};
+
 // Get profile of the currently logged-in user
 const getUserProfile = async (req, res) => {
   try {
@@ -123,4 +231,4 @@ const updateUserPassword = async (req, res) => {
   }
 };
 
-export { getUserProfile, updateUserProfile, updateUserPassword };
+export { getUserProfile, updateUserProfile, updateUserPassword, getAllUsers, updateUserType};

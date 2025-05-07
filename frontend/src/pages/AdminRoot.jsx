@@ -41,6 +41,11 @@ function AdminRoot() {
       const fullName = lastName ? `${firstName} ${lastName}` : firstName;
       setAdminFullName(fullName);
     }
+
+    if (userType === 'superadmin' && firstName) {
+      const fullName = lastName ? `${firstName} ${lastName}` : firstName;
+      setAdminFullName(fullName);
+    }
   }, [isLoggedIn, navigate]);
 
   const handleLogout = () => {
