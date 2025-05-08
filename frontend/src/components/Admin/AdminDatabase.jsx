@@ -898,7 +898,9 @@ function AdminDatabase() {
                 residents.map((resident) => (
                   <TableRow key={resident._id} hover>
                     <TableCell>
-                      {resident.lastName}, {resident.firstName} {resident.middleName && resident.middleName}
+                      {resident.firstName === 'Resident' 
+                        ? resident.lastName // Display just the lastName for legacy entries (contains full name)
+                        : `${resident.lastName}, ${resident.firstName} ${resident.middleName || ''}`}
                       {!resident.isVerified && (
                         <Chip 
                           label="Pending" 
@@ -970,7 +972,11 @@ function AdminDatabase() {
         <DialogContent>
           {duplicateWarning && (
             <Alert severity="warning" sx={{ mb: 2 }}>
-              Potential duplicate found: {duplicateWarning.map(r => `${r.lastName}, ${r.firstName} (${r.address})`).join(', ')}
+              Potential duplicate found: {duplicateWarning.map(r => 
+                r.firstName === 'Resident' 
+                  ? r.lastName  // For legacy format
+                  : `${r.lastName}, ${r.firstName} ${r.middleName || ''}`
+              ).join(', ')}
             </Alert>
           )}
           <Grid container spacing={2} sx={{ mt: 1 }}>
@@ -1090,11 +1096,6 @@ function AdminDatabase() {
           <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} maxWidth="md" fullWidth>
             <DialogTitle>Edit Resident</DialogTitle>
             <DialogContent>
-              {duplicateWarning && (
-                <Alert severity="warning" sx={{ mb: 2 }}>
-                  Potential duplicate found: {duplicateWarning.map(r => `${r.lastName}, ${r.firstName} (${r.address})`).join(', ')}
-                </Alert>
-              )}
               <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} md={4}>
               <TextField

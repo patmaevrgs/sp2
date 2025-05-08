@@ -34,21 +34,41 @@ const logResidentAction = async (userId, action, details) => {
     }
   };
 
-// Parse full name - updated to handle single NAME field
+// Replace your existing parseNameFromCSV function
 const parseNameFromCSV = (name) => {
-    if (!name) return { firstName: '', middleName: '', lastName: '' };
+  if (!name) return { firstName: '', middleName: '', lastName: '' };
+
+  // Clean up the name string
+  const cleanName = name.replace(/\s+/g, ' ').trim();
   
-    // Clean up the name string
-    const cleanName = name.replace(/\s+/g, ' ').trim();
+  // Check if the name is in "LastName, FirstName MiddleName" format
+  if (cleanName.includes(',')) {
+    const [lastName, firstMiddle] = cleanName.split(',').map(part => part.trim());
+    const firstMiddleParts = firstMiddle.split(' ');
     
-    // For your case, we'll just store the full name in the lastName field
-    // and leave firstName and middleName empty or with placeholder values
-    return {
-      firstName: 'Resident', // Placeholder
-      middleName: '',
-      lastName: cleanName // Store full name in lastName for easier searching
-    };
-  };
+    const firstName = firstMiddleParts[0] || '';
+    const middleName = firstMiddleParts.slice(1).join(' ') || '';
+    
+    return { firstName, middleName, lastName };
+  } 
+  // If no comma, assume it's just a full name that needs to be properly parsed
+  else {
+    const nameParts = cleanName.split(' ');
+    
+    if (nameParts.length === 1) {
+      return { firstName: '', middleName: '', lastName: nameParts[0] };
+    } else if (nameParts.length === 2) {
+      return { firstName: nameParts[0], middleName: '', lastName: nameParts[1] };
+    } else {
+      // Assume last part is lastName, first part is firstName, and middle parts are middleName
+      const lastName = nameParts.pop();
+      const firstName = nameParts.shift();
+      const middleName = nameParts.join(' ');
+      
+      return { firstName, middleName, lastName };
+    }
+  }
+};
   
 
 // Simple CSV parser function
@@ -698,176 +718,199 @@ export const rejectResidentRequest = async (req, res) => {
   }
 };
 
-// Import residents from CSV - update to handle your specific CSV format
+// Import residents from CSV - updated version with fixes
 export const importResidentsFromCSV = async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({
-          success: false,
-          message: 'No file uploaded'
-        });
-      }
-      
-      const { password } = req.body;
-      
-      // Require password for verification
-      if (!password) {
-        return res.status(400).json({
-          success: false,
-          message: 'Password is required to import residents'
-        });
-      }
-  
-      // Get user ID from cookie
-      const userId = getUserIdFromCookie(req);
-      if (!userId) {
-        return res.status(401).json({
-          success: false,
-          message: 'User not authenticated'
-        });
-      }
-  
-      const admin = await User.findById(userId);
-      if (!admin) {
-        return res.status(404).json({
-          success: false,
-          message: 'Admin account not found'
-        });
-      }
-  
-      const isMatch = await bcrypt.compare(password, admin.password);
-      if (!isMatch) {
-        return res.status(401).json({
-          success: false,
-          message: 'Invalid password'
-        });
-      }
-  
-      // Convert buffer to string and parse CSV
-      const csvText = req.file.buffer.toString('utf8');
-      const results = parseCSV(csvText);
-      
-      const duplicates = [];
-      let successCount = 0;
-      let errorCount = 0;
-  
-      // Get admin name for logging
-      const adminName = `${admin.firstName} ${admin.lastName}`;
-  
-      // Process each row
-      for (const row of results) {
-        try {
-          // Get name from the "NAME" field
-          const nameData = parseNameFromCSV(row.NAME || row.Name || row.name);
-          
-          // Skip rows with missing required fields
-          if (!nameData.lastName || !row.ADDRESS) {
-            errorCount++;
-            continue;
-          }
-  
-          // Check for duplicates - use full name
-          const duplicate = await Resident.findOne({
-            lastName: { $regex: new RegExp(`^${nameData.lastName}$`, 'i') },
-          });
-  
-          if (duplicate) {
-            duplicates.push({
-              rowData: row,
-              existingResident: {
-                _id: duplicate._id,
-                name: duplicate.lastName,
-                address: duplicate.address
-              }
-            });
-            continue;
-          }
-  
-          // Process types
-          let types = [];
-          if (row.TYPE || row.Types || row.types) {
-            types = (row.TYPE || row.Types || row.types).split(',').map(type => type.trim());
-          }
-  
-          // Create new resident
-          const resident = new Resident({
-            firstName: nameData.firstName,
-            middleName: nameData.middleName,
-            lastName: nameData.lastName, // Full name stored here
-            address: row.ADDRESS || '',
-            precinctLevel: row['PRECINCT LEVEL'] || '',
-            contactNumber: row['CONTACT NUMBER'] || row.CONTACT || '',
-            email: row.EMAIL || '',
-            types: types,
-            isVoter: row.VOTER === 'Yes' || row.VOTER === 'true' || row.VOTER === 'TRUE',
-            isVerified: true,
-            addedBy: userId,
-            updatedBy: userId
-          });
-  
-          await resident.save();
-          successCount++;
-        } catch (error) {
-          console.error('Error processing CSV row:', error);
-          errorCount++;
-        }
-      }
-  
-      // Log action without using createLog
-      console.log(`Import: Admin ${adminName} imported ${successCount} residents`);
-  
-      return res.status(200).json({
-        success: true,
-        message: `Successfully imported ${successCount} residents`,
-        errors: errorCount,
-        duplicates: duplicates
-      });
-    } catch (error) {
-      console.error('Error importing residents:', error);
-      return res.status(500).json({
+  try {
+    if (!req.file) {
+      return res.status(400).json({
         success: false,
-        message: 'Error importing residents',
-        error: error.message
+        message: 'No file uploaded'
       });
     }
-  };
+    
+    const { password } = req.body;
+    
+    // Require password for verification
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password is required to import residents'
+      });
+    }
 
-// Helper function to check potential duplicates - MODIFIED to support isVerified filter
-export const checkDuplicateResident = async (req, res) => {
-    try {
-      const { firstName, lastName, isVerified } = req.query;
-      
-      if (!firstName || !lastName) {
-        return res.status(400).json({
-          success: false,
-          message: 'First name and last name are required'
+    // Get user ID from cookie
+    const userId = getUserIdFromCookie(req);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+
+    const admin = await User.findById(userId);
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin account not found'
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid password'
+      });
+    }
+
+    // Convert buffer to string and parse CSV
+    const csvText = req.file.buffer.toString('utf8');
+    const results = parseCSV(csvText);
+    
+    const duplicates = [];
+    let successCount = 0;
+    let errorCount = 0;
+
+    // Get admin name for logging
+    const adminName = `${admin.firstName} ${admin.lastName}`;
+
+    // Process each row
+    for (const row of results) {
+      try {
+        // Get name from the "NAME" field
+        const nameData = parseNameFromCSV(row.NAME || row.Name || row.name);
+        
+        // Skip rows with missing required fields
+        if (!nameData.lastName || !row.ADDRESS) {
+          errorCount++;
+          continue;
+        }
+
+        // Check for duplicates - use a more flexible approach
+        const duplicate = await Resident.findOne({
+          $or: [
+            // Check if matches exact first and last name
+            {
+              firstName: { $regex: new RegExp(`^${nameData.firstName}$`, 'i') },
+              lastName: { $regex: new RegExp(`^${nameData.lastName}$`, 'i') }
+            },
+            // Check if matches full name in lastName field (for legacy data)
+            {
+              firstName: 'Resident',
+              lastName: { $regex: new RegExp(`${nameData.lastName},\\s*${nameData.firstName}`, 'i') }
+            }
+          ]
         });
+
+        if (duplicate) {
+          duplicates.push({
+            rowData: row,
+            existingResident: {
+              _id: duplicate._id,
+              name: `${duplicate.lastName}, ${duplicate.firstName} ${duplicate.middleName || ''}`.trim(),
+              address: duplicate.address
+            }
+          });
+          continue;
+        }
+
+        // Process types - THIS WAS MISSING IN YOUR CODE
+        let types = [];
+        if (row.TYPE || row.Types || row.types) {
+          types = (row.TYPE || row.Types || row.types).split(',').map(type => type.trim());
+        }
+
+        // Create new resident with properly parsed name
+        const resident = new Resident({
+          firstName: nameData.firstName,
+          middleName: nameData.middleName,
+          lastName: nameData.lastName,
+          address: row.ADDRESS || row.Address || row.address || '',
+          precinctLevel: row['PRECINCT LEVEL'] || row.Precinct || row.precinct || '',
+          contactNumber: row['CONTACT NUMBER'] || row.Contact || row.contact || '',
+          email: row.EMAIL || row.Email || row.email || '',
+          types: types, // Using the defined variable now
+          isVoter: row.VOTER === 'Yes' || row.Voter === 'Yes' || row.voter === 'Yes' || 
+                   row.VOTER === 'true' || row.Voter === 'true' || row.voter === 'true' || 
+                   row.VOTER === 'TRUE' || row.Voter === 'TRUE' || row.voter === 'TRUE',
+          isVerified: true,
+          addedBy: userId,
+          updatedBy: userId
+        });
+
+        await resident.save();
+        successCount++;
+      } catch (error) {
+        console.error('Error processing CSV row:', error);
+        errorCount++;
       }
-  
-      // Build filter object
-      const filter = {
+    }
+
+    // Log action without using createLog
+    console.log(`Import: Admin ${adminName} imported ${successCount} residents`);
+
+    return res.status(200).json({
+      success: true,
+      message: `Successfully imported ${successCount} residents`,
+      errors: errorCount,
+      duplicates: duplicates
+    });
+  } catch (error) {
+    console.error('Error importing residents:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error importing residents',
+      error: error.message
+    });
+  }
+};
+
+// Update the checkDuplicateResident function
+export const checkDuplicateResident = async (req, res) => {
+  try {
+    const { firstName, lastName, isVerified } = req.query;
+    
+    if (!firstName || !lastName) {
+      return res.status(400).json({
+        success: false,
+        message: 'First name and last name are required'
+      });
+    }
+
+    // Build filter object for more comprehensive duplicate checking
+    const filters = [
+      // Check standard format (firstName, lastName as separate fields)
+      {
         firstName: { $regex: new RegExp(`^${firstName}$`, 'i') },
         lastName: { $regex: new RegExp(`^${lastName}$`, 'i') }
-      };
-      
-      // Add isVerified filter if provided
-      if (isVerified !== undefined) {
-        filter.isVerified = isVerified === 'true';
+      },
+      // Check legacy format where full name is in lastName
+      {
+        firstName: 'Resident',
+        lastName: { $regex: new RegExp(`${lastName},\\s*${firstName}`, 'i') }
       }
-  
-      const duplicates = await Resident.find(filter).lean();
-  
-      return res.status(200).json({
-        success: true,
-        hasDuplicates: duplicates.length > 0,
-        duplicates: duplicates
-      });
-    } catch (error) {
-      console.error('Error checking duplicates:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Error checking for duplicate residents',
-        error: error.message
+    ];
+    
+    // Add isVerified filter if provided
+    if (isVerified !== undefined) {
+      filters.forEach(filter => {
+        filter.isVerified = isVerified === 'true';
       });
     }
-  };
+
+    const duplicates = await Resident.find({ $or: filters }).lean();
+
+    return res.status(200).json({
+      success: true,
+      hasDuplicates: duplicates.length > 0,
+      duplicates: duplicates
+    });
+  } catch (error) {
+    console.error('Error checking duplicates:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error checking for duplicate residents',
+      error: error.message
+    });
+  }
+};
