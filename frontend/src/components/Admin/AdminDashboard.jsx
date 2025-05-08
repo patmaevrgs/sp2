@@ -67,59 +67,64 @@ const getDateRange = (days) => {
 };
 
 const AdminDashboard = () => {
-  // State variables for data
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [tabValue, setTabValue] = useState(0);
-  const [timeRange, setTimeRange] = useState(30); // Default to 30 days
-  const [anchorEl, setAnchorEl] = useState(null);
-  
+    // State variables for data
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [tabValue, setTabValue] = useState(0);
+    const [timeRange, setTimeRange] = useState(30); // Default to 30 days
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [reportIssueTypes, setReportIssueTypes] = useState([]);
+    const [reportStats, setReportStats] = useState({
+    averageResolutionTime: '0.0',
+    resolvedCount: 0
+    });
+
   // Statistics state
-  const [stats, setStats] = useState({
-    todayRequests: 0,
-    residentCount: 0
-  });
-  
-  // Data for service-specific analytics
-  const [serviceData, setServiceData] = useState({
-    ambulance: { total: 0, pending: 0, booked: 0, completed: 0, cancelled: 0 },
-    court: { total: 0, pending: 0, approved: 0, rejected: 0, cancelled: 0 },
-    documents: { total: 0, pending: 0, inProgress: 0, completed: 0, rejected: 0 },
-    reports: { total: 0, pending: 0, inProgress: 0, resolved: 0, cancelled: 0 },
-    proposals: { total: 0, pending: 0, inReview: 0, considered: 0, approved: 0, rejected: 0 }
-  });
-  
-  // Time series data
-  const [timeSeriesData, setTimeSeriesData] = useState([]);
-  const [serviceDistribution, setServiceDistribution] = useState([]);
-  const [requestTrends, setRequestTrends] = useState([]);
-  
-  // Recent activity data
-  const [recentActivity, setRecentActivity] = useState([]);
-  
-  // Resident data
-  const [residentTypes, setResidentTypes] = useState([]);
-  const [residentRegistrationTrends, setResidentRegistrationTrends] = useState([]);
+    const [stats, setStats] = useState({
+        todayRequests: 0,
+        residentCount: 0
+    });
+    
+    // Data for service-specific analytics
+    const [serviceData, setServiceData] = useState({
+        ambulance: { total: 0, pending: 0, booked: 0, completed: 0, cancelled: 0 },
+        court: { total: 0, pending: 0, approved: 0, rejected: 0, cancelled: 0 },
+        documents: { total: 0, pending: 0, inProgress: 0, completed: 0, rejected: 0 },
+        reports: { total: 0, pending: 0, inProgress: 0, resolved: 0, cancelled: 0 },
+        proposals: { total: 0, pending: 0, inReview: 0, considered: 0, approved: 0, rejected: 0 }
+    });
+    
+    // Time series data
+    const [timeSeriesData, setTimeSeriesData] = useState([]);
+    const [serviceDistribution, setServiceDistribution] = useState([]);
+    const [requestTrends, setRequestTrends] = useState([]);
+    
+    // Recent activity data
+    const [recentActivity, setRecentActivity] = useState([]);
+    
+    // Resident data
+    const [residentTypes, setResidentTypes] = useState([]);
+    const [residentRegistrationTrends, setResidentRegistrationTrends] = useState([]);
 
-  // Menu handling
-  const handleMenuClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+    // Menu handling
+    const handleMenuClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
 
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
 
-  // Tab handling
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue);
-  };
+    // Tab handling
+    const handleTabChange = (event, newValue) => {
+        setTabValue(newValue);
+    };
 
-  // Time range handling
-  const handleTimeRangeChange = (event) => {
-    setTimeRange(parseInt(event.target.value));
-    fetchData(parseInt(event.target.value));
-  };
+    // Time range handling
+    const handleTimeRangeChange = (event) => {
+        setTimeRange(parseInt(event.target.value));
+        fetchData(parseInt(event.target.value));
+    };
 
   // Fix for the dashboard data loading error
 // Moving the residents variable initialization before it's used in setStats
@@ -233,6 +238,71 @@ const fetchData = async (days = 30) => {
         cancelled: reports.filter(item => item && item.status === 'Cancelled').length
       };
       
+      // Calculate average resolution time for resolved reports
+        let averageResolutionTime = 0;
+        let resolvedReportsWithDates = 0;
+
+        if (reports && Array.isArray(reports)) {
+        // Filter only resolved reports that have both created and updated dates
+        const resolvedReports = reports.filter(
+            report => report && report.status === 'Resolved' && report.createdAt && report.updatedAt
+        );
+        
+        if (resolvedReports.length > 0) {
+            // Calculate total resolution time in milliseconds
+            const totalResolutionTime = resolvedReports.reduce((total, report) => {
+            const createdDate = new Date(report.createdAt);
+            const updatedDate = new Date(report.updatedAt);
+            return total + (updatedDate - createdDate);
+            }, 0);
+            
+            // Calculate average resolution time in days
+            averageResolutionTime = totalResolutionTime / resolvedReports.length / (1000 * 60 * 60 * 24);
+            resolvedReportsWithDates = resolvedReports.length;
+        }
+        }
+
+        // Calculate issue type distribution
+        const issueTypeCounts = {};
+
+        if (reports && Array.isArray(reports)) {
+        reports.forEach(report => {
+            if (report && report.issueType) {
+            // Increment count for this issue type
+            issueTypeCounts[report.issueType] = (issueTypeCounts[report.issueType] || 0) + 1;
+            }
+        });
+        }
+
+        // Convert to array format for chart
+        const issueTypeData = Object.entries(issueTypeCounts)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value); // Sort by count (descending)
+
+        // Add "Other Issues" category if there are more than 5 types
+        if (issueTypeData.length > 5) {
+        const topIssues = issueTypeData.slice(0, 4);
+        const otherIssues = issueTypeData.slice(4);
+        const otherCount = otherIssues.reduce((sum, issue) => sum + issue.value, 0);
+        
+        const chartData = [
+            ...topIssues,
+            { name: 'Other Issues', value: otherCount }
+        ];
+        
+        // Store the processed issue type data
+        setReportIssueTypes(chartData);
+        } else {
+        // Use all issue types if 5 or fewer
+        setReportIssueTypes(issueTypeData);
+        }
+
+        // Store the average resolution time
+        setReportStats(prevStats => ({
+        ...prevStats,
+        averageResolutionTime: averageResolutionTime.toFixed(1),
+        resolvedCount: resolvedReportsWithDates
+        }));
       // Process proposal data with safe accesses
       const proposals = proposalData && Array.isArray(proposalData.proposals) ? proposalData.proposals : [];
       const proposalStats = {
@@ -1116,7 +1186,7 @@ const fetchData = async (days = 30) => {
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <Typography variant="h6" gutterBottom>Document Request Status</Typography>
-                <Paper sx={{ p: 2, height: 450 }}>
+                <Paper sx={{ p: 2, height: 450, width: "94%" }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -1147,7 +1217,7 @@ const fetchData = async (days = 30) => {
               
               <Grid item xs={12} md={6}>
                 <Typography variant="h6" gutterBottom>Document Request Trends</Typography>
-                <Paper sx={{ p: 2, height: 450 }}>
+                <Paper sx={{ p: 2, height: 450, width: "93%" }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
                       data={timeSeriesData}
@@ -1217,98 +1287,95 @@ const fetchData = async (days = 30) => {
             </Grid>
           )}
           
-          {/* Reports Tab */}
-          {tabValue === 4 && (
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" gutterBottom>Infrastructure Report Status</Typography>
-                <Paper sx={{ p: 2, height: 450 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={[
-                          { name: 'Pending', value: serviceData.reports.pending },
-                          { name: 'In Progress', value: serviceData.reports.inProgress },
-                          { name: 'Resolved', value: serviceData.reports.resolved },
-                          { name: 'Cancelled', value: serviceData.reports.cancelled }
-                        ]}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={120}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        <Cell fill={STATUS_COLORS.pending} />
-                        <Cell fill={STATUS_COLORS.inProgress} />
-                        <Cell fill={STATUS_COLORS.resolved} />
-                        <Cell fill={STATUS_COLORS.cancelled} />
-                      </Pie>
-                      <Tooltip formatter={(value, name) => [value, name]} />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </Paper>
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" gutterBottom>Issue Types</Typography>
-                <Paper sx={{ p: 2, height: 450 }}>
-                  <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
-                    Distribution of reported infrastructure issues
-                  </Typography>
-                  <ResponsiveContainer width="100%" height="80%">
-                    <BarChart
-                      data={[
-                        { name: 'Road Damage', value: 25 },
-                        { name: 'Drainage Issues', value: 20 },
-                        { name: 'Street Lights', value: 15 },
-                        { name: 'Waste Management', value: 12 },
-                        { name: 'Other Issues', value: 8 }
-                      ]}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+          
+        {/* Reports Tab with Real Data */}
+        {tabValue === 4 && (
+        <Grid container spacing={3}>
+            <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>Infrastructure Report Status</Typography>
+            <Paper sx={{ p: 2, height: 450 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                    <Pie
+                    data={[
+                        { name: 'Pending', value: serviceData.reports.pending },
+                        { name: 'In Progress', value: serviceData.reports.inProgress },
+                        { name: 'Resolved', value: serviceData.reports.resolved },
+                        { name: 'Cancelled', value: serviceData.reports.cancelled }
+                    ]}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={120}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="name" 
-                        tick={{ fontSize: 12 }}
-                        angle={-45}
-                        textAnchor="end"
-                      />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#FF8042" name="Reports">
-                        {[0, 1, 2, 3, 4].map((index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                  <Typography variant="caption" color="textSecondary">
-                    * Sample data placeholder. Connect to actual issue types from your database for production.
-                  </Typography>
-                </Paper>
-              </Grid>
-              
-              <Grid item xs={12}>
-                <Typography variant="h6" gutterBottom>Report Resolution Time</Typography>
-                <Paper sx={{ p: 2, height: 300 }}>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={4}>
-                      <Card>
-                        <CardContent>
-                          <Typography color="textSecondary" gutterBottom>
-                            Average Resolution Time
-                          </Typography>
-                          <Typography variant="h4" color="primary.main">
-                            5.2 days
-                          </Typography>
-                          <Typography variant="body2" color="textSecondary">
-                            From submission to completion
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Grid>
+                    <Cell fill={STATUS_COLORS.pending} />
+                    <Cell fill={STATUS_COLORS.inProgress} />
+                    <Cell fill={STATUS_COLORS.resolved} />
+                    <Cell fill={STATUS_COLORS.cancelled} />
+                    </Pie>
+                    <Tooltip formatter={(value, name) => [value, name]} />
+                    <Legend />
+                </PieChart>
+                </ResponsiveContainer>
+            </Paper>
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom>Issue Types</Typography>
+            <Paper sx={{ p: 2, height: 450 }}>
+                <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+                Distribution of reported infrastructure issues
+                </Typography>
+                <ResponsiveContainer width="100%" height="80%">
+                <BarChart
+                    data={reportIssueTypes}
+                    margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                    dataKey="name" 
+                    tick={{ fontSize: 12 }}
+                    angle={-45}
+                    textAnchor="end"
+                    />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="value" fill="#FF8042" name="Reports">
+                    {reportIssueTypes.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                    </Bar>
+                </BarChart>
+                </ResponsiveContainer>
+                {reportIssueTypes.length === 0 && (
+                <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 5 }}>
+                    No report data available yet
+                </Typography>
+                )}
+            </Paper>
+            </Grid>
+            
+            <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom>Report Resolution Time</Typography>
+            <Paper sx={{ p: 2, height: 300 }}>
+                <Grid container spacing={3}>
+                <Grid item xs={12} md={4}>
+                    <Card>
+                    <CardContent>
+                        <Typography color="textSecondary" gutterBottom>
+                        Average Resolution Time
+                        </Typography>
+                        <Typography variant="h4" color="primary.main">
+                        {reportStats.averageResolutionTime} days
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                        Based on {reportStats.resolvedCount} resolved reports
+                        </Typography>
+                    </CardContent>
+                    </Card>
+                </Grid>
                     <Grid item xs={12} md={4}>
                       <Card>
                         <CardContent>
