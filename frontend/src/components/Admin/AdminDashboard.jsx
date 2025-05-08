@@ -73,7 +73,9 @@ const AdminDashboard = () => {
     const [tabValue, setTabValue] = useState(0);
     const [timeRange, setTimeRange] = useState(30); // Default to 30 days
     const [anchorEl, setAnchorEl] = useState(null);
+    const [documentTypeDistribution, setDocumentTypeDistribution] = useState([]);
     const [reportIssueTypes, setReportIssueTypes] = useState([]);
+    const [totalDocRequests, setTotalDocRequests] = useState(0);
     const [reportStats, setReportStats] = useState({
     averageResolutionTime: '0.0',
     resolvedCount: 0
@@ -219,15 +221,55 @@ const fetchData = async (days = 30) => {
       };
       
       // Process document data with safe accesses
-      const docRequests = docData && Array.isArray(docData.documentRequests) ? docData.documentRequests : [];
-      const docStats = {
+        const docRequests = docData && Array.isArray(docData.documentRequests) ? docData.documentRequests : [];
+        const docStats = {
         total: docRequests.length,
         pending: docRequests.filter(item => item && item.status === 'pending').length,
         inProgress: docRequests.filter(item => item && item.status === 'in_progress').length,
         completed: docRequests.filter(item => item && item.status === 'completed').length,
         rejected: docRequests.filter(item => item && item.status === 'rejected').length
-      };
-      
+        };
+
+        const activeDocRequests = docRequests.filter(request => request.status !== 'cancelled');
+        setTotalDocRequests(activeDocRequests.length);
+
+        // Calculate document type distribution
+        const docTypeCounts = {};
+
+        docRequests.forEach(request => {
+        // Skip cancelled requests
+        if (request && request.documentType && request.status !== 'cancelled') {
+            // Format the document type name for better display
+            const formattedType = request.documentType
+            .split('_')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+            
+            // Increment count for this document type
+            docTypeCounts[formattedType] = (docTypeCounts[formattedType] || 0) + 1;
+        }
+        });
+
+        // Convert to array format for chart
+        const docTypeData = Object.entries(docTypeCounts)
+        .map(([name, value]) => ({ name, value }))
+        .sort((a, b) => b.value - a.value); // Sort by count (descending)
+
+        // Add "Other Types" category if there are more than 5 types
+        if (docTypeData.length > 5) {
+        const topTypes = docTypeData.slice(0, 4);
+        const otherTypes = docTypeData.slice(4);
+        const otherCount = otherTypes.reduce((sum, type) => sum + type.value, 0);
+        
+        setDocumentTypeDistribution([
+            ...topTypes,
+            { name: 'Other Types', value: otherCount }
+        ]);
+        } else {
+        // Use all document types if 5 or fewer
+        setDocumentTypeDistribution(docTypeData);
+        }
+
       // Process report data with safe accesses
       const reports = reportData && Array.isArray(reportData.reports) ? reportData.reports : [];
       const reportStats = {
@@ -429,7 +471,8 @@ const fetchData = async (days = 30) => {
       }
       
       docRequests.forEach(doc => {
-        if (doc && doc.createdAt) {
+        // Skip cancelled requests
+        if (doc && doc.createdAt && doc.status !== 'cancelled') {
           const dateStr = new Date(doc.createdAt).toISOString().split('T')[0];
           if (dateMap.has(dateStr)) {
             const dayData = dateMap.get(dateStr);
@@ -1254,34 +1297,33 @@ const fetchData = async (days = 30) => {
                   </Typography>
                   <ResponsiveContainer width="100%" height="80%">
                     <BarChart
-                      data={[
-                        { name: 'Brgy Clearance', value: 35 },
-                        { name: 'Certificate of Residency', value: 28 },
-                        { name: 'Indigency Certificate', value: 15 },
-                        { name: 'Business Permit', value: 12 },
-                        { name: 'Other Documents', value: 10 }
-                      ]}
+                      data={documentTypeDistribution}
                       margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="name" 
-                        tick={{ fontSize: 12 }}
-                        angle={-45}
-                        textAnchor="end"
-                      />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="value" fill="#FFBB28" name="Document Requests">
-                        {[0, 1, 2, 3, 4].map((index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Bar>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis 
+                            dataKey="name" 
+                            tick={{ fontSize: 12 }}
+                            angle={-45}
+                            textAnchor="end"
+                        />
+                         <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="value" fill="#FFBB28" name="Document Requests">
+                            {documentTypeDistribution.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Bar>
                     </BarChart>
-                  </ResponsiveContainer>
-                  <Typography variant="caption" color="textSecondary">
-                    * Sample data placeholder. Connect to actual document types from your database for production.
-                  </Typography>
+                    </ResponsiveContainer>
+                    {documentTypeDistribution.length === 0 && (
+                        <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 5 }}>
+                            No document request data available yet
+                        </Typography>
+                    )}
+                    <Typography variant="caption" color="textSecondary">
+                        Based on {totalDocRequests} document requests
+                    </Typography>
                 </Paper>
               </Grid>
             </Grid>
