@@ -220,6 +220,26 @@ const fetchData = async (days = 30) => {
         cancelled: Array.isArray(courtData) ? courtData.filter(item => item && item.status === 'cancelled').length : 0
       };
       
+      // Add this after parsing court data
+console.log('Raw Court Data:', courtData);
+if (Array.isArray(courtData)) {
+  console.log('Total court reservations:', courtData.length);
+  console.log('Status breakdown:', {
+    pending: courtData.filter(item => item && item.status === 'pending').length,
+    approved: courtData.filter(item => item && item.status === 'approved').length,
+    rejected: courtData.filter(item => item && item.status === 'rejected').length,
+    cancelled: courtData.filter(item => item && item.status === 'cancelled').length,
+    noStatus: courtData.filter(item => !item || !item.status).length,
+    otherStatus: courtData.filter(item => item && item.status && !['pending', 'approved', 'rejected', 'cancelled'].includes(item.status)).length
+  });
+  
+  // Check if there are any reservations with unexpected status values
+  const unexpectedStatus = courtData.filter(item => item && item.status && !['pending', 'approved', 'rejected', 'cancelled'].includes(item.status));
+  if (unexpectedStatus.length > 0) {
+    console.log('Reservations with unexpected status:', unexpectedStatus);
+  }
+}
+
       // Process document data with safe accesses
         const docRequests = docData && Array.isArray(docData.documentRequests) ? docData.documentRequests : [];
         const docStats = {
@@ -799,7 +819,7 @@ const fetchData = async (days = 30) => {
                 Registered Residents
               </Typography>
               <Typography variant="h4" color="primary.main">
-                {stats.residentCount}
+                    {stats.verifiedCount}
               </Typography>
               <Typography variant="body2" color="textSecondary">
                 Total in database
@@ -1729,49 +1749,6 @@ const fetchData = async (days = 30) => {
           )}
         </Box>
       </Paper>
-      
-        {/* Recent Activity */}
-        <Paper sx={{ p: 2, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>Recent Activity</Typography>
-        {recentActivity.length > 0 ? (
-            <TableContainer>
-            <Table size="small">
-                <TableHead>
-                <TableRow>
-                    <TableCell><strong>Type</strong></TableCell>
-                    <TableCell><strong>Action</strong></TableCell>
-                    <TableCell><strong>Details</strong></TableCell>
-                    <TableCell><strong>Admin</strong></TableCell>
-                    <TableCell><strong>Time</strong></TableCell>
-                </TableRow>
-                </TableHead>
-                <TableBody>
-                {recentActivity.map((activity, index) => (
-                    <TableRow key={activity.id || index}>
-                    <TableCell>{activity.type}</TableCell>
-                    <TableCell>
-                        {activity.action.split('_').map(word => 
-                        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                        ).join(' ')}
-                    </TableCell>
-                    <TableCell>{activity.details}</TableCell>
-                    <TableCell>{activity.admin}</TableCell>
-                    <TableCell>
-                        {formatDate(activity.timestamp)}, {formatTime(activity.timestamp)}
-                    </TableCell>
-                    </TableRow>
-                ))}
-                </TableBody>
-            </Table>
-            </TableContainer>
-        ) : (
-            <Box sx={{ height: 100, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <Typography variant="body2" color="textSecondary">
-                No recent activity found
-            </Typography>
-            </Box>
-        )}
-        </Paper>
       
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
             <Typography variant="caption" color="textSecondary">
