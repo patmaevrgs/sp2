@@ -3,6 +3,9 @@ import { Box, Container, Typography, Paper, Grid, Card, CardContent, CircularPro
 import AdminDashboard from './AdminDashboard';
 import QuickStats from './QuickStats';
 
+// Define the API base URL to match your other components
+const API_BASE_URL = 'http://localhost:3002';
+
 function AdminHome() {
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState({
@@ -11,43 +14,30 @@ function AdminHome() {
     email: ''
   });
 
-  // Fetch user data from JWT cookie on component mount
+  // Fetch user data using localStorage as a reliable fallback
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Try to extract user data from JWT cookie
-        const cookies = document.cookie.split('; ');
-        const authCookie = cookies.find(cookie => cookie.startsWith('authToken='));
-        
-        if (authCookie) {
-          const token = authCookie.split('=')[1];
-          
-          // Get user data from server using token
-          const response = await fetch('/profile', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
+        // Always load data from localStorage first for immediate display
+        const firstName = localStorage.getItem('firstName');
+        const lastName = localStorage.getItem('lastName');
+        const email = localStorage.getItem('email');
+
+        if (firstName && lastName && email) {
+          setUserData({
+            firstName,
+            lastName,
+            email
           });
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.user) {
-              setUserData({
-                firstName: data.user.firstName,
-                lastName: data.user.lastName,
-                email: data.user.email
-              });
-            }
-          }
         }
-        
-        // Remove loading state after short delay to ensure UI transitions smoothly
+
+      } catch (error) {
+        console.error('Error in user data handling:', error);
+      } finally {
+        // Always finish loading after a short delay
         setTimeout(() => {
           setLoading(false);
         }, 500);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        setLoading(false);
       }
     };
     

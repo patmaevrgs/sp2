@@ -133,582 +133,672 @@ const AdminDashboard = () => {
 
 // Complete fixed fetchData function with error handling
 const fetchData = async (days = 30) => {
-    setLoading(true);
-    setError(null);
+  setLoading(true);
+  setError(null);
+  
+  try {
+    const { startDate, endDate } = getDateRange(days);
+    
+    // Create fetch options with credentials to send cookies
+    const fetchOptions = {
+      method: 'GET',
+      credentials: 'include', // Important: This sends cookies with the request
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    };
+    
+    // Fetch all data using Promise.all for better performance
+    let responses;
+    try {
+      console.log('Fetching data with date range:', { startDate, endDate });
+      
+      responses = await Promise.all([
+        fetch(`${API_BASE_URL}/ambulance?startDate=${startDate}&endDate=${endDate}`, fetchOptions),
+        fetch(`${API_BASE_URL}/court?startDate=${startDate}&endDate=${endDate}`, fetchOptions),
+        fetch(`${API_BASE_URL}/documents?`, fetchOptions),
+        fetch(`${API_BASE_URL}/reports`, fetchOptions),
+        fetch(`${API_BASE_URL}/proposals`, fetchOptions),
+        fetch(`${API_BASE_URL}/residents?limit=200000`, fetchOptions),
+        fetch(`${API_BASE_URL}/logs?limit=10`, fetchOptions)
+      ]);
+    } catch (fetchError) {
+      console.error('Error fetching data:', fetchError);
+      throw new Error('Network error when fetching data');
+    }
+    
+    const [
+      ambulanceRes, 
+      courtRes, 
+      docRes, 
+      reportRes, 
+      proposalRes, 
+      residentRes,
+      logsRes
+    ] = responses;
+    
+    // Parse all response data with proper error handling
+    let ambulanceData, courtData, docData, reportData, proposalData, residentData, logsData;
     
     try {
-      const { startDate, endDate } = getDateRange(days);
+      // Use conditional chaining to handle potential errors in each fetch response
+      ambulanceData = ambulanceRes.ok ? await ambulanceRes.json() : [];
+      courtData = courtRes.ok ? await courtRes.json() : [];
+      docData = docRes.ok ? await docRes.json() : { documentRequests: [] };
+      reportData = reportRes.ok ? await reportRes.json() : { reports: [] };
       
-      // Create fetch options with credentials to send cookies
-      const fetchOptions = {
-        method: 'GET',
-        credentials: 'include', // Important: This sends cookies with the request
-        headers: {
-          'Content-Type': 'application/json'
+      // Special handling for proposal data
+    if (proposalRes.ok) {
+      try {
+        const proposalJson = await proposalRes.json();
+        console.log('Raw proposal response:', proposalJson);
+        
+        // Check different possible data structures
+        if (proposalJson && proposalJson.proposals && Array.isArray(proposalJson.proposals)) {
+          proposalData = { proposals: proposalJson.proposals };
+        } else if (proposalJson && Array.isArray(proposalJson)) {
+          // If the API returns an array directly
+          proposalData = { proposals: proposalJson };
+        } else if (proposalJson && proposalJson.success && proposalJson.data && Array.isArray(proposalJson.data)) {
+          // If using a success/data pattern
+          proposalData = { proposals: proposalJson.data };
+        } else {
+          console.warn('Unexpected proposal data format:', proposalJson);
+          proposalData = { proposals: [] };
         }
-      };
-      
-      // Fetch all data using Promise.all for better performance
-      let responses;
-      try {
-        responses = await Promise.all([
-          fetch(`${API_BASE_URL}/ambulance?startDate=${startDate}&endDate=${endDate}`, fetchOptions),
-          fetch(`${API_BASE_URL}/court?startDate=${startDate}&endDate=${endDate}`, fetchOptions),
-          fetch(`${API_BASE_URL}/documents?startDate=${startDate}&endDate=${endDate}`, fetchOptions),
-          fetch(`${API_BASE_URL}/reports`, fetchOptions),
-          fetch(`${API_BASE_URL}/proposals?startDate=${startDate}&endDate=${endDate}`, fetchOptions),
-          fetch(`${API_BASE_URL}/residents?limit=100000`, fetchOptions),
-          fetch(`${API_BASE_URL}/logs?limit=10`, fetchOptions)
-        ]);
-      } catch (fetchError) {
-        console.error('Error fetching data:', fetchError);
-        throw new Error('Network error when fetching data');
-      }
-      
-      const [
-        ambulanceRes, 
-        courtRes, 
-        docRes, 
-        reportRes, 
-        proposalRes, 
-        residentRes,
-        logsRes
-      ] = responses;
-      
-      // Parse all response data with proper error handling
-      let ambulanceData, courtData, docData, reportData, proposalData, residentData, logsData;
-      
-      try {
-        // Use conditional chaining to handle potential errors in each fetch response
-        ambulanceData = ambulanceRes.ok ? await ambulanceRes.json() : [];
-        courtData = courtRes.ok ? await courtRes.json() : [];
-        docData = docRes.ok ? await docRes.json() : { documentRequests: [] };
-        reportData = reportRes.ok ? await reportRes.json() : { reports: [] };
-        proposalData = proposalRes.ok ? await proposalRes.json() : { proposals: [] };
-        residentData = residentRes.ok ? await residentRes.json() : { data: [] };
-        logsData = logsRes.ok ? await logsRes.json() : { logs: [] };
       } catch (parseError) {
-        console.error('Error parsing response data:', parseError);
-        throw new Error('Error parsing server response');
+        console.error('Error parsing proposal response:', parseError);
+        proposalData = { proposals: [] };
       }
-      
-      console.log('Fetched data:', {
-        ambulance: ambulanceData,
-        court: courtData,
-        docs: docData,
-        reports: reportData,
-        proposals: proposalData,
-        residents: residentData,
-        logs: logsData
-      });
-      
-      // Process ambulance data with safe accesses
-      const ambulanceStats = {
-        total: Array.isArray(ambulanceData) ? ambulanceData.length : 0,
-        pending: Array.isArray(ambulanceData) ? ambulanceData.filter(item => item && item.status === 'pending').length : 0,
-        booked: Array.isArray(ambulanceData) ? ambulanceData.filter(item => item && item.status === 'booked').length : 0,
-        completed: Array.isArray(ambulanceData) ? ambulanceData.filter(item => item && item.status === 'completed').length : 0,
-        cancelled: Array.isArray(ambulanceData) ? ambulanceData.filter(item => item && item.status === 'cancelled').length : 0
-      };
-      
-      // Process court data with safe accesses
-      const courtStats = {
-        total: Array.isArray(courtData) ? courtData.length : 0,
-        pending: Array.isArray(courtData) ? courtData.filter(item => item && item.status === 'pending').length : 0,
-        approved: Array.isArray(courtData) ? courtData.filter(item => item && item.status === 'approved').length : 0,
-        rejected: Array.isArray(courtData) ? courtData.filter(item => item && item.status === 'rejected').length : 0,
-        cancelled: Array.isArray(courtData) ? courtData.filter(item => item && item.status === 'cancelled').length : 0
-      };
-      
-      // Add this after parsing court data
-console.log('Raw Court Data:', courtData);
-if (Array.isArray(courtData)) {
-  console.log('Total court reservations:', courtData.length);
-  console.log('Status breakdown:', {
-    pending: courtData.filter(item => item && item.status === 'pending').length,
-    approved: courtData.filter(item => item && item.status === 'approved').length,
-    rejected: courtData.filter(item => item && item.status === 'rejected').length,
-    cancelled: courtData.filter(item => item && item.status === 'cancelled').length,
-    noStatus: courtData.filter(item => !item || !item.status).length,
-    otherStatus: courtData.filter(item => item && item.status && !['pending', 'approved', 'rejected', 'cancelled'].includes(item.status)).length
-  });
-  
-  // Check if there are any reservations with unexpected status values
-  const unexpectedStatus = courtData.filter(item => item && item.status && !['pending', 'approved', 'rejected', 'cancelled'].includes(item.status));
-  if (unexpectedStatus.length > 0) {
-    console.log('Reservations with unexpected status:', unexpectedStatus);
-  }
-}
-
-      // Process document data with safe accesses
-        const docRequests = docData && Array.isArray(docData.documentRequests) ? docData.documentRequests : [];
-        const docStats = {
-        total: docRequests.length,
-        pending: docRequests.filter(item => item && item.status === 'pending').length,
-        inProgress: docRequests.filter(item => item && item.status === 'in_progress').length,
-        completed: docRequests.filter(item => item && item.status === 'completed').length,
-        rejected: docRequests.filter(item => item && item.status === 'rejected').length
-        };
-
-        const activeDocRequests = docRequests.filter(request => request.status !== 'cancelled');
-        setTotalDocRequests(activeDocRequests.length);
-
-        // Calculate document type distribution
-        const docTypeCounts = {};
-
-        docRequests.forEach(request => {
-        // Skip cancelled requests
-        if (request && request.documentType && request.status !== 'cancelled') {
-            // Format the document type name for better display
-            const formattedType = request.documentType
-            .split('_')
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-            
-            // Increment count for this document type
-            docTypeCounts[formattedType] = (docTypeCounts[formattedType] || 0) + 1;
-        }
-        });
-
-        // Convert to array format for chart
-        const docTypeData = Object.entries(docTypeCounts)
-        .map(([name, value]) => ({ name, value }))
-        .sort((a, b) => b.value - a.value); // Sort by count (descending)
-
-        // Add "Other Types" category if there are more than 5 types
-        if (docTypeData.length > 5) {
-        const topTypes = docTypeData.slice(0, 4);
-        const otherTypes = docTypeData.slice(4);
-        const otherCount = otherTypes.reduce((sum, type) => sum + type.value, 0);
-        
-        setDocumentTypeDistribution([
-            ...topTypes,
-            { name: 'Other Types', value: otherCount }
-        ]);
-        } else {
-        // Use all document types if 5 or fewer
-        setDocumentTypeDistribution(docTypeData);
-        }
-
-      // Process report data with safe accesses
-      const reports = reportData && Array.isArray(reportData.reports) ? reportData.reports : [];
-      const reportStats = {
-        total: reports.length,
-        pending: reports.filter(item => item && item.status === 'Pending').length,
-        inProgress: reports.filter(item => item && item.status === 'In Progress').length,
-        resolved: reports.filter(item => item && item.status === 'Resolved').length,
-        cancelled: reports.filter(item => item && item.status === 'Cancelled').length
-      };
-      
-      // Calculate average resolution time for resolved reports
-        let averageResolutionTime = 0;
-        let resolvedReportsWithDates = 0;
-
-        if (reports && Array.isArray(reports)) {
-        // Filter only resolved reports that have both created and updated dates
-        const resolvedReports = reports.filter(
-            report => report && report.status === 'Resolved' && report.createdAt && report.updatedAt
-        );
-        
-        if (resolvedReports.length > 0) {
-            // Calculate total resolution time in milliseconds
-            const totalResolutionTime = resolvedReports.reduce((total, report) => {
-            const createdDate = new Date(report.createdAt);
-            const updatedDate = new Date(report.updatedAt);
-            return total + (updatedDate - createdDate);
-            }, 0);
-            
-            // Calculate average resolution time in days
-            averageResolutionTime = totalResolutionTime / resolvedReports.length / (1000 * 60 * 60 * 24);
-            resolvedReportsWithDates = resolvedReports.length;
-        }
-        }
-
-        // Calculate issue type distribution
-        const issueTypeCounts = {};
-
-        if (reports && Array.isArray(reports)) {
-        reports.forEach(report => {
-            if (report && report.issueType) {
-            // Increment count for this issue type
-            issueTypeCounts[report.issueType] = (issueTypeCounts[report.issueType] || 0) + 1;
-            }
-        });
-        }
-
-        // Convert to array format for chart
-        const issueTypeData = Object.entries(issueTypeCounts)
-        .map(([name, value]) => ({ name, value }))
-        .sort((a, b) => b.value - a.value); // Sort by count (descending)
-
-        // Add "Other Issues" category if there are more than 5 types
-        if (issueTypeData.length > 5) {
-        const topIssues = issueTypeData.slice(0, 4);
-        const otherIssues = issueTypeData.slice(4);
-        const otherCount = otherIssues.reduce((sum, issue) => sum + issue.value, 0);
-        
-        const chartData = [
-            ...topIssues,
-            { name: 'Other Issues', value: otherCount }
-        ];
-        
-        // Store the processed issue type data
-        setReportIssueTypes(chartData);
-        } else {
-        // Use all issue types if 5 or fewer
-        setReportIssueTypes(issueTypeData);
-        }
-
-        // Store the average resolution time
-        setReportStats(prevStats => ({
-        ...prevStats,
-        averageResolutionTime: averageResolutionTime.toFixed(1),
-        resolvedCount: resolvedReportsWithDates
-        }));
-      // Process proposal data with safe accesses
-      const proposals = proposalData && Array.isArray(proposalData.proposals) ? proposalData.proposals : [];
-      const proposalStats = {
-        total: proposals.length,
-        pending: proposals.filter(item => item && item.status === 'pending').length,
-        inReview: proposals.filter(item => item && item.status === 'in_review').length,
-        considered: proposals.filter(item => item && item.status === 'considered').length,
-        approved: proposals.filter(item => item && item.status === 'approved').length,
-        rejected: proposals.filter(item => item && item.status === 'rejected').length
-      };
-      
-      // Calculate today's requests
-      const today = new Date().toISOString().split('T')[0];
-      
-      // Safe array operations
-      const todayAmbulance = Array.isArray(ambulanceData) ? 
-        ambulanceData.filter(item => item && item.createdAt && item.createdAt.startsWith(today)).length : 0;
-      
-      const todayCourt = Array.isArray(courtData) ? 
-        courtData.filter(item => item && item.createdAt && item.createdAt.startsWith(today)).length : 0;
-      
-      const todayDocs = docRequests.filter(item => 
-        item && item.createdAt && item.createdAt.startsWith(today)
-      ).length;
-      
-      const todayReports = reports.filter(item => 
-        item && item.createdAt && item.createdAt.startsWith(today)
-      ).length;
-      
-      const todayProposals = proposals.filter(item => 
-        item && item.createdAt && item.createdAt.startsWith(today)
-      ).length;
-      
-      const todayRequests = todayAmbulance + todayCourt + todayDocs + todayReports + todayProposals;
-      
-      // Process resident data - IMPORTANT: This needs to be defined before using it
-      const residents = residentData && residentData.data ? residentData.data : [];
-      
-      // Handle resident counts safely
-      // Count verified residents - those with isVerified = true
-        const verifiedCount = residents.filter(resident => resident && resident.isVerified === true).length;
-        // For voter count, ONLY count voters who are ALSO verified
-        // This ensures unverified voters don't count toward the voter count
-        const voterCount = residents.filter(resident => 
-            resident && resident.isVerified === true && resident.isVoter === true
-        ).length;
-        // For pending count, only count residents with isVerified = false (unverified)
-        const pendingCount = residents.filter(resident => 
-            resident && resident.isVerified === false
-        ).length;
-      
-      // Log detailed counts for debugging
-        console.log("Resident counts:", {
-            total: residents.length,
-            verified: verifiedCount,
-            verifiedVoters: voterCount,
-            pending: pendingCount
-        });
-      
-      // Update the stats state with the correct counts
-        setStats({
-            todayRequests,
-            residentCount: residents.length,
-            verifiedCount,
-            voterCount,
-            pendingCount
-        });
-      
-      // Update service data state
-      setServiceData({
-        ambulance: ambulanceStats,
-        court: courtStats,
-        documents: docStats,
-        reports: reportStats,
-        proposals: proposalStats
-      });
-      
-      // Generate time series data for trend analysis
-      const dateMap = new Map();
-      
-      // Initialize dates for the past X days
-      for (let i = 0; i < days; i++) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
-        dateMap.set(dateStr, {
-          date: dateStr,
-          ambulance: 0,
-          court: 0,
-          documents: 0,
-          reports: 0,
-          proposals: 0,
-          total: 0
-        });
-      }
-      
-      // Count requests by date for each service with safe accesses
-      if (Array.isArray(ambulanceData)) {
-        ambulanceData.forEach(booking => {
-          if (booking && booking.createdAt) {
-            const dateStr = new Date(booking.createdAt).toISOString().split('T')[0];
-            if (dateMap.has(dateStr)) {
-              const dayData = dateMap.get(dateStr);
-              dayData.ambulance += 1;
-              dayData.total += 1;
-              dateMap.set(dateStr, dayData);
-            }
-          }
-        });
-      }
-      
-      if (Array.isArray(courtData)) {
-        courtData.forEach(reservation => {
-          if (reservation && reservation.createdAt) {
-            const dateStr = new Date(reservation.createdAt).toISOString().split('T')[0];
-            if (dateMap.has(dateStr)) {
-              const dayData = dateMap.get(dateStr);
-              dayData.court += 1;
-              dayData.total += 1;
-              dateMap.set(dateStr, dayData);
-            }
-          }
-        });
-      }
-      
-      docRequests.forEach(doc => {
-        // Skip cancelled requests
-        if (doc && doc.createdAt && doc.status !== 'cancelled') {
-          const dateStr = new Date(doc.createdAt).toISOString().split('T')[0];
-          if (dateMap.has(dateStr)) {
-            const dayData = dateMap.get(dateStr);
-            dayData.documents += 1;
-            dayData.total += 1;
-            dateMap.set(dateStr, dayData);
-          }
-        }
-      });
-      
-      reports.forEach(report => {
-        if (report && report.createdAt) {
-          const dateStr = new Date(report.createdAt).toISOString().split('T')[0];
-          if (dateMap.has(dateStr)) {
-            const dayData = dateMap.get(dateStr);
-            dayData.reports += 1;
-            dayData.total += 1;
-            dateMap.set(dateStr, dayData);
-          }
-        }
-      });
-      
-      proposals.forEach(proposal => {
-        if (proposal && proposal.createdAt) {
-          const dateStr = new Date(proposal.createdAt).toISOString().split('T')[0];
-          if (dateMap.has(dateStr)) {
-            const dayData = dateMap.get(dateStr);
-            dayData.proposals += 1;
-            dayData.total += 1;
-            dateMap.set(dateStr, dayData);
-          }
-        }
-      });
-      
-      // Convert Map to array and sort by date
-      const timeSeriesArray = Array.from(dateMap.values())
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
-      
-      setTimeSeriesData(timeSeriesArray);
-      
-      // Create service distribution data for pie chart
-      setServiceDistribution([
-        { name: 'Ambulance', value: ambulanceStats.total },
-        { name: 'Court', value: courtStats.total },
-        { name: 'Documents', value: docStats.total },
-        { name: 'Reports', value: reportStats.total },
-        { name: 'Proposals', value: proposalStats.total }
-      ]);
-      
-      // Create request trends data
-      const weekData = timeSeriesArray.slice(-7);
-      const monthData = timeSeriesArray;
-      
-      const weeklyAvg = weekData.reduce((acc, curr) => acc + curr.total, 0) / Math.max(weekData.length, 1);
-      const monthlyAvg = monthData.reduce((acc, curr) => acc + curr.total, 0) / Math.max(monthData.length, 1);
-      
-      setRequestTrends([
-        { name: 'Today', value: todayRequests },
-        { name: 'Weekly Avg', value: weeklyAvg.toFixed(1) },
-        { name: 'Monthly Avg', value: monthlyAvg.toFixed(1) }
-      ]);
-      
-      // Count residents by type - ensure all types are counted separately
-      const typeCounter = {
-        'Minor': 0,
-        '18-30': 0,
-        'Illiterate': 0, 
-        'PWD': 0,
-        'Senior Citizen': 0,
-        'Indigent': 0
-      };
-      
-      // Count each type individually with safe access
-      residents
-        .filter(resident => resident && resident.isVerified === true) // Filter for verified residents only
-        .forEach(resident => {
-            if (resident && resident.types && Array.isArray(resident.types)) {
-            resident.types.forEach(type => {
-                // Increment counter for this specific type
-                if (typeCounter.hasOwnProperty(type)) {
-                typeCounter[type] += 1;
-                }
-            });
-            }
-        });
-      
-      // Log the type counter for debugging
-      console.log("Verified residents type counter:", typeCounter);
-      
-      // Create type data for charts - filter out zero values
-    const residentTypeData = Object.entries(typeCounter)
-        .filter(([name, value]) => value > 0)
-        .map(([name, value]) => ({ name, value }));
-      
-      setResidentTypes(residentTypeData);
-      
-      // Create resident registration trends data
-      // Group residents by registration month
-      const registrationDateMap = new Map();
-  
-      // Initialize last 12 months
-      for (let i = 0; i < 12; i++) {
-        const date = new Date();
-        date.setMonth(date.getMonth() - i);
-        const monthYear = date.toLocaleString('default', { month: 'short', year: 'numeric' });
-        registrationDateMap.set(monthYear, {
-          month: monthYear,
-          residents: 0
-        });
-      }
-  
-      // Count registrations by month with safe access
-      residents
-        .filter(resident => resident && resident.isVerified === true) // Filter for verified residents only
-        .forEach(resident => {
-            if (resident && resident.createdAt) {
-            const date = new Date(resident.createdAt);
-            const monthYear = date.toLocaleString('default', { month: 'short', year: 'numeric' });
-            if (registrationDateMap.has(monthYear)) {
-                const monthData = registrationDateMap.get(monthYear);
-                monthData.residents += 1;
-                registrationDateMap.set(monthYear, monthData);
-            }
-            }
-        });
-  
-      // Convert Map to array and sort by date
-    const registrationTrendsArray = Array.from(registrationDateMap.values())
-        .sort((a, b) => {
-            try {
-            const [aMonth, aYear] = a.month.split(' ');
-            const [bMonth, bYear] = b.month.split(' ');
-            const aDate = new Date(`${aMonth} 1, ${aYear}`);
-            const bDate = new Date(`${bMonth} 1, ${bYear}`);
-            return aDate - bDate;
-            } catch (e) {
-            console.error('Error sorting registration trends:', e);
-            return 0;
-            }
-        });
-  
-      setResidentRegistrationTrends(registrationTrendsArray);
-      
-      // Process logs for recent activity with safe accesses
-      if (logsData && Array.isArray(logsData.logs) && logsData.logs.length > 0) {
-        // Use actual logs from backend
-        const formattedLogs = logsData.logs.map(log => ({
-          id: log._id || `log-${Math.random()}`,
-          type: log.entityType || (log.action ? log.action.split('_')[0] : 'Activity'),
-          action: log.action || 'ACTIVITY',
-          details: log.details || 'System activity',
-          admin: log.adminName || 'System',
-          timestamp: new Date(log.timestamp || log.createdAt || Date.now())
-        })).slice(0, 10); // Get 10 most recent
-        
-        setRecentActivity(formattedLogs);
-      } else if (Array.isArray(ambulanceData) && ambulanceData.length > 0 || 
-                 Array.isArray(courtData) && courtData.length > 0) {
-        // If no logs, create activity from recent requests
-        const activities = [];
-        
-        // Add recent ambulance bookings
-        if (Array.isArray(ambulanceData)) {
-          ambulanceData.slice(0, 3).forEach(booking => {
-            if (booking && booking.createdAt) {
-              activities.push({
-                id: booking._id || `amb-${Math.random()}`,
-                type: 'Ambulance',
-                action: 'BOOKING_CREATED',
-                details: `Ambulance booking for ${booking.patientName || 'Unknown'}`,
-                admin: booking.processedBy ? 
-                  `${booking.processedBy.firstName || ''} ${booking.processedBy.lastName || ''}` : 
-                  'System',
-                timestamp: new Date(booking.createdAt)
-              });
-            }
-          });
-        }
-        
-        // Add recent court reservations
-        if (Array.isArray(courtData)) {
-          courtData.slice(0, 3).forEach(reservation => {
-            if (reservation && reservation.createdAt) {
-              activities.push({
-                id: reservation._id || `court-${Math.random()}`,
-                type: 'Court',
-                action: 'RESERVATION_CREATED',
-                details: `Court reservation by ${reservation.representativeName || 'Unknown'}`,
-                admin: reservation.processedBy ? 
-                  `${reservation.processedBy.firstName || ''} ${reservation.processedBy.lastName || ''}` : 
-                  'System',
-                timestamp: new Date(reservation.createdAt)
-              });
-            }
-          });
-        }
-        
-        // Sort by timestamp and take top 10
-        activities.sort((a, b) => b.timestamp - a.timestamp);
-        setRecentActivity(activities.slice(0, 10));
-      } else {
-        // Fallback with sample data if no real data is available
-        setRecentActivity([
-          { id: '1', type: 'Ambulance', action: 'BOOKING_CREATED', details: 'New ambulance booking', admin: 'Admin', timestamp: new Date() },
-          { id: '2', type: 'Document', action: 'REQUEST_APPROVED', details: 'Document request approved', admin: 'Admin', timestamp: new Date(Date.now() - 3600000) },
-          { id: '3', type: 'Court', action: 'RESERVATION_CANCELLED', details: 'Court reservation cancelled', admin: 'Admin', timestamp: new Date(Date.now() - 7200000) }
-        ]);
-      }
-      
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err);
-      setError('Failed to load dashboard data. Please try again later.');
-      setLoading(false);
+    } else {
+      console.error('Proposal fetch failed:', proposalRes.status, proposalRes.statusText);
+      proposalData = { proposals: [] };
     }
-  };
+
+    console.log('Processed proposal data:', proposalData);
+      
+      residentData = residentRes.ok ? await residentRes.json() : { data: [] };
+      logsData = logsRes.ok ? await logsRes.json() : { logs: [] };
+    } catch (parseError) {
+      console.error('Error parsing response data:', parseError);
+      throw new Error('Error parsing server response');
+    }
+    
+    console.log('Fetched data:', {
+      ambulance: Array.isArray(ambulanceData) ? ambulanceData.length : 'not an array',
+      court: Array.isArray(courtData) ? courtData.length : 'not an array',
+      docs: docData && docData.documentRequests ? docData.documentRequests.length : 0,
+      reports: reportData && reportData.reports ? reportData.reports.length : 0,
+      proposals: proposalData && proposalData.proposals ? proposalData.proposals.length : 0,
+      residents: residentData && residentData.data ? residentData.data.length : 0,
+      logs: logsData && logsData.logs ? logsData.logs.length : 0
+    });
+    
+    // Process ambulance data with safe accesses
+    const ambulanceStats = {
+      total: Array.isArray(ambulanceData) ? ambulanceData.length : 0,
+      pending: Array.isArray(ambulanceData) ? ambulanceData.filter(item => item && item.status === 'pending').length : 0,
+      booked: Array.isArray(ambulanceData) ? ambulanceData.filter(item => item && item.status === 'booked').length : 0,
+      completed: Array.isArray(ambulanceData) ? ambulanceData.filter(item => item && item.status === 'completed').length : 0,
+      cancelled: Array.isArray(ambulanceData) ? ambulanceData.filter(item => item && item.status === 'cancelled').length : 0
+    };
+    
+    // Process court data with safe accesses
+    const courtStats = {
+      total: Array.isArray(courtData) ? courtData.length : 0,
+      pending: Array.isArray(courtData) ? courtData.filter(item => item && item.status === 'pending').length : 0,
+      approved: Array.isArray(courtData) ? courtData.filter(item => item && item.status === 'approved').length : 0,
+      rejected: Array.isArray(courtData) ? courtData.filter(item => item && item.status === 'rejected').length : 0,
+      cancelled: Array.isArray(courtData) ? courtData.filter(item => item && item.status === 'cancelled').length : 0
+    };
+    
+    // Add this after parsing court data
+    console.log('Raw Court Data:', courtData);
+    if (Array.isArray(courtData)) {
+      console.log('Total court reservations:', courtData.length);
+      console.log('Status breakdown:', {
+        pending: courtData.filter(item => item && item.status === 'pending').length,
+        approved: courtData.filter(item => item && item.status === 'approved').length,
+        rejected: courtData.filter(item => item && item.status === 'rejected').length,
+        cancelled: courtData.filter(item => item && item.status === 'cancelled').length,
+        noStatus: courtData.filter(item => !item || !item.status).length,
+        otherStatus: courtData.filter(item => item && item.status && !['pending', 'approved', 'rejected', 'cancelled'].includes(item.status)).length
+      });
+      
+      // Check if there are any reservations with unexpected status values
+      const unexpectedStatus = courtData.filter(item => item && item.status && !['pending', 'approved', 'rejected', 'cancelled'].includes(item.status));
+      if (unexpectedStatus.length > 0) {
+        console.log('Reservations with unexpected status:', unexpectedStatus);
+      }
+    }
+
+    // Process document data with safe accesses
+    const docRequests = docData && Array.isArray(docData.documentRequests) ? docData.documentRequests : [];
+    const docStats = {
+      total: docRequests.length,
+      pending: docRequests.filter(item => item && item.status === 'pending').length,
+      inProgress: docRequests.filter(item => item && item.status === 'in_progress').length,
+      completed: docRequests.filter(item => item && item.status === 'completed').length,
+      rejected: docRequests.filter(item => item && item.status === 'rejected').length
+    };
+
+    const activeDocRequests = docRequests.filter(request => request.status !== 'cancelled');
+    setTotalDocRequests(activeDocRequests.length);
+
+    // Calculate document type distribution
+    const docTypeCounts = {};
+
+    docRequests.forEach(request => {
+      // Skip cancelled requests
+      if (request && request.documentType && request.status !== 'cancelled') {
+        // Format the document type name for better display
+        const formattedType = request.documentType
+          .split('_')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
+        
+        // Increment count for this document type
+        docTypeCounts[formattedType] = (docTypeCounts[formattedType] || 0) + 1;
+      }
+    });
+
+    // Convert to array format for chart
+    const docTypeData = Object.entries(docTypeCounts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value); // Sort by count (descending)
+
+    // Add "Other Types" category if there are more than 5 types
+    if (docTypeData.length > 5) {
+      const topTypes = docTypeData.slice(0, 4);
+      const otherTypes = docTypeData.slice(4);
+      const otherCount = otherTypes.reduce((sum, type) => sum + type.value, 0);
+      
+      setDocumentTypeDistribution([
+        ...topTypes,
+        { name: 'Other Types', value: otherCount }
+      ]);
+    } else {
+      // Use all document types if 5 or fewer
+      setDocumentTypeDistribution(docTypeData);
+    }
+
+    // Process report data with safe accesses
+    const reports = reportData && Array.isArray(reportData.reports) ? reportData.reports : [];
+    const reportStats = {
+      total: reports.length,
+      pending: reports.filter(item => item && item.status === 'Pending').length,
+      inProgress: reports.filter(item => item && item.status === 'In Progress').length,
+      resolved: reports.filter(item => item && item.status === 'Resolved').length,
+      cancelled: reports.filter(item => item && item.status === 'Cancelled').length
+    };
+    
+    // Calculate average resolution time for resolved reports
+    let averageResolutionTime = 0;
+    let resolvedReportsWithDates = 0;
+
+    if (reports && Array.isArray(reports)) {
+      // Filter only resolved reports that have both created and updated dates
+      const resolvedReports = reports.filter(
+        report => report && report.status === 'Resolved' && report.createdAt && report.updatedAt
+      );
+      
+      if (resolvedReports.length > 0) {
+        // Calculate total resolution time in milliseconds
+        const totalResolutionTime = resolvedReports.reduce((total, report) => {
+          const createdDate = new Date(report.createdAt);
+          const updatedDate = new Date(report.updatedAt);
+          return total + (updatedDate - createdDate);
+        }, 0);
+        
+        // Calculate average resolution time in days
+        averageResolutionTime = totalResolutionTime / resolvedReports.length / (1000 * 60 * 60 * 24);
+        resolvedReportsWithDates = resolvedReports.length;
+      }
+    }
+
+    // Calculate issue type distribution
+    const issueTypeCounts = {};
+
+    if (reports && Array.isArray(reports)) {
+      reports.forEach(report => {
+        if (report && report.issueType) {
+          // Increment count for this issue type
+          issueTypeCounts[report.issueType] = (issueTypeCounts[report.issueType] || 0) + 1;
+        }
+      });
+    }
+
+    // Convert to array format for chart
+    const issueTypeData = Object.entries(issueTypeCounts)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value); // Sort by count (descending)
+
+    // Add "Other Issues" category if there are more than 5 types
+    if (issueTypeData.length > 5) {
+      const topIssues = issueTypeData.slice(0, 4);
+      const otherIssues = issueTypeData.slice(4);
+      const otherCount = otherIssues.reduce((sum, issue) => sum + issue.value, 0);
+      
+      const chartData = [
+        ...topIssues,
+        { name: 'Other Issues', value: otherCount }
+      ];
+      
+      // Store the processed issue type data
+      setReportIssueTypes(chartData);
+    } else {
+      // Use all issue types if 5 or fewer
+      setReportIssueTypes(issueTypeData);
+    }
+
+    // Store the average resolution time
+    setReportStats(prevStats => ({
+      ...prevStats,
+      averageResolutionTime: averageResolutionTime.toFixed(1),
+      resolvedCount: resolvedReportsWithDates
+    }));
+
+    // Process proposal data with safe accesses - FIXED
+    const proposals = proposalData && Array.isArray(proposalData.proposals) ? proposalData.proposals : [];
+    console.log('Processing proposals array:', proposals);
+    
+    // Log each proposal for debugging
+    if (proposals.length > 0) {
+      console.log('First proposal example:', proposals[0]);
+    } else {
+      console.log('No proposals found in the data');
+    }
+    
+    const proposalStats = {
+      total: proposals.length,
+      pending: proposals.filter(item => item && item.status === 'pending').length,
+      inReview: proposals.filter(item => item && item.status === 'in_review').length,
+      considered: proposals.filter(item => item && item.status === 'considered').length,
+      approved: proposals.filter(item => item && item.status === 'approved').length,
+      rejected: proposals.filter(item => item && item.status === 'rejected').length
+    };
+    
+    console.log('Proposal stats calculated:', proposalStats);
+    
+    // Calculate today's requests
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Safe array operations
+    const todayAmbulance = Array.isArray(ambulanceData) ? 
+      ambulanceData.filter(item => item && item.createdAt && item.createdAt.startsWith(today)).length : 0;
+    
+    const todayCourt = Array.isArray(courtData) ? 
+      courtData.filter(item => item && item.createdAt && item.createdAt.startsWith(today)).length : 0;
+    
+    const todayDocs = docRequests.filter(item => 
+      item && item.createdAt && item.createdAt.startsWith(today)
+    ).length;
+    
+    const todayReports = reports.filter(item => 
+      item && item.createdAt && item.createdAt.startsWith(today)
+    ).length;
+    
+    // Fix for today's proposals - ensure we're checking the date correctly
+    const todayProposals = proposals.filter(item => {
+      if (!item || !item.createdAt) return false;
+      // Try to handle different date formats
+      const itemDate = typeof item.createdAt === 'string' ? item.createdAt : 
+                      (item.createdAt instanceof Date ? item.createdAt.toISOString() : null);
+      return itemDate ? itemDate.startsWith(today) : false;
+    }).length;
+    
+    console.log('Today\'s requests:', {
+      ambulance: todayAmbulance,
+      court: todayCourt,
+      docs: todayDocs,
+      reports: todayReports,
+      proposals: todayProposals,
+      total: todayAmbulance + todayCourt + todayDocs + todayReports + todayProposals
+    });
+    
+    const todayRequests = todayAmbulance + todayCourt + todayDocs + todayReports + todayProposals;
+    
+    // Process resident data - IMPORTANT: This needs to be defined before using it
+    const residents = residentData && residentData.data ? residentData.data : [];
+    
+    // Handle resident counts safely
+    // Count verified residents - those with isVerified = true
+    const verifiedCount = residents.filter(resident => resident && resident.isVerified === true).length;
+    // For voter count, ONLY count voters who are ALSO verified
+    // This ensures unverified voters don't count toward the voter count
+    const voterCount = residents.filter(resident => 
+      resident && resident.isVerified === true && resident.isVoter === true
+    ).length;
+    // For pending count, only count residents with isVerified = false (unverified)
+    const pendingCount = residents.filter(resident => 
+      resident && resident.isVerified === false
+    ).length;
+    
+    // Log detailed counts for debugging
+    console.log("Resident counts:", {
+      total: residents.length,
+      verified: verifiedCount,
+      verifiedVoters: voterCount,
+      pending: pendingCount
+    });
+    
+    // Update the stats state with the correct counts
+    setStats({
+      todayRequests,
+      residentCount: residents.length,
+      verifiedCount,
+      voterCount,
+      pendingCount
+    });
+    
+    // Update service data state - FIXED to include proposals correctly
+    setServiceData({
+      ambulance: ambulanceStats,
+      court: courtStats,
+      documents: docStats,
+      reports: reportStats,
+      proposals: proposalStats
+    });
+    
+    // Generate time series data for trend analysis
+    const dateMap = new Map();
+    
+    // Initialize dates for the past X days
+    for (let i = 0; i < days; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      dateMap.set(dateStr, {
+        date: dateStr,
+        ambulance: 0,
+        court: 0,
+        documents: 0,
+        reports: 0,
+        proposals: 0,
+        total: 0
+      });
+    }
+    
+    // Count requests by date for each service with safe accesses
+    if (Array.isArray(ambulanceData)) {
+      ambulanceData.forEach(booking => {
+        if (booking && booking.createdAt) {
+          const dateStr = new Date(booking.createdAt).toISOString().split('T')[0];
+          if (dateMap.has(dateStr)) {
+            const dayData = dateMap.get(dateStr);
+            dayData.ambulance += 1;
+            dayData.total += 1;
+            dateMap.set(dateStr, dayData);
+          }
+        }
+      });
+    }
+    
+    if (Array.isArray(courtData)) {
+      courtData.forEach(reservation => {
+        if (reservation && reservation.createdAt) {
+          const dateStr = new Date(reservation.createdAt).toISOString().split('T')[0];
+          if (dateMap.has(dateStr)) {
+            const dayData = dateMap.get(dateStr);
+            dayData.court += 1;
+            dayData.total += 1;
+            dateMap.set(dateStr, dayData);
+          }
+        }
+      });
+    }
+    
+    docRequests.forEach(doc => {
+      // Skip cancelled requests
+      if (doc && doc.createdAt && doc.status !== 'cancelled') {
+        const dateStr = new Date(doc.createdAt).toISOString().split('T')[0];
+        if (dateMap.has(dateStr)) {
+          const dayData = dateMap.get(dateStr);
+          dayData.documents += 1;
+          dayData.total += 1;
+          dateMap.set(dateStr, dayData);
+        }
+      }
+    });
+    
+    reports.forEach(report => {
+      if (report && report.createdAt) {
+        const dateStr = new Date(report.createdAt).toISOString().split('T')[0];
+        if (dateMap.has(dateStr)) {
+          const dayData = dateMap.get(dateStr);
+          dayData.reports += 1;
+          dayData.total += 1;
+          dateMap.set(dateStr, dayData);
+        }
+      }
+    });
+    
+    // FIXED: proper handling of proposal dates
+    proposals.forEach(proposal => {
+      if (proposal && proposal.createdAt) {
+        try {
+          // Convert to date object to handle different date formats
+          const dateObj = new Date(proposal.createdAt);
+          if (!isNaN(dateObj.getTime())) {
+            const dateStr = dateObj.toISOString().split('T')[0];
+            if (dateMap.has(dateStr)) {
+              const dayData = dateMap.get(dateStr);
+              dayData.proposals += 1;
+              dayData.total += 1;
+              dateMap.set(dateStr, dayData);
+            }
+          }
+        } catch (dateError) {
+          console.error('Error processing proposal date:', dateError, proposal);
+        }
+      }
+    });
+    
+    // Log the date map to verify proposal data is being counted
+    console.log('Date map entries (sample):', Array.from(dateMap.entries()).slice(0, 5));
+    
+    // Convert Map to array and sort by date
+    const timeSeriesArray = Array.from(dateMap.values())
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    console.log('Time series data sample:', timeSeriesArray.slice(0, 5));
+    
+    setTimeSeriesData(timeSeriesArray);
+    
+    // Create service distribution data for pie chart - FIXED to include proposals
+    setServiceDistribution([
+      { name: 'Ambulance', value: ambulanceStats.total },
+      { name: 'Court', value: courtStats.total },
+      { name: 'Documents', value: docStats.total },
+      { name: 'Reports', value: reportStats.total },
+      { name: 'Proposals', value: proposalStats.total }
+    ]);
+    
+    // Create request trends data
+    const weekData = timeSeriesArray.slice(-7);
+    const monthData = timeSeriesArray;
+    
+    const weeklyAvg = weekData.reduce((acc, curr) => acc + curr.total, 0) / Math.max(weekData.length, 1);
+    const monthlyAvg = monthData.reduce((acc, curr) => acc + curr.total, 0) / Math.max(monthData.length, 1);
+    
+    setRequestTrends([
+      { name: 'Today', value: todayRequests },
+      { name: 'Weekly Avg', value: weeklyAvg.toFixed(1) },
+      { name: 'Monthly Avg', value: monthlyAvg.toFixed(1) }
+    ]);
+    
+    // Count residents by type - ensure all types are counted separately
+    const typeCounter = {
+      'Minor': 0,
+      '18-30': 0,
+      'Illiterate': 0, 
+      'PWD': 0,
+      'Senior Citizen': 0,
+      'Indigent': 0
+    };
+    
+    // Count each type individually with safe access
+    residents
+      .filter(resident => resident && resident.isVerified === true) // Filter for verified residents only
+      .forEach(resident => {
+        if (resident && resident.types && Array.isArray(resident.types)) {
+          resident.types.forEach(type => {
+            // Increment counter for this specific type
+            if (typeCounter.hasOwnProperty(type)) {
+              typeCounter[type] += 1;
+            }
+          });
+        }
+      });
+    
+    // Log the type counter for debugging
+    console.log("Verified residents type counter:", typeCounter);
+    
+    // Create type data for charts - filter out zero values
+    const residentTypeData = Object.entries(typeCounter)
+      .filter(([name, value]) => value > 0)
+      .map(([name, value]) => ({ name, value }));
+    
+    setResidentTypes(residentTypeData);
+    
+    // Create resident registration trends data
+    // Group residents by registration month
+    const registrationDateMap = new Map();
+
+    // Initialize last 12 months
+    for (let i = 0; i < 12; i++) {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      const monthYear = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+      registrationDateMap.set(monthYear, {
+        month: monthYear,
+        residents: 0
+      });
+    }
+
+    // Count registrations by month with safe access
+    residents
+      .filter(resident => resident && resident.isVerified === true) // Filter for verified residents only
+      .forEach(resident => {
+        if (resident && resident.createdAt) {
+          const date = new Date(resident.createdAt);
+          const monthYear = date.toLocaleString('default', { month: 'short', year: 'numeric' });
+          if (registrationDateMap.has(monthYear)) {
+            const monthData = registrationDateMap.get(monthYear);
+            monthData.residents += 1;
+            registrationDateMap.set(monthYear, monthData);
+          }
+        }
+      });
+
+    // Convert Map to array and sort by date
+    const registrationTrendsArray = Array.from(registrationDateMap.values())
+      .sort((a, b) => {
+        try {
+          const [aMonth, aYear] = a.month.split(' ');
+          const [bMonth, bYear] = b.month.split(' ');
+          const aDate = new Date(`${aMonth} 1, ${aYear}`);
+          const bDate = new Date(`${bMonth} 1, ${bYear}`);
+          return aDate - bDate;
+        } catch (e) {
+          console.error('Error sorting registration trends:', e);
+          return 0;
+        }
+      });
+
+    setResidentRegistrationTrends(registrationTrendsArray);
+    
+    // Process logs for recent activity with safe accesses
+    if (logsData && Array.isArray(logsData.logs) && logsData.logs.length > 0) {
+      // Use actual logs from backend
+      const formattedLogs = logsData.logs.map(log => ({
+        id: log._id || `log-${Math.random()}`,
+        type: log.entityType || (log.action ? log.action.split('_')[0] : 'Activity'),
+        action: log.action || 'ACTIVITY',
+        details: log.details || 'System activity',
+        admin: log.adminName || 'System',
+        timestamp: new Date(log.timestamp || log.createdAt || Date.now())
+      })).slice(0, 10); // Get 10 most recent
+      
+      setRecentActivity(formattedLogs);
+    } else if (Array.isArray(ambulanceData) && ambulanceData.length > 0 || 
+                Array.isArray(courtData) && courtData.length > 0) {
+      // If no logs, create activity from recent requests
+      const activities = [];
+      
+      // Add recent ambulance bookings
+      if (Array.isArray(ambulanceData)) {
+        ambulanceData.slice(0, 3).forEach(booking => {
+          if (booking && booking.createdAt) {
+            activities.push({
+              id: booking._id || `amb-${Math.random()}`,
+              type: 'Ambulance',
+              action: 'BOOKING_CREATED',
+              details: `Ambulance booking for ${booking.patientName || 'Unknown'}`,
+              admin: booking.processedBy ? 
+                `${booking.processedBy.firstName || ''} ${booking.processedBy.lastName || ''}` : 
+                'System',
+              timestamp: new Date(booking.createdAt)
+            });
+          }
+        });
+      }
+      
+      // Add recent court reservations
+      if (Array.isArray(courtData)) {
+        courtData.slice(0, 3).forEach(reservation => {
+          if (reservation && reservation.createdAt) {
+            activities.push({
+              id: reservation._id || `court-${Math.random()}`,
+              type: 'Court',
+              action: 'RESERVATION_CREATED',
+              details: `Court reservation by ${reservation.representativeName || 'Unknown'}`,
+              admin: reservation.processedBy ? 
+                `${reservation.processedBy.firstName || ''} ${reservation.processedBy.lastName || ''}` : 
+                'System',
+              timestamp: new Date(reservation.createdAt)
+            });
+          }
+        });
+      }
+      
+      // ADDED: Include recent proposal activities
+      if (Array.isArray(proposals) && proposals.length > 0) {
+        proposals.slice(0, 3).forEach(proposal => {
+          if (proposal && proposal.createdAt) {
+            activities.push({
+              id: proposal._id || `proposal-${Math.random()}`,
+              type: 'Proposal',
+              action: 'PROPOSAL_SUBMITTED',
+              details: `Project proposal "${proposal.projectTitle || 'Unknown'}" submitted`,
+              admin: proposal.processedBy ? 
+                `${proposal.processedBy.firstName || ''} ${proposal.processedBy.lastName || ''}` : 
+                'System',
+              timestamp: new Date(proposal.createdAt)
+            });
+          }
+        });
+      }
+      
+      // Sort by timestamp and take top 10
+      activities.sort((a, b) => b.timestamp - a.timestamp);
+      setRecentActivity(activities.slice(0, 10));
+    } else {
+      // Fallback with sample data if no real data is available
+      setRecentActivity([
+        { id: '1', type: 'Ambulance', action: 'BOOKING_CREATED', details: 'New ambulance booking', admin: 'Admin', timestamp: new Date() },
+        { id: '2', type: 'Document', action: 'REQUEST_APPROVED', details: 'Document request approved', admin: 'Admin', timestamp: new Date(Date.now() - 3600000) },
+        { id: '3', type: 'Court', action: 'RESERVATION_CANCELLED', details: 'Court reservation cancelled', admin: 'Admin', timestamp: new Date(Date.now() - 7200000) }
+      ]);
+    }
+    
+    setLoading(false);
+  } catch (err) {
+    console.error('Error fetching dashboard data:', err);
+    setError('Failed to load dashboard data. Please try again later.');
+    setLoading(false);
+  }
+};
   
   // Initial data fetch
   useEffect(() => {
