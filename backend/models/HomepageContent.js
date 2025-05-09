@@ -107,6 +107,30 @@ const homepageContentSchema = new mongoose.Schema({
     }
   }],
   
+  // Footer data
+  footerData: {
+    title: {
+      type: String,
+      default: 'BARANGAY MAAHAS'
+    },
+    description: {
+      type: String,
+      default: 'Your one-stop hub for essential barangay services and information. Stay updated with announcements, request forms, and connect with your local community.'
+    },
+    address: {
+      type: String,
+      default: 'Los Baños, Laguna, Philippines'
+    },
+    phone: {
+      type: String,
+      default: '+63 (049) 536-XXXX'
+    },
+    email: {
+      type: String,
+      default: 'contact@barangaymaahas.gov.ph'
+    }
+  },
+  
   // Last updated info
   lastUpdatedBy: {
     type: String

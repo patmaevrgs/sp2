@@ -80,7 +80,8 @@ import {
   updateOfficials,
   uploadCarouselImages,
   deleteCarouselImage,
-  uploadOfficialImage
+  uploadOfficialImage,
+  updateFooterData
 } from './controllers/homePageController.js';
 import multer from 'multer';
 import { generateDocument } from './controllers/documentGeneratorController.js';
@@ -212,6 +213,7 @@ router.put('/homepage/officials', updateOfficials);
 router.post('/homepage/carousel', upload.array('images'), uploadCarouselImages);
 router.delete('/homepage/carousel', deleteCarouselImage);
 router.post('/homepage/official-image', upload.single('image'), uploadOfficialImage);
+router.put('/homepage/footer', updateFooterData);
 
 // Serve static files
 import express from 'express';

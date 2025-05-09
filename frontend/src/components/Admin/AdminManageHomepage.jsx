@@ -128,6 +128,14 @@ function AdminManageHomepage() {
     const [editingOfficialIndex, setEditingOfficialIndex] = useState(-1);
     const [selectedOfficialImage, setSelectedOfficialImage] = useState(null);
     const [officialImagePreview, setOfficialImagePreview] = useState('');
+    const [footerData, setFooterData] = useState({
+        title: '',
+        description: '',
+        address: '',
+        phone: '',
+        email: ''
+      });
+
   
   useEffect(() => {
     fetchHomepageContent();
@@ -178,6 +186,14 @@ function AdminManageHomepage() {
       
       // Set officials state
       setOfficials(data.officials || []);
+
+      setFooterData(data.footerData || {
+        title: 'BARANGAY MAAHAS',
+        description: 'Your one-stop hub for essential barangay services and information. Stay updated with announcements, request forms, and connect with your local community.',
+        address: 'Los Baños, Laguna, Philippines',
+        phone: '+63 (049) 536-XXXX',
+        email: 'contact@barangaymaahas.gov.ph'
+      });
     } catch (error) {
       console.error('Error fetching homepage content:', error);
       showAlert('Error fetching homepage content. Please try again.', 'error');
@@ -231,6 +247,46 @@ function AdminManageHomepage() {
     }
   };
   
+  // ======== Footer Data Handlers ========
+const handleFooterDataChange = (e) => {
+  const { name, value } = e.target;
+  setFooterData(prev => ({
+    ...prev,
+    [name]: value
+  }));
+};
+
+const saveFooterData = async () => {
+  try {
+    setSaving(true);
+    const adminName = localStorage.getItem('firstName') + ' ' + localStorage.getItem('lastName');
+    
+    const response = await fetch('http://localhost:3002/homepage/footer', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        footerData,
+        adminName
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    
+    const data = await response.json();
+    setHomepageContent(data);
+    showAlert('Footer information updated successfully!');
+  } catch (error) {
+    console.error('Error updating footer information:', error);
+    showAlert('Error updating footer information. Please try again.', 'error');
+  } finally {
+    setSaving(false);
+  }
+};
+
   // ======== About Section Handlers ========
   const saveAboutSection = async () => {
     try {
@@ -785,6 +841,7 @@ function AdminManageHomepage() {
           <Tab label="Emergency Hotlines" />
           <Tab label="Map Location" />
           <Tab label="Officials" />
+          <Tab label="Footer" /> 
         </Tabs>
         
         {/* Welcome Section Tab */}
@@ -1579,6 +1636,88 @@ function AdminManageHomepage() {
           >
             {saving ? 'Saving...' : 'Save All Officials'}
           </Button>
+        </TabPanel>
+        {/* Footer Tab */}
+        <TabPanel value={tabValue} index={7}>
+          <Typography variant="h6" gutterBottom>
+            Update Footer Information
+          </Typography>
+          <Typography variant="body2" color="text.secondary" paragraph>
+            Update the information displayed in the site footer.
+          </Typography>
+          
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <TextField
+                name="title"
+                label="Footer Title"
+                variant="outlined"
+                fullWidth
+                value={footerData.title || ''}
+                onChange={handleFooterDataChange}
+                margin="normal"
+                helperText="Title displayed in the footer (usually barangay name)"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                name="description"
+                label="Footer Description"
+                variant="outlined"
+                fullWidth
+                multiline
+                rows={3}
+                value={footerData.description || ''}
+                onChange={handleFooterDataChange}
+                margin="normal"
+                helperText="Brief description of the barangay or site"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                name="address"
+                label="Address"
+                variant="outlined"
+                fullWidth
+                value={footerData.address || ''}
+                onChange={handleFooterDataChange}
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                name="phone"
+                label="Phone Number"
+                variant="outlined"
+                fullWidth
+                value={footerData.phone || ''}
+                onChange={handleFooterDataChange}
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <TextField
+                name="email"
+                label="Email Address"
+                variant="outlined"
+                fullWidth
+                value={footerData.email || ''}
+                onChange={handleFooterDataChange}
+                margin="normal"
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<SaveIcon />}
+                onClick={saveFooterData}
+                disabled={saving}
+              >
+                {saving ? 'Saving...' : 'Save Footer Information'}
+              </Button>
+            </Grid>
+          </Grid>
         </TabPanel>
       </Paper>
       

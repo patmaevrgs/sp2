@@ -493,3 +493,38 @@ export const uploadOfficialImage = async (req, res) => {
       res.status(500).json({ message: 'Error uploading official image', error: error.message });
     }
   };
+
+// Update footer data
+export const updateFooterData = async (req, res) => {
+  try {
+    const { footerData, adminName } = req.body;
+    
+    if (!adminName) {
+      return res.status(400).json({ message: 'Admin name is required for logging' });
+    }
+    
+    let homepageContent = await HomepageContent.findOne();
+    
+    if (!homepageContent) {
+      homepageContent = await HomepageContent.createDefaultIfNone();
+    }
+    
+    homepageContent.footerData = footerData;
+    homepageContent.lastUpdatedBy = adminName;
+    homepageContent.lastUpdatedAt = new Date();
+    
+    await homepageContent.save();
+    
+    await logAdminAction(
+      adminName,
+      'UPDATE_HOMEPAGE_FOOTER',
+      `Updated footer information`,
+      homepageContent._id
+    );
+    
+    res.status(200).json(homepageContent);
+  } catch (error) {
+    console.error('Error updating footer data:', error);
+    res.status(500).json({ message: 'Error updating footer data', error: error.message });
+  }
+};

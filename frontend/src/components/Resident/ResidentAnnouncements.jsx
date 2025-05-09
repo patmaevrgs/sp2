@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { 
   Card, 
   CardContent, 
@@ -30,6 +30,7 @@ const ResidentAnnouncements = () => {
   const [announcements, setAnnouncements] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const highlightedCardRef = useRef(null);
 
   // Get icon for announcement type
   const getTypeIcon = (typeValue) => {
@@ -92,6 +93,42 @@ const ResidentAnnouncements = () => {
         setError('Failed to load announcements. Please try again later.');
         setLoading(false);
       });
+  }, []);
+
+  // Add this new useEffect for handling hash navigation
+  useEffect(() => {
+    if (!loading && announcements.length > 0 && window.location.hash) {
+      const id = window.location.hash.substring(1); // Remove the # symbol
+      
+      // Give time for the DOM to render the cards
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          // Scroll the element into view with smooth behavior
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          
+          // Add a highlight effect
+          element.style.boxShadow = '0 0 20px rgba(33, 150, 243, 0.8)';
+          highlightedCardRef.current = element;
+          
+          // Remove the highlight effect after 3 seconds
+          setTimeout(() => {
+            if (highlightedCardRef.current) {
+              highlightedCardRef.current.style.boxShadow = '';
+            }
+          }, 3000);
+        }
+      }, 300);
+    }
+  }, [loading, announcements]);
+  
+  // When component unmounts or navigates away, clean up any highlight
+  useEffect(() => {
+    return () => {
+      if (highlightedCardRef.current) {
+        highlightedCardRef.current.style.boxShadow = '';
+      }
+    };
   }, []);
 
   // Helper function to display media galleries
@@ -196,7 +233,7 @@ const ResidentAnnouncements = () => {
         </Paper>
       ) : announcements.length > 0 ? (
         announcements.map((announcement) => (
-          <Card key={announcement._id} sx={{ mb: 3, boxShadow: 3, overflow: 'visible' }}>
+          <Card key={announcement._id} id={announcement._id} sx={{ mb: 3, boxShadow: 3, overflow: 'visible', transition: 'box-shadow 0.3s ease-in-out' }}>
             <CardHeader
               avatar={
                 <Avatar 
