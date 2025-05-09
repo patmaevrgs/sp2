@@ -70,6 +70,18 @@ import {
   importResidentsFromCSV,
   checkDuplicateResident
 } from './controllers/residentController.js';
+import {
+  getHomepageContent,
+  updateWelcomeSection,
+  updateAboutSection,
+  updateSummaryData,
+  updateEmergencyHotlines,
+  updateMapCoordinates,
+  updateOfficials,
+  uploadCarouselImages,
+  deleteCarouselImage,
+  uploadOfficialImage
+} from './controllers/homePageController.js';
 import multer from 'multer';
 import { generateDocument } from './controllers/documentGeneratorController.js';
 
@@ -188,6 +200,18 @@ router.get('/residents/check-duplicate', checkDuplicateResident);
 router.get('/users', getAllUsers);
 router.put('/users/updateType', updateUserType);
 router.post('/addsuperadmin', addSuperAdmin);
+
+// Homepage Content Management Routes
+router.get('/homepage', getHomepageContent);
+router.put('/homepage/welcome', updateWelcomeSection);
+router.put('/homepage/about', updateAboutSection);
+router.put('/homepage/summary', updateSummaryData);
+router.put('/homepage/hotlines', updateEmergencyHotlines);
+router.put('/homepage/map', updateMapCoordinates);
+router.put('/homepage/officials', updateOfficials);
+router.post('/homepage/carousel', upload.array('images'), uploadCarouselImages);
+router.delete('/homepage/carousel', deleteCarouselImage);
+router.post('/homepage/official-image', upload.single('image'), uploadOfficialImage);
 
 // Serve static files
 import express from 'express';

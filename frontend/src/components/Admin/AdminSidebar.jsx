@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Drawer,
@@ -27,6 +27,7 @@ import {
   Assignment as ProjectIcon,
   ExpandLess,
   ExpandMore,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { Link, useLocation } from 'react-router-dom';
 
@@ -36,14 +37,24 @@ export default function AdminSidebar() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openServices, setOpenServices] = useState(false);
+  const [userType, setUserType] = useState('admin');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  useEffect(() => {
+    // Get user type from localStorage
+    const storedUserType = localStorage.getItem('userType');
+    if (storedUserType) {
+      setUserType(storedUserType);
+    }
+  }, []);
 
   const toggleDrawer = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const navItems = [
+  // Base navigation items
+  const baseNavItems = [
     {
       label: 'Dashboard',
       icon: <DashboardIcon />,
@@ -81,6 +92,16 @@ export default function AdminSidebar() {
       path: '/admin/logs',
     },
   ];
+  
+  // Add Manage Application for superadmin only
+  const navItems = userType === 'superadmin' ? [
+    ...baseNavItems,
+    {
+      label: 'Manage Application',
+      icon: <SettingsIcon />,
+      path: '/admin/manage-app',
+    }
+  ] : baseNavItems;
 
   const renderNavItems = () => (
     <List sx={{ mt: 2 }}>

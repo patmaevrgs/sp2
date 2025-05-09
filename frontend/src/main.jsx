@@ -4,6 +4,7 @@ import { createBrowserRouter, RouterProvider, redirect } from 'react-router-dom'
 import SignUp from './components/SignUp';
 import SignIn from './components/SignIn';
 import AdminRoot from './pages/AdminRoot';
+import AdminManageHomepage from './components/Admin/AdminManageHomepage.jsx';
 import AdminHome from './components/Admin/AdminHome.jsx';
 import AdminProfile from './components/Admin/AdminProfile.jsx';
 import AdminAnnouncements from './components/Admin/AdminAnnouncements.jsx';
@@ -143,6 +144,23 @@ const router = createBrowserRouter([
     {path: '/admin/services/court-reservation', element: <AdminCourt />},
     {path: '/admin/services/infrastructure-reports', element: <AdminReport />},
     {path: '/admin/services/project-proposals', element: <AdminProposal />},
+    {
+      path: '/admin/manage-app', 
+      element: <AdminManageHomepage />,
+      loader: async () => {
+        const res = await fetch("http://localhost:3002/checkifloggedin", {
+          method: "POST",
+          credentials: "include" 
+        });
+    
+        const payload = await res.json();
+        if (payload.isLoggedIn && payload.userType === "superadmin") {
+          return true;
+        } else {
+          return redirect("/admin");
+        }
+      }
+    }
   ]},
 ])
 
