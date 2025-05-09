@@ -156,6 +156,7 @@ const fetchData = async (days = 30) => {
       responses = await Promise.all([
         fetch(`${API_BASE_URL}/ambulance?startDate=${startDate}&endDate=${endDate}`, fetchOptions),
         fetch(`${API_BASE_URL}/court?startDate=${startDate}&endDate=${endDate}`, fetchOptions),
+        // Remove date parameters from these endpoints
         fetch(`${API_BASE_URL}/documents`, fetchOptions),
         fetch(`${API_BASE_URL}/reports`, fetchOptions),
         fetch(`${API_BASE_URL}/proposals`, fetchOptions),
@@ -181,41 +182,119 @@ const fetchData = async (days = 30) => {
     let ambulanceData, courtData, docData, reportData, proposalData, residentData, logsData;
     
     try {
-      // Use conditional chaining to handle potential errors in each fetch response
+      // Process ambulance and court data with server-side filtering
       ambulanceData = ambulanceRes.ok ? await ambulanceRes.json() : [];
       courtData = courtRes.ok ? await courtRes.json() : [];
-      docData = docRes.ok ? await docRes.json() : { documentRequests: [] };
-      reportData = reportRes.ok ? await reportRes.json() : { reports: [] };
       
-      // Special handling for proposal data
-    if (proposalRes.ok) {
-      try {
-        const proposalJson = await proposalRes.json();
-        console.log('Raw proposal response:', proposalJson);
+      // Process document requests with client-side filtering
+      if (docRes.ok) {
+        const docJson = await docRes.json();
         
-        // Check different possible data structures
-        if (proposalJson && proposalJson.proposals && Array.isArray(proposalJson.proposals)) {
-          proposalData = { proposals: proposalJson.proposals };
-        } else if (proposalJson && Array.isArray(proposalJson)) {
-          // If the API returns an array directly
-          proposalData = { proposals: proposalJson };
-        } else if (proposalJson && proposalJson.success && proposalJson.data && Array.isArray(proposalJson.data)) {
-          // If using a success/data pattern
-          proposalData = { proposals: proposalJson.data };
-        } else {
-          console.warn('Unexpected proposal data format:', proposalJson);
+        // Apply client-side date filtering to document requests
+        if (startDate && endDate && docJson && docJson.documentRequests && Array.isArray(docJson.documentRequests)) {
+          const startDateObj = new Date(startDate);
+          const endDateObj = new Date(endDate);
+          // Add one day to end date to make it inclusive
+          endDateObj.setDate(endDateObj.getDate() + 1);
+          
+          console.log('Filtering document requests from', startDateObj, 'to', endDateObj);
+          console.log('Before filtering:', docJson.documentRequests.length, 'document requests');
+          
+          docJson.documentRequests = docJson.documentRequests.filter(doc => {
+            if (!doc || !doc.createdAt) return false;
+            const docDate = new Date(doc.createdAt);
+            return docDate >= startDateObj && docDate < endDateObj;
+          });
+          
+          console.log('After filtering:', docJson.documentRequests.length, 'document requests');
+        }
+        
+        docData = docJson;
+      } else {
+        docData = { documentRequests: [] };
+      }
+      
+      // Process report data with client-side filtering
+      if (reportRes.ok) {
+        const reportJson = await reportRes.json();
+        
+        // Apply client-side date filtering to reports
+        if (startDate && endDate && reportJson && reportJson.reports && Array.isArray(reportJson.reports)) {
+          const startDateObj = new Date(startDate);
+          const endDateObj = new Date(endDate);
+          // Add one day to end date to make it inclusive
+          endDateObj.setDate(endDateObj.getDate() + 1);
+          
+          console.log('Filtering reports from', startDateObj, 'to', endDateObj);
+          console.log('Before filtering:', reportJson.reports.length, 'reports');
+          
+          reportJson.reports = reportJson.reports.filter(report => {
+            if (!report || !report.createdAt) return false;
+            const reportDate = new Date(report.createdAt);
+            return reportDate >= startDateObj && reportDate < endDateObj;
+          });
+          
+          console.log('After filtering:', reportJson.reports.length, 'reports');
+        }
+        
+        reportData = reportJson;
+      } else {
+        reportData = { reports: [] };
+      }
+      
+      // Process proposal data with client-side filtering
+      if (proposalRes.ok) {
+        try {
+          const proposalJson = await proposalRes.json();
+          console.log('Raw proposal response:', proposalJson);
+          
+          // Determine the structure of proposal data
+          let proposals = [];
+          if (proposalJson && proposalJson.proposals && Array.isArray(proposalJson.proposals)) {
+            proposals = proposalJson.proposals;
+          } else if (proposalJson && Array.isArray(proposalJson)) {
+            proposals = proposalJson;
+          } else if (proposalJson && proposalJson.success && proposalJson.data && Array.isArray(proposalJson.data)) {
+            proposals = proposalJson.data;
+          }
+          
+          console.log('Identified proposals array with length:', proposals.length);
+          
+          // Apply client-side date filtering to proposals
+          if (startDate && endDate && proposals.length > 0) {
+            const startDateObj = new Date(startDate);
+            const endDateObj = new Date(endDate);
+            // Add one day to end date to make it inclusive
+            endDateObj.setDate(endDateObj.getDate() + 1);
+            
+            console.log('Filtering proposals from', startDateObj, 'to', endDateObj);
+            console.log('Before filtering:', proposals.length, 'proposals');
+            
+            proposals = proposals.filter(proposal => {
+              if (!proposal || !proposal.createdAt) return false;
+              try {
+                const proposalDate = new Date(proposal.createdAt);
+                return proposalDate >= startDateObj && proposalDate < endDateObj;
+              } catch (dateError) {
+                console.error('Error parsing proposal date:', dateError);
+                return false;
+              }
+            });
+            
+            console.log('After filtering:', proposals.length, 'proposals');
+          }
+          
+          proposalData = { proposals: proposals };
+        } catch (parseError) {
+          console.error('Error parsing proposal response:', parseError);
           proposalData = { proposals: [] };
         }
-      } catch (parseError) {
-        console.error('Error parsing proposal response:', parseError);
+      } else {
+        console.error('Proposal fetch failed:', proposalRes.status, proposalRes.statusText);
         proposalData = { proposals: [] };
       }
-    } else {
-      console.error('Proposal fetch failed:', proposalRes.status, proposalRes.statusText);
-      proposalData = { proposals: [] };
-    }
-
-    console.log('Processed proposal data:', proposalData);
+      
+      console.log('Processed proposal data:', proposalData);
       
       residentData = residentRes.ok ? await residentRes.json() : { data: [] };
       logsData = logsRes.ok ? await logsRes.json() : { logs: [] };
@@ -224,7 +303,7 @@ const fetchData = async (days = 30) => {
       throw new Error('Error parsing server response');
     }
     
-    console.log('Fetched data:', {
+    console.log('Fetched data after client-side filtering:', {
       ambulance: Array.isArray(ambulanceData) ? ambulanceData.length : 'not an array',
       court: Array.isArray(courtData) ? courtData.length : 'not an array',
       docs: docData && docData.documentRequests ? docData.documentRequests.length : 0,
@@ -754,7 +833,7 @@ const fetchData = async (days = 30) => {
               action: 'RESERVATION_CREATED',
               details: `Court reservation by ${reservation.representativeName || 'Unknown'}`,
               admin: reservation.processedBy ? 
-                `${reservation.processedBy.firstName || ''} ${reservation.processedBy.lastName || ''}` : 
+                `${reservation.processedBy.firstName || ''} ${reservation.processedBy.firstName || ''} ${reservation.processedBy.lastName || ''}` : 
                 'System',
               timestamp: new Date(reservation.createdAt)
             });
@@ -885,23 +964,7 @@ const fetchData = async (days = 30) => {
       </Box>
       
       {/* Only keep the requested overview cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6}>
-          <Card sx={{ minHeight: 120 }}>
-            <CardContent>
-              <Typography color="textSecondary" gutterBottom>
-                Today's Requests
-              </Typography>
-              <Typography variant="h4" color="info.main">
-                {stats.todayRequests}
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                New today
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        
+      <Grid container spacing={3} sx={{ mb: 3 }}>  
         <Grid item xs={12} sm={6}>
           <Card sx={{ minHeight: 120 }}>
             <CardContent>
