@@ -156,7 +156,7 @@ const fetchData = async (days = 30) => {
       responses = await Promise.all([
         fetch(`${API_BASE_URL}/ambulance?startDate=${startDate}&endDate=${endDate}`, fetchOptions),
         fetch(`${API_BASE_URL}/court?startDate=${startDate}&endDate=${endDate}`, fetchOptions),
-        fetch(`${API_BASE_URL}/documents?`, fetchOptions),
+        fetch(`${API_BASE_URL}/documents`, fetchOptions),
         fetch(`${API_BASE_URL}/reports`, fetchOptions),
         fetch(`${API_BASE_URL}/proposals`, fetchOptions),
         fetch(`${API_BASE_URL}/residents?limit=200000`, fetchOptions),

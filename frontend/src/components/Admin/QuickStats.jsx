@@ -59,7 +59,7 @@ const QuickStats = () => {
         fetch(`${API_BASE_URL}/documents`, fetchOptions),
         fetch(`${API_BASE_URL}/reports`, fetchOptions),
         fetch(`${API_BASE_URL}/proposals`, fetchOptions),
-        fetch(`${API_BASE_URL}/logs?limit=5`, fetchOptions) // Get 5 most recent logs
+        fetch(`${API_BASE_URL}/logs?limit=10`, fetchOptions) // Get 10 recent logs for more choices
       ]);
       
       // Check if any requests failed due to auth issues
@@ -173,9 +173,14 @@ const QuickStats = () => {
         { name: 'Project Proposals', count: totalProposals }
       ];
       
+      // Sort services by count for debugging
+      console.log('Service counts sorted:', [...serviceCounts].sort((a, b) => b.count - a.count));
+      
       const mostActiveService = serviceCounts.reduce((prev, current) => 
         (prev.count > current.count) ? prev : current, { name: 'None', count: 0 }
       ).name;
+      
+      console.log('Most active service calculated:', mostActiveService);
       
       // Process recent activity - if logs API is available, use that
       let recentActivity = [];
@@ -186,8 +191,10 @@ const QuickStats = () => {
           type: log.entityType || 'Activity',
           status: log.action || 'Updated',
           date: new Date(log.timestamp || log.createdAt),
-          details: log.details
+          details: log.details || 'System activity'
         })).slice(0, 5);
+        
+        console.log('Using real logs for activity:', recentActivity);
       } else {
         // If no logs, aggregate recent items from other services
         const allItems = [];
@@ -220,22 +227,68 @@ const QuickStats = () => {
           });
         }
         
+        // Add recent document requests
+        if (docData && docData.documentRequests && Array.isArray(docData.documentRequests)) {
+          docData.documentRequests.forEach(doc => {
+            if (doc && doc.createdAt) {
+              allItems.push({
+                type: 'Document Request',
+                status: doc.status.charAt(0).toUpperCase() + doc.status.slice(1).replace('_', ' '),
+                date: new Date(doc.createdAt),
+                details: `Type: ${doc.documentType ? doc.documentType.replace('_', ' ') : 'Unknown'}`
+              });
+            }
+          });
+        }
+        
+        // Add recent reports
+        if (reportData && reportData.reports && Array.isArray(reportData.reports)) {
+          reportData.reports.forEach(report => {
+            if (report && report.createdAt) {
+              allItems.push({
+                type: 'Infrastructure Report',
+                status: report.status || 'Submitted',
+                date: new Date(report.createdAt),
+                details: `Issue: ${report.issueType || 'General'}`
+              });
+            }
+          });
+        }
+        
+        // Add recent proposals
+        if (proposalData && proposalData.proposals && Array.isArray(proposalData.proposals)) {
+          proposalData.proposals.forEach(proposal => {
+            if (proposal && proposal.createdAt) {
+              allItems.push({
+                type: 'Project Proposal',
+                status: proposal.status.charAt(0).toUpperCase() + proposal.status.slice(1).replace('_', ' '),
+                date: new Date(proposal.createdAt),
+                details: `Project: ${proposal.projectTitle || 'Untitled'}`
+              });
+            }
+          });
+        }
+        
+        console.log('All collected recent items:', allItems.length);
+        
         // Sort all items by date (newest first) and take the first 5
         recentActivity = allItems
           .sort((a, b) => b.date - a.date)
           .slice(0, 5);
-          
-        // If still no activities, provide sample data as fallback
-        if (recentActivity.length === 0) {
-          recentActivity = [
-            { type: 'Ambulance Booking', status: 'Completed', date: new Date(), details: 'Sample data' },
-            { type: 'Document Request', status: 'Approved', date: new Date(Date.now() - 86400000), details: 'Sample data' },
-            { type: 'Court Reservation', status: 'Pending', date: new Date(Date.now() - 2*86400000), details: 'Sample data' },
-            { type: 'Infrastructure Report', status: 'In Progress', date: new Date(Date.now() - 3*86400000), details: 'Sample data' },
-            { type: 'Project Proposal', status: 'Considered', date: new Date(Date.now() - 4*86400000), details: 'Sample data' }
-          ];
-        }
+        
+        console.log('Processed recent activity:', recentActivity);
+        
       }
+      
+      // Add this debug log right before setting the state
+      console.log('Final stats being set:', {
+        totalRequests,
+        pendingRequests,
+        approvedRequests,
+        rejectedRequests,
+        mostActiveService,
+        recentActivity: recentActivity.length
+      });
       
       setStats({
         totalRequests,
@@ -264,6 +317,14 @@ const QuickStats = () => {
     return () => clearInterval(refreshInterval);
   }, []);
   
+  // Debug logging when stats change
+  useEffect(() => {
+    console.log('Stats updated:', {
+      mostActiveService: stats.mostActiveService,
+      recentActivity: stats.recentActivity.length
+    });
+  }, [stats]);
+  
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
@@ -271,6 +332,13 @@ const QuickStats = () => {
       </Box>
     );
   }
+  
+  // Debug logs during render
+  console.log('RENDER DATA:', {
+    mostActiveService: stats.mostActiveService,
+    recentActivityCount: stats.recentActivity.length,
+    firstActivity: stats.recentActivity[0]
+  });
   
   const statCards = [
     {
@@ -344,7 +412,7 @@ const QuickStats = () => {
             <Typography variant="h6" component="div" gutterBottom>
               Recent Activity
             </Typography>
-            {stats.recentActivity.length > 0 ? (
+            {stats.recentActivity && stats.recentActivity.length > 0 ? (
               stats.recentActivity.map((activity, index) => (
                 <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between', mb: 1, pb: 1, borderBottom: index < stats.recentActivity.length - 1 ? '1px solid #eee' : 'none' }}>
                   <Typography variant="body2" sx={{ maxWidth: '40%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -353,7 +421,7 @@ const QuickStats = () => {
                   <Typography variant="body2" color={
                     activity.status === 'Completed' || activity.status === 'Approved' ? 'success.main' :
                     activity.status === 'Pending' ? 'warning.main' :
-                    activity.status === 'In Progress' || activity.status === 'Considered' ? 'info.main' :
+                    activity.status === 'In Progress' || activity.status === 'Considered' || activity.status === 'In Review' ? 'info.main' :
                     'error.main'
                   }>
                     {activity.status}
