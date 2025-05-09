@@ -742,22 +742,24 @@ function ResidentHome() {
                 
                 <Box sx={{ display: 'flex', justifyContent: 'start' }}>
                   <Button 
-                    component={RouterLink}
-                    to="/resident/register-database"
-                    variant="contained" 
-                    color="primary" 
-                    startIcon={<PersonAddIcon />}
-                    sx={{ 
-                      px: 3,
-                      py: 1,
-                      boxShadow: 2,
-                      '&:hover': {
-                        boxShadow: 4,
-                      }
-                    }}
-                  >
-                    Register as Resident
-                  </Button>
+                      component={RouterLink}
+                      to="/resident/register-database"
+                      variant="contained" 
+                      startIcon={<PersonAddIcon />}
+                      sx={(theme) => ({ 
+                        px: 3,
+                        py: 1,
+                        backgroundColor: theme.palette.primary.main,
+                        color: 'white', // Ensure text color contrasts with background
+                        boxShadow: 2,
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.9), // Slightly lighter on hover
+                          boxShadow: 4,
+                        }
+                      })}
+                    >
+                      Register as Resident
+                    </Button>
                 </Box>
               </Paper>
             </Grid>
