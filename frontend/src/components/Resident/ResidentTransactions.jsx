@@ -3493,6 +3493,7 @@ const ResidentTransaction = () => {
               label="Filter"
               onChange={handleFilterChange}
               size="small"
+              sx={{ bgcolor: 'background.paper' }}
             >
               <MenuItem value="all">All Transactions</MenuItem>
               <MenuItem value="active">Active Transactions</MenuItem>
@@ -3518,7 +3519,11 @@ const ResidentTransaction = () => {
             size="small"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            sx={{ flexGrow: 1, maxWidth: 400 }}
+            sx={{ flexGrow: 1, maxWidth: 400,
+              "& .MuiInputBase-root": {
+                bgcolor: 'background.paper'
+              }
+             }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
