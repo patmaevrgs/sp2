@@ -62,6 +62,14 @@ const ResidentTransaction = () => {
   // Get userId from localStorage
   const userId = localStorage.getItem('user');
   
+  // Material UI Theme Overrides for consistent spacing
+  const themeSpacing = {
+    xs: { p: 0.75, py: 0.75 },
+    sm: { p: 1, py: 1 },
+    md: { p: 1.5, py: 1.5 },
+    desktop: { p: 2, py: 2 }
+  };
+  
   const SERVICE_TYPES = {
     AMBULANCE: 'ambulance_booking',
     COURT: 'court_reservation',
@@ -238,7 +246,6 @@ const ResidentTransaction = () => {
       });
     }
   };
-
   // ServiceIdCell component for displaying service IDs in the table
   const ServiceIdCell = ({ transaction }) => {
     const [serviceId, setServiceId] = useState(null);
@@ -456,7 +463,6 @@ const ResidentTransaction = () => {
       });
     }
   };
-
   // Diesel cost response functions
   const handleRespondToDiesel = (transaction) => {
     setSelectedTransaction(transaction);
@@ -563,7 +569,7 @@ const ResidentTransaction = () => {
             label = formatStatusText(docStatus);
         }
         
-        return <Chip size="small" label={label} color={color} />;
+        return <Chip size="small" label={label} color={color} sx={{ fontWeight: 500 }} />;
       }
       
       // If reference details not available, map from transaction status
@@ -590,7 +596,7 @@ const ResidentTransaction = () => {
           label = formatStatusText(status);
       }
       
-      return <Chip size="small" label={label} color={color} />;
+      return <Chip size="small" label={label} color={color} sx={{ fontWeight: 500 }} />;
     }
     
     // Project Proposal status mapping
@@ -622,7 +628,7 @@ const ResidentTransaction = () => {
           label = formatStatusText(status);
       }
       
-      return <Chip size="small" label={label} color={color} />;
+      return <Chip size="small" label={label} color={color} sx={{ fontWeight: 500 }} />;
     }
   
     // Infrastructure Report status mapping
@@ -650,7 +656,7 @@ const ResidentTransaction = () => {
           color = 'default';
           label = formatStatusText(status);
       }
-      return <Chip size="small" label={label} color={color} />;
+      return <Chip size="small" label={label} color={color} sx={{ fontWeight: 500 }} />;
     }
   
     // Regular transaction status handling for other service types
@@ -682,7 +688,7 @@ const ResidentTransaction = () => {
         label = formatStatusText(status);
     }
   
-    return <span className="status-chip-wrapper">{<Chip size="small" label={label} color={color} />}</span>;
+    return <Chip size="small" label={label} color={color} sx={{ fontWeight: 500 }} />;
   };
 
   const getServiceTypeLabel = (type) => {
@@ -787,7 +793,6 @@ const ResidentTransaction = () => {
     return [STATUS.PENDING, STATUS.NEEDS_APPROVAL, STATUS.BOOKED, STATUS.APPROVED].includes(transaction.status)
       && transaction.status !== STATUS.COMPLETED;
   };
-
   const filteredTransactions = filter === 'all' 
   ? transactions 
   : transactions.filter(transaction => {
@@ -828,11 +833,32 @@ const ResidentTransaction = () => {
         <Typography variant="h4" gutterBottom>
           My Transactions
         </Typography>
-        <Paper sx={{ p: 3, textAlign: 'center' }}>
-          <Typography variant="h6">No transactions found</Typography>
-          <Typography variant="body1" color="textSecondary" sx={{ mt: 1 }}>
-            You don't have any transactions yet.
-          </Typography>
+        <Paper sx={{ p: 5, textAlign: 'center', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+          <Box sx={{ py: 3 }}>
+            <Box 
+              sx={{ 
+                width: 80, 
+                height: 80, 
+                borderRadius: '50%', 
+                bgcolor: 'primary.light', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                mx: 'auto',
+                mb: 2
+              }}
+            >
+              <EventIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+            </Box>
+            <Typography variant="h5" gutterBottom>No transactions found</Typography>
+            <Typography variant="body1" color="textSecondary" sx={{ maxWidth: 500, mx: 'auto', mb: 3 }}>
+              You don't have any transactions yet. When you book services or request documents, 
+              they will appear here.
+            </Typography>
+            <Button variant="contained" color="primary" sx={{ mt: 2 }} onClick={fetchTransactions}>
+              <RefreshIcon sx={{ mr: 1 }} /> Refresh
+            </Button>
+          </Box>
         </Paper>
       </Container>
     );
@@ -842,14 +868,21 @@ const ResidentTransaction = () => {
   if (isMobile) {
     return (
       <Container maxWidth="lg" sx={{ mt: 3, mb: 4, px: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5" component="h1">
-            My Transactions
-          </Typography>
-          <IconButton onClick={fetchTransactions} color="primary">
-            <RefreshIcon />
-          </IconButton>
-        </Box>
+        <Paper sx={{ p: 2, mb: 2, backgroundColor: 'primary.main', color: 'white', borderRadius: '8px' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Box>
+              <Typography variant="h5" component="h1">
+                My Transactions
+              </Typography>
+              <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
+                {transactions.length} {transactions.length === 1 ? 'transaction' : 'transactions'} found
+              </Typography>
+            </Box>
+            <IconButton onClick={fetchTransactions} sx={{ color: 'white' }}>
+              <RefreshIcon />
+            </IconButton>
+          </Box>
+        </Paper>
 
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
@@ -857,7 +890,7 @@ const ResidentTransaction = () => {
           </Alert>
         )}
 
-        {/* <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 3 }}>
           <FormControl fullWidth variant="outlined" size="small">
             <InputLabel id="filter-select-label">Filter</InputLabel>
             <Select
@@ -865,22 +898,25 @@ const ResidentTransaction = () => {
               value={filter}
               label="Filter"
               onChange={handleFilterChange}
+              sx={{ bgcolor: 'background.paper' }}
             >
               <MenuItem value="all">All Transactions</MenuItem>
+              <MenuItem value="active">Active Transactions</MenuItem>
+              <Divider />
               <MenuItem value="ambulance">Ambulance Bookings</MenuItem>
+              <MenuItem value="court">Court Reservations</MenuItem>
               <MenuItem value="document">Document Requests</MenuItem>
-              <MenuItem value="court">Court Reservations</MenuItem>
-              <MenuItem value="court">Court Reservations</MenuItem>
+              <MenuItem value="infrastructure">Infrastructure Reports</MenuItem>
+              <MenuItem value="project_proposal">Project Proposals</MenuItem>
               <MenuItem value="resident_registration">Resident Registration</MenuItem>
               <Divider />
               <MenuItem value="pending">Pending</MenuItem>
               <MenuItem value="approved">Approved</MenuItem>
-              <MenuItem value="booked">Booked</MenuItem>
               <MenuItem value="completed">Completed</MenuItem>
               <MenuItem value="cancelled">Cancelled</MenuItem>
             </Select>
           </FormControl>
-        </Box> */}
+        </Box>
 
         <List sx={{ bgcolor: 'background.paper' }}>
           {filteredTransactions.map((transaction) => (
@@ -900,7 +936,12 @@ const ResidentTransaction = () => {
                       case 'needs_approval': return 'info.main';
                       default: return 'grey.500';
                     }
-                  })()
+                  })(),
+                  transition: 'background-color 0.2s',
+                  ':hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                  },
+                  py: 1.5
                 }}
               >
                 <ListItemText
@@ -998,8 +1039,7 @@ const ResidentTransaction = () => {
             </Paper>
           ))}
         </List>
-
-        {/* Transaction Details Dialog - Mobile */}
+        {/* Transaction Details Dialog - Mobile & Desktop (shared) */}
         <Dialog 
           open={openDetails} 
           onClose={handleCloseDetails} 
@@ -1008,132 +1048,1049 @@ const ResidentTransaction = () => {
           fullWidth
         >
           <DialogTitle>
-            Transaction Details
-            <IconButton
-              aria-label="close"
-              onClick={handleCloseDetails}
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: 8,
-              }}
-            >
-              <CancelIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent>
             {selectedTransaction && (
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Typography variant="h6" gutterBottom>
-                    {getServiceTypeLabel(selectedTransaction.serviceType)}
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Typography variant="h6" component="div">
+                  {getServiceTypeLabel(selectedTransaction.serviceType)}
+                  <Typography component="span" sx={{ ml: 1.5, verticalAlign: 'middle', display: 'inline-flex' }}>
+                    {getStatusChip(selectedTransaction.status, selectedTransaction.serviceType, selectedTransaction)}
                   </Typography>
-                  <Box component="div">
-                    {getStatusChip(selectedTransaction.status)}
-                  </Box>
-                  <Divider sx={{ my: 1 }} />
-                </Grid>
-                
-                <Grid item xs={12}>
-                  <Typography variant="body2" paragraph>
-                    <strong>Created:</strong> {formatDateTime(selectedTransaction.createdAt)}
-                  </Typography>
-                  <Typography variant="body2" paragraph>
-                    <strong>Last Updated:</strong> {formatDateTime(selectedTransaction.updatedAt)}
-                  </Typography>
-                </Grid>
-                
-                {selectedTransaction.serviceType === 'ambulance_booking' && selectedTransaction.details && (
-                  <>
-                    <Grid item xs={12}>
-                      <Typography variant="subtitle1" gutterBottom sx={{ mt: 1 }}>
-                        Ambulance Booking Information
+                </Typography>
+                <IconButton
+                  aria-label="close"
+                  onClick={handleCloseDetails}
+                >
+                  <CancelIcon />
+                </IconButton>
+              </Box>
+            )}
+          </DialogTitle>
+          <DialogContent dividers>
+            {selectedTransaction && (
+              <Box sx={{ overflowX: 'hidden' }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="body2" sx={{ my: 0.5 }}>
+                      <strong>Status:</strong> {formatStatusText(selectedTransaction.status)}
+                    </Typography>
+                    <Typography variant="body2" sx={{ my: 0.5 }}>
+                      <strong>Created:</strong> {formatDateTime(selectedTransaction.createdAt)}
+                    </Typography>
+                    <Typography variant="body2" sx={{ my: 0.5 }}>
+                      <strong>Last Updated:</strong> {formatDateTime(selectedTransaction.updatedAt)}
+                    </Typography>
+                    {selectedTransaction.amount > 0 && (
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
+                        <strong>Amount:</strong> ₱{selectedTransaction.amount.toFixed(2)}
                       </Typography>
-                      <Divider />
-                    </Grid>
-                    
-                    <Grid item xs={12}>
-                      <Typography variant="body2" paragraph>
-                        <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                        <strong>Patient:</strong> {selectedTransaction.details.patientName}
-                      </Typography>
-                      <Typography variant="body2" paragraph>
-                        <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                        <strong>Pickup Date:</strong> {formatDate(selectedTransaction.details.pickupDate)}
-                      </Typography>
-                      <Typography variant="body2" paragraph>
-                        <TimeIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                        <strong>Pickup Time:</strong> {selectedTransaction.details.pickupTime}
-                      </Typography>
-                      <Typography variant="body2" paragraph>
-                        <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                        <strong>Destination:</strong> {selectedTransaction.details.destination}
-                      </Typography>
-                      <Typography variant="body2" paragraph>
-                        <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                        <strong>Diesel Cost Required:</strong> {selectedTransaction.details.dieselCost ? 'Yes' : 'No'}
-                      </Typography>
-                    </Grid>
-                    
-                    {selectedTransaction.referenceDetails && (
+                    )}
+                  </Grid>
+                  
+                  {/* Ambulance Booking Details */}
+                  {selectedTransaction.serviceType === 'ambulance_booking' && (
+                    <>
                       <Grid item xs={12}>
-                        <Typography variant="body2" paragraph>
-                          <strong>Additional Notes:</strong> {selectedTransaction.referenceDetails.additionalNote || 'None'}
+                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                          Ambulance Booking Information
                         </Typography>
-                        <Typography variant="body2" paragraph>
-                          <strong>Emergency Details:</strong> {selectedTransaction.referenceDetails.emergencyDetails || 'None'}
+                        <Divider />
+                      </Grid>
+                      
+                      {selectedTransaction.serviceType === 'ambulance_booking' && selectedTransaction.referenceDetails && (
+                        <Typography variant="body2" sx={{ my: 0.5 }}>
+                          <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId || 'N/A'}
+                        </Typography>
+                      )}
+                      
+                      {/* From referenceDetails - more comprehensive information */}
+                      {selectedTransaction.referenceDetails && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Patient:</strong> {selectedTransaction.referenceDetails.patientName}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Pickup Date:</strong> {formatDate(selectedTransaction.referenceDetails.pickupDate)}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <TimeIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Pickup Time:</strong> {selectedTransaction.referenceDetails.pickupTime}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Duration:</strong> {selectedTransaction.referenceDetails.duration}
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Pickup Address:</strong> {selectedTransaction.referenceDetails.pickupAddress}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Destination:</strong> {selectedTransaction.referenceDetails.destination}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Submitter Relation:</strong> {selectedTransaction.referenceDetails.submitterRelation}
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Emergency Details:</strong> {selectedTransaction.referenceDetails.emergencyDetails || 'None'}
+                            </Typography>
+                            {selectedTransaction.referenceDetails.additionalNote && (
+                              <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Additional Notes:</strong> {selectedTransaction.referenceDetails.additionalNote}
+                              </Typography>
+                            )}
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Diesel Cost Required:</strong> {selectedTransaction.details?.dieselCost ? 'Yes' : 'No'}
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Court Reservation Details */}
+                  {selectedTransaction.serviceType === 'court_reservation' && (
+                    <>
+                      <Grid item xs={12}>
+                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                          Court Reservation Information
+                        </Typography>
+                        <Divider />
+                      </Grid>
+                      
+                      {/* From referenceDetails - more comprehensive information */}
+                      {selectedTransaction.referenceDetails && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Representative:</strong> {selectedTransaction.referenceDetails.representativeName}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Date:</strong> {formatDate(selectedTransaction.referenceDetails.reservationDate)}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <TimeIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Time:</strong> {selectedTransaction.referenceDetails.startTime}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Duration:</strong> {selectedTransaction.referenceDetails.duration} hours
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Purpose:</strong> {selectedTransaction.referenceDetails.purpose}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Number of People:</strong> {selectedTransaction.referenceDetails.numberOfPeople}
+                            </Typography>
+                          </Grid>
+                          
+                          {selectedTransaction.referenceDetails.additionalNotes && (
+                            <Grid item xs={12}>
+                              <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Additional Notes:</strong> {selectedTransaction.referenceDetails.additionalNotes}
+                              </Typography>
+                            </Grid>
+                          )}
+                        </>
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Document Request Details - Add Barangay Clearance section */}
+                  {selectedTransaction?.serviceType === 'document_request' && (
+                    <>
+                      <Grid item xs={12}>
+                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                          Document Request Information
+                        </Typography>
+                        <Divider />
+                      </Grid>
+                      
+                      {/* From transaction.details */}
+                      {selectedTransaction.details && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Document Type:</strong> {
+                                (() => {
+                                  const docType = selectedTransaction.details.documentType;
+                                  switch(docType) {
+                                    case 'barangay_id': return 'Barangay ID';
+                                    case 'barangay_clearance': return 'Barangay Clearance';
+                                    case 'business_clearance': return 'Business Clearance';
+                                    case 'lot_ownership': return 'Lot Ownership';
+                                    case 'digging_permit': return 'Digging Permit';
+                                    case 'fencing_permit': return 'Fencing Permit';
+                                    case 'request_for_assistance': return 'Request for Assistance';
+                                    case 'certificate_of_indigency': return 'Certificate of Indigency';
+                                    case 'certificate_of_residency': return 'Certificate of Residency';
+                                    case 'no_objection_certificate': return 'No Objection Certificate';
+                                    default: return docType;
+                                  }
+                                })()
+                              }
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
+                      {/* From referenceDetails - more comprehensive information */}
+                      {selectedTransaction.referenceDetails && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Purpose:</strong> {
+                                selectedTransaction.referenceDetails.documentType === 'digging_permit' && 
+                                selectedTransaction.referenceDetails.formData && 
+                                selectedTransaction.referenceDetails.formData.diggingPurpose
+                                  ? (() => {
+                                      const purpose = selectedTransaction.referenceDetails.formData.diggingPurpose;
+                                      switch(purpose) {
+                                        case 'water_supply': return 'Water Supply Connection';
+                                        case 'electrical': return 'Electrical Connection';
+                                        case 'drainage': return 'Drainage System';
+                                        case 'other': return 'Other';
+                                        default: return purpose;
+                                      }
+                                    })()
+                                  : selectedTransaction.referenceDetails.purpose
+                              }
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Status:</strong> {
+                                (() => {
+                                  const status = selectedTransaction.referenceDetails.status;
+                                  switch(status) {
+                                    case 'pending': return 'Pending';
+                                    case 'in_progress': return 'In Progress';
+                                    case 'completed': return 'Completed';
+                                    case 'rejected': return 'Rejected';
+                                    case 'cancelled': return 'Cancelled';
+                                    default: return status.replace('_', ' ');
+                                  }
+                                })()
+                              }
+                            </Typography>
+                          </Grid>
+                          
+                          {/* Display different fields based on document type */}
+                          {selectedTransaction.referenceDetails.documentType === 'certificate_of_residency' && (
+                            <>
+                              <Grid item xs={12} sm={6}>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                  <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                  <strong>Age:</strong> {selectedTransaction.referenceDetails.formData.age}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                  <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address} Barangay Maahas, Los Baños, Laguna
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                  <strong>Date of Birth:</strong> {
+                                    selectedTransaction.referenceDetails.formData.dateOfBirth ? 
+                                    format(new Date(selectedTransaction.referenceDetails.formData.dateOfBirth), 'MMM dd, yyyy') : 
+                                    'N/A'
+                                  }
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                  <strong>Place of Birth:</strong> {selectedTransaction.referenceDetails.formData.placeOfBirth}
+                                </Typography>
+                              </Grid>
+                              <Grid item xs={12} sm={6}>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                  <strong>Nationality:</strong> {selectedTransaction.referenceDetails.formData.nationality}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                  <strong>Civil Status:</strong> {selectedTransaction.referenceDetails.formData.civilStatus}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                  <strong>Years of Stay:</strong> {selectedTransaction.referenceDetails.formData.yearsOfStay}
+                                </Typography>
+                              </Grid>
+                            </>
+                          )}
+                          
+                          {/* Add other document type conditionals here */}
+                          {/* Barangay Clearance Details */}
+                                                {selectedTransaction.referenceDetails.documentType === 'barangay_clearance' && (
+                                                  <>
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Gender:</strong> {selectedTransaction.referenceDetails.formData.gender === 'male' ? 'Male' : 'Female'}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030
+                                                      </Typography>
+                                                    </Grid>
+                                                  </>
+                                                )}
+                                                {/* Lot Ownership Details */}
+                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'lot_ownership' && (
+                                                  <>
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>TD Number:</strong> {selectedTransaction.referenceDetails.formData.tdNumber}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Survey Number:</strong> {selectedTransaction.referenceDetails.formData.surveyNumber}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Lot Area:</strong> {selectedTransaction.referenceDetails.formData.lotArea} {
+                                                          (() => {
+                                                            const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
+                                                            switch(areaUnit) {
+                                                              case 'square_meters': return 'square meters';
+                                                              case 'square_feet': return 'square feet';
+                                                              case 'hectares': return 'hectares';
+                                                              default: return areaUnit;
+                                                            }
+                                                          })()
+                                                        }
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Property Location:</strong> {selectedTransaction.referenceDetails.formData.lotLocation}, Barangay Maahas, Los Baños, Laguna
+                                                      </Typography>
+                                                    </Grid>
+                                                    
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Owner Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Owner Address:</strong> {selectedTransaction.referenceDetails.formData.ownerAddress}
+                                                      </Typography>
+                                                    </Grid>
+                                                  </>
+                                                )}
+                          
+                                                {/* Barangay ID Details */}
+                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'barangay_id' && (
+                                                  <>
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>First Name:</strong> {selectedTransaction.referenceDetails.formData.firstName}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Middle Name:</strong> {selectedTransaction.referenceDetails.formData.middleName || 'N/A'}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Last Name:</strong> {selectedTransaction.referenceDetails.formData.lastName}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
+                                                      </Typography>
+                                                    </Grid>
+                                                    
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Date of Birth:</strong> {selectedTransaction.referenceDetails.formData.birthDate}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Emergency Contact Name:</strong> {selectedTransaction.referenceDetails.formData.emergencyContactName}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Emergency Contact Number:</strong> {selectedTransaction.referenceDetails.formData.emergencyContactNumber}
+                                                      </Typography>
+                                                    </Grid>
+                                                  </>
+                                                )}
+                          
+                                                {/* Fencing Permit Details */}
+                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'fencing_permit' && (
+                                                  <>
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Residential Address:</strong> {selectedTransaction.referenceDetails.formData.residentAddress}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Property Location:</strong> {selectedTransaction.referenceDetails.formData.propertyLocation}, Barangay Maahas, Los Baños, Laguna
+                                                      </Typography>
+                                                    </Grid>
+                                                    
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Tax Declaration No.:</strong> {selectedTransaction.referenceDetails.formData.taxDeclarationNumber}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Property ID No.:</strong> {selectedTransaction.referenceDetails.formData.propertyIdentificationNumber}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Property Area:</strong> {selectedTransaction.referenceDetails.formData.propertyArea} {
+                                                          (() => {
+                                                            const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
+                                                            switch(areaUnit) {
+                                                              case 'square_meters': return 'square meters';
+                                                              case 'square_feet': return 'square feet';
+                                                              case 'hectares': return 'hectares';
+                                                              default: return areaUnit;
+                                                            }
+                                                          })()
+                                                        }
+                                                      </Typography>
+                                                    </Grid>
+                                                  </>
+                                                )}
+                          
+                                                {/* Digging Permit Details */}
+                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'digging_permit' && (
+                                                  <>
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
+                                                      </Typography>
+                                                    </Grid>
+                                                    
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Company:</strong> {selectedTransaction.referenceDetails.formData.companyName}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Application Details:</strong> {selectedTransaction.referenceDetails.formData.applicationDetails}
+                                                      </Typography>
+                                                    </Grid>
+                                                  </>
+                                                )}
+                                                
+                                                {/* Business Clearance Details */}
+                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'business_clearance' && (
+                                                  <>
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Business Name:</strong> {selectedTransaction.referenceDetails.formData.businessName}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Business Address:</strong> {selectedTransaction.referenceDetails.formData.businessAddress}, Barangay Maahas, Los Baños, Laguna
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Line of Business:</strong> {selectedTransaction.referenceDetails.formData.lineOfBusiness}
+                                                      </Typography>
+                                                    </Grid>
+                                                    
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Business Status:</strong> {selectedTransaction.referenceDetails.formData.businessStatus}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Amount:</strong> ₱{selectedTransaction.referenceDetails.formData.amount}
+                                                      </Typography>
+                                                    </Grid>
+                                                  </>
+                                                )}
+                          
+                                                {/* No Objection Certificate Details */}
+                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'no_objection_certificate' && (
+                                                  <>
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
+                                                      </Typography>
+                                                    </Grid>
+                                                    
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Activity Type:</strong> {
+                                                          (() => {
+                                                            const objectType = selectedTransaction.referenceDetails.formData.objectType;
+                                                            switch(objectType) {
+                                                              case 'tree_cutting': return 'Tree Cutting';
+                                                              case 'construction': return 'Construction';
+                                                              case 'event': return 'Event/Gathering';
+                                                              case 'business': return 'Business Operation';
+                                                              case 'other': return 'Other Activity';
+                                                              default: return objectType;
+                                                            }
+                                                          })()
+                                                        }
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Details:</strong> {selectedTransaction.referenceDetails.formData.objectDetails}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Quantity:</strong> {selectedTransaction.referenceDetails.formData.quantity}
+                                                      </Typography>
+                                                      {selectedTransaction.referenceDetails.formData.objectType === 'other' && (
+                                                        <Typography variant="body2">
+                                                          <strong>Additional Info:</strong> {selectedTransaction.referenceDetails.formData.additionalInfo}
+                                                        </Typography>
+                                                      )}
+                                                    </Grid>
+                                                  </>
+                                                )}
+                          
+                                                {/* Request for Assistance Details */}
+                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'request_for_assistance' && (
+                                                  <>
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Years of Stay:</strong> {selectedTransaction.referenceDetails.formData.yearsOfStay}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Marginalized Group:</strong> {
+                                                          (() => {
+                                                            const group = selectedTransaction.referenceDetails.formData.marginGroupType;
+                                                            switch(group) {
+                                                              case 'urban_poor': return 'Urban Poor';
+                                                              case 'senior_citizen': return 'Senior Citizen';
+                                                              case 'single_parent': return 'Single Parent';
+                                                              case 'pwd': return 'Person with Disability (PWD)';
+                                                              case 'indigenous': return 'Indigenous Person';
+                                                              case 'solo_parent': return 'Solo Parent';
+                                                              case 'other': return 'Other';
+                                                              default: return group;
+                                                            }
+                                                          })()
+                                                        }
+                                                      </Typography>
+                                                    </Grid>
+                                                    
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Request For:</strong> {selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'}
+                                                      </Typography>
+                                                      {!selectedTransaction.referenceDetails.formData.isSelf && (
+                                                        <>
+                                                          <Typography variant="body2">
+                                                            <strong>Beneficiary Name:</strong> {selectedTransaction.referenceDetails.formData.beneficiaryName}
+                                                          </Typography>
+                                                          <Typography variant="body2">
+                                                            <strong>Relationship:</strong> {selectedTransaction.referenceDetails.formData.beneficiaryRelation}
+                                                          </Typography>
+                                                        </>
+                                                      )}
+                                                      <Typography variant="body2">
+                                                        <strong>Assistance Type:</strong> {
+                                                          (() => {
+                                                            const type = selectedTransaction.referenceDetails.formData.assistanceType;
+                                                            switch(type) {
+                                                              case 'financial': return 'Financial Assistance';
+                                                              case 'medical': return 'Medical Assistance';
+                                                              case 'burial': return 'Burial Assistance';
+                                                              case 'educational': return 'Educational Assistance';
+                                                              case 'food': return 'Food Assistance';
+                                                              case 'housing': return 'Housing Assistance';
+                                                              case 'other': return selectedTransaction.referenceDetails.formData.otherAssistanceType || 'Other Assistance';
+                                                              default: return type;
+                                                            }
+                                                          })()
+                                                        }
+                                                      </Typography>
+                                                    </Grid>
+                                                  </>
+                                                )}
+                          
+                          
+                                                {/* certificate of indigency details */}
+                                                {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (
+                                                  <>
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Age:</strong> {selectedTransaction.referenceDetails.formData.age} years old
+                                                      </Typography>
+                                                      <Typography variant="body2">
+                                                        <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030
+                                                      </Typography>
+                                                    </Grid>
+                                                    
+                                                    <Grid item xs={12} sm={6}>
+                                                      <Typography variant="body2">
+                                                        <strong>Certificate For:</strong> {selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'}
+                                                      </Typography>
+                                                      
+                                                      {!selectedTransaction.referenceDetails.formData.isSelf ? (
+                                                        <>
+                                                          <Typography variant="body2">
+                                                            <strong>Recipient:</strong> {selectedTransaction.referenceDetails.formData.guardian}
+                                                          </Typography>
+                                                          <Typography variant="body2">
+                                                            <strong>Relationship:</strong> {selectedTransaction.referenceDetails.formData.guardianRelation}
+                                                          </Typography>
+                                                        </>
+                                                      ) : (
+                                                        <Typography variant="body2">
+                                                          <strong>Recipient:</strong> Self (Same as applicant)
+                                                        </Typography>
+                                                      )}
+                                                      
+                                                      <Typography variant="body2">
+                                                        <strong>Purpose:</strong> {selectedTransaction.referenceDetails.purpose}
+                                                      </Typography>
+                                                    </Grid>
+                                                  </>
+                                                )}
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {/* Resident Registration Details in the dialog*/}
+                  {selectedTransaction?.serviceType === 'resident_registration' && (
+                    <>
+                      <Grid item xs={12}>
+                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                          Resident Registration Information
+                        </Typography>
+                        <Divider />
+                      </Grid>
+                      
+                      {/* From transaction.details */}
+                      {selectedTransaction.details && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Service ID:</strong> {selectedTransaction.referenceDetails?.serviceId || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Name:</strong> {`${selectedTransaction.details.firstName} ${selectedTransaction.details.middleName ? selectedTransaction.details.middleName + ' ' : ''}${selectedTransaction.details.lastName}`}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Address:</strong> {selectedTransaction.details.address}
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
+                      
+                      {/* From referenceDetails - more comprehensive information */}
+                      {selectedTransaction.referenceDetails && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Email:</strong> {selectedTransaction.referenceDetails.email || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Precinct Level:</strong> {selectedTransaction.referenceDetails.precinctLevel || 'N/A'}
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12}>
+                            {selectedTransaction.referenceDetails.types && selectedTransaction.referenceDetails.types.length > 0 && (
+                              <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Categories:</strong> {selectedTransaction.referenceDetails.types.join(', ')}
+                              </Typography>
+                            )}
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Voter:</strong> {selectedTransaction.referenceDetails.isVoter ? 'Yes' : 'No'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Status:</strong> {selectedTransaction.referenceDetails.isVerified ? 'Verified' : 'Pending Verification'}
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {/* Project Proposal Details */}
+                  {selectedTransaction?.serviceType === 'project_proposal' && (
+                    <>
+                      <Grid item xs={12}>
+                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                          Project Proposal Information
+                        </Typography>
+                        <Divider />
+                      </Grid>
+                      
+                      <Grid item xs={12}>
+                        <Typography variant="body2" sx={{ my: 0.5 }}>
+                          <strong>Proposal ID:</strong> {
+                            selectedTransaction.referenceDetails?.serviceId || 
+                            selectedTransaction.details?.serviceId || 
+                            'N/A'
+                          }
                         </Typography>
                       </Grid>
-                    )}
-                  </>
-                )}
-                
-                {selectedTransaction.adminComment && (
-                  <Grid item xs={12}>
-                    <Card sx={{ mt: 2, bgcolor: '#f5f5f5' }}>
-                      <CardContent>
-                        <Typography variant="subtitle2" gutterBottom>
-                          Admin Comment:
+
+                      {/* From transaction.details */}
+                      {selectedTransaction.details && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Project Title:</strong> {selectedTransaction.details.projectTitle || 'N/A'}
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
+                      
+                      {/* From referenceDetails - more comprehensive information */}
+                      {selectedTransaction.referenceDetails && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Submitter:</strong> {selectedTransaction.referenceDetails.fullName}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Email:</strong> {selectedTransaction.referenceDetails.email}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Submitted:</strong> {formatDate(selectedTransaction.referenceDetails.createdAt)}
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Project Title:</strong> {selectedTransaction.referenceDetails.projectTitle}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Status:</strong> {
+                                (() => {
+                                  const status = selectedTransaction.referenceDetails.status;
+                                  switch(status) {
+                                    case 'pending': return 'Pending';
+                                    case 'in_review': return 'In Review';
+                                    case 'considered': return 'Considered';
+                                    case 'approved': return 'Approved';
+                                    case 'rejected': return 'Rejected';
+                                    default: return status.replace('_', ' ');
+                                  }
+                                })()
+                              }
+                            </Typography>
+                            {selectedTransaction.referenceDetails.documentPath && (
+                              <Typography variant="body2" sx={{ mt: 1 }}>
+                                <FileIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <Link 
+                                  href={`http://localhost:3002${selectedTransaction.referenceDetails.documentPath}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  View Proposal Document
+                                </Link>
+                              </Typography>
+                            )}
+                          </Grid>
+                          
+                          <Grid item xs={12}>
+                            <Typography variant="body2" sx={{ mt: 1, mb: 1 }}>
+                              <strong>Project Description:</strong>
+                            </Typography>
+                            <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f9f9f9' }}>
+                              <Typography variant="body2" style={{ whiteSpace: 'pre-line' }}>
+                                {selectedTransaction.referenceDetails.description}
+                              </Typography>
+                            </Paper>
+                          </Grid>
+                        </>
+                      )}
+                    </>
+                  )}
+
+                  {/* Infrastructure Report Details */}
+                  {selectedTransaction?.serviceType === 'infrastructure_report' && (
+                    <>
+                      <Grid item xs={12}>
+                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                          Infrastructure Report Information
                         </Typography>
-                        <Typography variant="body2">
-                          {selectedTransaction.adminComment}
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                )}
-              </Grid>
+                        <Divider />
+                      </Grid>
+                      
+                      {/* From transaction.details */}
+                      {selectedTransaction.details && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Report ID:</strong> {selectedTransaction.referenceDetails?.serviceId || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Issue Type:</strong> {selectedTransaction.details.issueType || 'N/A'}
+                            </Typography>
+                          </Grid>
+                        </>
+                      )}
+                      
+                      {/* From referenceDetails - more comprehensive information */}
+                      {selectedTransaction.referenceDetails && (
+                        <>
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Reported By:</strong> {selectedTransaction.referenceDetails.fullName}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Contact Number:</strong> {selectedTransaction.referenceDetails.contactNumber}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Date Observed:</strong> {formatDate(selectedTransaction.referenceDetails.dateObserved)}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Issue Type:</strong> {selectedTransaction.referenceDetails.issueType}
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Location:</strong> {selectedTransaction.referenceDetails.location}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                              <strong>Nearest Landmark:</strong> {selectedTransaction.referenceDetails.nearestLandmark}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Status:</strong> {selectedTransaction.referenceDetails.status}
+                            </Typography>
+                          </Grid>
+                          
+                          <Grid item xs={12}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Description:</strong> {selectedTransaction.referenceDetails.description}
+                            </Typography>
+                            {selectedTransaction.referenceDetails.additionalComments && (
+                              <Typography variant="body2" sx={{ mt: 1 }}>
+                                <strong>Additional Comments:</strong> {selectedTransaction.referenceDetails.additionalComments}
+                              </Typography>
+                            )}
+                          </Grid>
+                          
+                          {/* Admin Comments Section */}
+                          {selectedTransaction.referenceDetails.adminComments && (
+                            <Grid item xs={12}>
+                              <Typography variant="body2" sx={{ mt: 1 }}>
+                                <strong>Admin Comments:</strong> {selectedTransaction.referenceDetails.adminComments}
+                              </Typography>
+                            </Grid>
+                          )}
+                          
+                          {/* Resident Feedback Section */}
+                          {selectedTransaction.referenceDetails.residentFeedback && 
+                            (selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined || 
+                            selectedTransaction.referenceDetails.residentFeedback.comments) && (
+                            <Grid item xs={12}>
+                              <Card sx={{ mt: 2, bgcolor: '#f8f9fa' }}>
+                                <CardContent>
+                                  <Typography variant="subtitle2" gutterBottom>
+                                    Your Feedback:
+                                  </Typography>
+                                  {selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined && (
+                                    <Typography variant="body2" sx={{ my: 0.5 }}>
+                                      <strong>Satisfied:</strong> {selectedTransaction.referenceDetails.residentFeedback.satisfied ? 'Yes' : 'No'}
+                                    </Typography>
+                                  )}
+                                  {selectedTransaction.referenceDetails.residentFeedback.comments && (
+                                    <Typography variant="body2" sx={{ my: 0.5 }}>
+                                      <strong>Comments:</strong> {selectedTransaction.referenceDetails.residentFeedback.comments}
+                                    </Typography>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            </Grid>
+                          )}
+                          
+                          {/* Display attached media if available */}
+                          {selectedTransaction.referenceDetails.mediaUrls && 
+                          selectedTransaction.referenceDetails.mediaUrls.length > 0 && (
+                            <Grid item xs={12}>
+                              <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+                                Attached Media:
+                              </Typography>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                {selectedTransaction.referenceDetails.mediaUrls.map((url, index) => (
+                                  <Box 
+                                    key={index}
+                                    component="a" 
+                                    href={`http://localhost:3002${url}`} 
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={{ 
+                                      border: '1px solid #ddd',
+                                      padding: '5px',
+                                      borderRadius: '4px'
+                                    }}
+                                  >
+                                    <Typography variant="body2">View Attachment {index + 1}</Typography>
+                                  </Box>
+                                ))}
+                              </Box>
+                            </Grid>
+                          )}
+                        </>
+                      )}
+                    </>
+                  )}
+                  
+                  {/* Admin Comments Section */}
+                  {selectedTransaction.adminComment && (
+                    <Grid item xs={12}>
+                      <Card sx={{ mt: 2, bgcolor: '#f5f5f5' }}>
+                        <CardContent>
+                          <Typography variant="subtitle2" gutterBottom>
+                            Admin Comment:
+                          </Typography>
+                          <Typography variant="body2">
+                            {selectedTransaction.adminComment}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  )}
+                </Grid>
+              </Box>
             )}
           </DialogContent>
-          <DialogActions>
-            {selectedTransaction && needsDieselResponse(selectedTransaction) && (
+          <DialogActions sx={{ px: 3, py: 2, bgcolor: '#f9f9f9', borderTop: '1px solid #eee' }}>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, width: '100%', justifyContent: isMobile ? 'center' : 'flex-end' }}>
+              {selectedTransaction && 
+              selectedTransaction.serviceType === 'infrastructure_report' && 
+              (
+                // If using transaction status (lowercase)
+                (selectedTransaction.status === 'completed' || 
+                // Or if using report status (PascalCase) from referenceDetails
+                (selectedTransaction.referenceDetails?.status === 'Resolved'))
+              ) && 
+              !selectedTransaction.referenceDetails?.residentFeedback && (
+                <Button 
+                  onClick={() => {
+                    // Store the report ID before opening feedback dialog
+                    let reportId = null;
+                    if (selectedTransaction.referenceId) {
+                      reportId = selectedTransaction.referenceId;
+                    } else if (selectedTransaction.details && selectedTransaction.details.reportId) {
+                      reportId = selectedTransaction.details.reportId;
+                    } else if (selectedTransaction.referenceDetails && selectedTransaction.referenceDetails._id) {
+                      reportId = selectedTransaction.referenceDetails._id;
+                    }
+                    
+                    if (reportId) {
+                      setFeedbackReportId(reportId);
+                      setOpenFeedbackDialog(true);
+                    } else {
+                      setSnackbar({
+                        open: true,
+                        message: 'Cannot determine report ID for feedback',
+                        severity: 'error'
+                      });
+                    }
+                  }} 
+                  color="primary"
+                  variant="contained"
+                  startIcon={<ReplyIcon />}
+                  size={isMobile ? "large" : "medium"}
+                  sx={{ 
+                    borderRadius: '4px', 
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    ...(isMobile && { flex: '1 1 auto' })
+                  }}
+                >
+                  Provide Feedback
+                </Button>
+              )}
+              {selectedTransaction && needsDieselResponse(selectedTransaction) && (
+                <Button 
+                  onClick={() => {
+                    handleCloseDetails();
+                    handleRespondToDiesel(selectedTransaction);
+                  }} 
+                  color="secondary"
+                  variant="contained"
+                  startIcon={<ReplyIcon />}
+                  size={isMobile ? "large" : "medium"}
+                  sx={{ 
+                    borderRadius: '4px', 
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    ...(isMobile && { flex: '1 1 auto' })
+                  }}
+                >
+                  Respond to Diesel Request
+                </Button>
+              )}
+              {selectedTransaction && canCancel(selectedTransaction) && (
+                <Button 
+                  onClick={() => {
+                    handleCloseDetails();
+                    handleCancelRequest(selectedTransaction);
+                  }} 
+                  color="error"
+                  variant="contained"
+                  startIcon={<CancelIcon />}
+                  size={isMobile ? "large" : "medium"}
+                  sx={{ 
+                    borderRadius: '4px', 
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    ...(isMobile && { flex: '1 1 auto' })
+                  }}
+                >
+                  Cancel Request
+                </Button>
+              )}
               <Button 
-                onClick={() => {
-                  handleCloseDetails();
-                  handleRespondToDiesel(selectedTransaction);
-                }} 
-                color="secondary"
-                fullWidth={isMobile}
-                variant="contained"
-                sx={{ mr: 1 }}
+                onClick={handleCloseDetails}
+                variant={isMobile ? "outlined" : "text"}
+                size={isMobile ? "large" : "medium"}
+                sx={{ ...(isMobile && { flex: '1 1 auto' }) }}
               >
-                Respond to Diesel Request
+                Close
               </Button>
-            )}
-            {selectedTransaction && canCancel(selectedTransaction) && (
-              <Button 
-                onClick={() => {
-                  handleCloseDetails();
-                  handleCancelRequest(selectedTransaction);
-                }} 
-                color="error"
-                fullWidth={isMobile}
-                variant="contained"
-              >
-                Cancel Request
-              </Button>
-            )}
-            {!isMobile && <Button onClick={handleCloseDetails}>Close</Button>}
+            </Box>
           </DialogActions>
         </Dialog>
 
@@ -1205,6 +2162,55 @@ const ResidentTransaction = () => {
           </DialogActions>
         </Dialog>
 
+        {/* Feedback Dialog for Infrastructure Reports */}
+        <Dialog
+          open={openFeedbackDialog}
+          onClose={() => {
+            setOpenFeedbackDialog(false);
+            setFeedbackReportId(null); // Clear the ID when closing
+          }}
+        >
+          <DialogTitle>Provide Your Feedback</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Are you satisfied with how your issue was resolved?
+            </DialogContentText>
+            <FormControl component="fieldset" sx={{ mt: 2 }}>
+              <RadioGroup
+                value={feedbackSatisfied ? 'yes' : 'no'}
+                onChange={(e) => setFeedbackSatisfied(e.target.value === 'yes')}
+              >
+                <FormControlLabel value="yes" control={<Radio />} label="Yes, I'm satisfied" />
+                <FormControlLabel value="no" control={<Radio />} label="No, I'm not satisfied" />
+              </RadioGroup>
+            </FormControl>
+            <TextField
+              margin="dense"
+              id="feedback-comments"
+              label="Comments (optional)"
+              type="text"
+              fullWidth
+              multiline
+              rows={3}
+              variant="outlined"
+              value={feedbackComments}
+              onChange={(e) => setFeedbackComments(e.target.value)}
+              sx={{ mt: 2 }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenFeedbackDialog(false)}>Cancel</Button>
+            <Button 
+              onClick={submitFeedback} 
+              color="primary"
+              variant="contained"
+              disabled={feedbackSubmitting}
+            >
+              {feedbackSubmitting ? <CircularProgress size={24} /> : 'Submit Feedback'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
         {/* Snackbar for notifications */}
         <Snackbar
           open={snackbar.open}
@@ -1223,7 +2229,6 @@ const ResidentTransaction = () => {
       </Container>
     );
   }
-
   // Desktop view
   return (
     <Container maxWidth="lg" sx={{ mt: 3, mb: 4 }}>
@@ -1272,21 +2277,32 @@ const ResidentTransaction = () => {
         </Button>
       </Box>
 
-      <TableContainer component={Paper}>
+      <TableContainer component={Paper} sx={{ 
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)', 
+        borderRadius: '8px', 
+        overflow: 'hidden'
+      }}>
         <Table>
           <TableHead>
-            <TableRow>
-              <TableCell>Service</TableCell>
-              <TableCell>Service ID</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Details</TableCell>
-              <TableCell>Actions</TableCell>
+            <TableRow sx={{ backgroundColor: 'primary.main' }}>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Service</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Service ID</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Date</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Details</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredTransactions.map((transaction) => (
-              <TableRow key={transaction._id}>
+            {filteredTransactions.map((transaction, index) => (
+              <TableRow 
+                key={transaction._id}
+                sx={{ 
+                  backgroundColor: index % 2 === 0 ? 'background.paper' : '#f9f9ff',
+                  '&:hover': { backgroundColor: '#f0f4ff' },
+                  transition: 'background-color 0.2s'
+                }}
+              >
                 <TableCell>{getServiceTypeLabel(transaction.serviceType)}</TableCell>
                 <TableCell>
                   {transaction.serviceType === 'ambulance_booking' || transaction.serviceType === 'court_reservation' || transaction.serviceType === 'infrastructure_report' || transaction.serviceType === 'document_request' || transaction.serviceType === 'project_proposal'? (
@@ -1312,13 +2328,13 @@ const ResidentTransaction = () => {
                   {/* Ambulance booking details */}
                   {transaction.serviceType === SERVICE_TYPES.AMBULANCE && transaction.details && (
                     <>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
                         <strong>Patient:</strong> {transaction.details.patientName || 'N/A'}
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
                         <strong>Destination:</strong> {transaction.details.destination || 'N/A'}
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
                         <strong>Pickup Date:</strong> {formatDate(transaction.details.pickupDate)}
                       </Typography>
                     </>
@@ -1327,10 +2343,10 @@ const ResidentTransaction = () => {
                   {/* Court reservation details */}
                   {transaction.serviceType === SERVICE_TYPES.COURT && transaction.details && (
                     <>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
                         <strong>Purpose:</strong> {transaction.details.purpose || 'N/A'}
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
                         <strong>Date:</strong> {formatDate(transaction.details.reservationDate)}
                       </Typography>
                     </>
@@ -1339,10 +2355,10 @@ const ResidentTransaction = () => {
                   {/* Infrastructure report details */}
                   {transaction.serviceType === SERVICE_TYPES.INFRASTRUCTURE && transaction.details && (
                     <>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
                         <strong>Issue:</strong> {transaction.details.issueType || 'N/A'}
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
                         <strong>Location:</strong> {transaction.details.location || 'N/A'}
                       </Typography>
                     </>
@@ -1351,7 +2367,7 @@ const ResidentTransaction = () => {
                   {/* Project proposal details */}
                   {transaction.serviceType === SERVICE_TYPES.PROJECT_PROPOSAL && transaction.details && (
                     <>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
                         <strong>Title:</strong> {transaction.details.projectTitle || 'N/A'}
                       </Typography>
                     </>
@@ -1360,10 +2376,10 @@ const ResidentTransaction = () => {
                   {/* Resident Registration details */}
                   {transaction.serviceType === SERVICE_TYPES.RESIDENT && transaction.details && (
                     <>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
                         <strong>Name:</strong> {`${transaction.details.firstName} ${transaction.details.middleName ? transaction.details.middleName + ' ' : ''}${transaction.details.lastName}`}
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
                         <strong>Address:</strong> {transaction.details.address || 'N/A'}
                       </Typography>
                     </>
@@ -1372,7 +2388,7 @@ const ResidentTransaction = () => {
                   {/* Document request details */}
                   {transaction.serviceType === SERVICE_TYPES.DOCUMENT && transaction.details && (
                     <>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
                         <strong>Type:</strong> {
                           (() => {
                             const docType = transaction.details.documentType;
@@ -1392,7 +2408,7 @@ const ResidentTransaction = () => {
                           })()
                         }
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
                         <strong>Purpose:</strong> {transaction.details.purpose || transaction.referenceDetails?.purpose || 'N/A'}
                       </Typography>
                     </>
@@ -1435,8 +2451,7 @@ const ResidentTransaction = () => {
           </TableBody>
         </Table>
       </TableContainer>
-
-      {/* Transaction Details Dialog - Desktop */}
+      {/* Transaction Details Dialog - Mobile & Desktop (shared) */}
       <Dialog 
         open={openDetails} 
         onClose={handleCloseDetails} 
@@ -1445,1026 +2460,1053 @@ const ResidentTransaction = () => {
         fullScreen={isMobile}
       >
         <DialogTitle>
-          Transaction Details
-          {isMobile && (
-            <IconButton
-              aria-label="close"
-              onClick={handleCloseDetails}
-              sx={{
-                position: 'absolute',
-                right: 8,
-                top: 8,
-              }}
-            >
-              <CancelIcon />
-            </IconButton>
+          {selectedTransaction && (
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="h6" component="div">
+                {getServiceTypeLabel(selectedTransaction.serviceType)}
+                <Typography component="span" sx={{ ml: 1.5, verticalAlign: 'middle', display: 'inline-flex' }}>
+                  {getStatusChip(selectedTransaction.status, selectedTransaction.serviceType, selectedTransaction)}
+                </Typography>
+              </Typography>
+              <IconButton
+                aria-label="close"
+                onClick={handleCloseDetails}
+              >
+                <CancelIcon />
+              </IconButton>
+            </Box>
           )}
         </DialogTitle>
-        <DialogContent>
+        <DialogContent dividers>
           {selectedTransaction && (
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Typography variant="h6" gutterBottom>
-                  {getServiceTypeLabel(selectedTransaction.serviceType)}
-                </Typography>
-                {getStatusChip(selectedTransaction.status)}
-                <Divider sx={{ my: 1 }} />
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <Typography variant="body2">
-                  <strong>Status:</strong> {selectedTransaction.status}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Created:</strong> {formatDateTime(selectedTransaction.createdAt)}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Last Updated:</strong> {formatDateTime(selectedTransaction.updatedAt)}
-                </Typography>
-                {selectedTransaction.amount > 0 && (
-                  <Typography variant="body2">
-                    <strong>Amount:</strong> ₱{selectedTransaction.amount.toFixed(2)}
+            <Box sx={{ overflowX: 'hidden' }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Typography variant="body2" sx={{ my: 0.5 }}>
+                    <strong>Status:</strong> {formatStatusText(selectedTransaction.status)}
                   </Typography>
+                  <Typography variant="body2" sx={{ my: 0.5 }}>
+                    <strong>Created:</strong> {formatDateTime(selectedTransaction.createdAt)}
+                  </Typography>
+                  <Typography variant="body2" sx={{ my: 0.5 }}>
+                    <strong>Last Updated:</strong> {formatDateTime(selectedTransaction.updatedAt)}
+                  </Typography>
+                  {selectedTransaction.amount > 0 && (
+                    <Typography variant="body2" sx={{ my: 0.5 }}>
+                      <strong>Amount:</strong> ₱{selectedTransaction.amount.toFixed(2)}
+                    </Typography>
+                  )}
+                </Grid>
+                
+                {/* Ambulance Booking Details */}
+                {selectedTransaction.serviceType === 'ambulance_booking' && (
+                  <>
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                        Ambulance Booking Information
+                      </Typography>
+                      <Divider />
+                    </Grid>
+                    
+                    {selectedTransaction.serviceType === 'ambulance_booking' && selectedTransaction.referenceDetails && (
+                      <Typography variant="body2" sx={{ my: 0.5 }}>
+                        <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId || 'N/A'}
+                      </Typography>
+                    )}
+                    
+                    {/* From referenceDetails - more comprehensive information */}
+                    {selectedTransaction.referenceDetails && (
+                      <>
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2" sx={{ my: 0.5 }}>
+                            <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                            <strong>Patient:</strong> {selectedTransaction.referenceDetails.patientName}
+                          </Typography>
+                          <Typography variant="body2" sx={{ my: 0.5 }}>
+                            <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                            <strong>Pickup Date:</strong> {formatDate(selectedTransaction.referenceDetails.pickupDate)}
+                          </Typography>
+                          <Typography variant="body2" sx={{ my: 0.5 }}>
+                            <TimeIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                            <strong>Pickup Time:</strong> {selectedTransaction.referenceDetails.pickupTime}
+                          </Typography>
+                          <Typography variant="body2" sx={{ my: 0.5 }}>
+                            <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                            <strong>Duration:</strong> {selectedTransaction.referenceDetails.duration}
+                          </Typography>
+                        </Grid>
+                        
+                        <Grid item xs={12} sm={6}>
+                          <Typography variant="body2" sx={{ my: 0.5 }}>
+                            <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                            <strong>Pickup Address:</strong> {selectedTransaction.referenceDetails.pickupAddress}
+                          </Typography>
+                          <Typography variant="body2" sx={{ my: 0.5 }}>
+                            <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                            <strong>Destination:</strong> {selectedTransaction.referenceDetails.destination}
+                          </Typography>
+                          <Typography variant="body2" sx={{ my: 0.5 }}>
+                            <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                            <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
+                          </Typography>
+                          <Typography variant="body2" sx={{ my: 0.5 }}>
+                            <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                            <strong>Submitter Relation:</strong> {selectedTransaction.referenceDetails.submitterRelation}
+                          </Typography>
+                        </Grid>
+                        
+                        <Grid item xs={12}>
+                          <Typography variant="body2" sx={{ my: 0.5 }}>
+                            <strong>Emergency Details:</strong> {selectedTransaction.referenceDetails.emergencyDetails || 'None'}
+                          </Typography>
+                          {selectedTransaction.referenceDetails.additionalNote && (
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                              <strong>Additional Notes:</strong> {selectedTransaction.referenceDetails.additionalNote}
+                            </Typography>
+                          )}
+                          <Typography variant="body2" sx={{ my: 0.5 }}>
+                            <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                            <strong>Diesel Cost Required:</strong> {selectedTransaction.details?.dieselCost ? 'Yes' : 'No'}
+                          </Typography>
+                        </Grid>
+                      </>
+                    )}
+                  </>
+                )}
+                
+                {/* All other service type sections copied from above */}
+                {/* Court Reservation Details */}
+                {selectedTransaction.serviceType === 'court_reservation' && (
+                  <>
+                    {/* Copy the court reservation section from above */}
+                    <Grid item xs={12}>
+                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                            Court Reservation Information
+                        </Typography>
+                        <Divider />
+                        </Grid>
+                        
+                        {/* From referenceDetails - more comprehensive information */}
+                        {selectedTransaction.referenceDetails && (
+                        <>
+                            <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Representative:</strong> {selectedTransaction.referenceDetails.representativeName}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Date:</strong> {formatDate(selectedTransaction.referenceDetails.reservationDate)}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <TimeIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Time:</strong> {selectedTransaction.referenceDetails.startTime}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Duration:</strong> {selectedTransaction.referenceDetails.duration} hours
+                            </Typography>
+                            </Grid>
+                            
+                            <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Purpose:</strong> {selectedTransaction.referenceDetails.purpose}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Number of People:</strong> {selectedTransaction.referenceDetails.numberOfPeople}
+                            </Typography>
+                            </Grid>
+                            
+                            {selectedTransaction.referenceDetails.additionalNotes && (
+                            <Grid item xs={12}>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Additional Notes:</strong> {selectedTransaction.referenceDetails.additionalNotes}
+                                </Typography>
+                            </Grid>
+                            )}
+                        </>
+                        )}
+                  </>
+                )}
+                
+                {/* Document Request Details */}
+                {selectedTransaction?.serviceType === 'document_request' && (
+                  <>
+                    {/* Copy the document request section from above */}
+                    <Grid item xs={12}>
+                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                            Document Request Information
+                        </Typography>
+                        <Divider />
+                        </Grid>
+                        
+                        {/* From transaction.details */}
+                        {selectedTransaction.details && (
+                        <>
+                            <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Document Type:</strong> {
+                                (() => {
+                                    const docType = selectedTransaction.details.documentType;
+                                    switch(docType) {
+                                    case 'barangay_id': return 'Barangay ID';
+                                    case 'barangay_clearance': return 'Barangay Clearance';
+                                    case 'business_clearance': return 'Business Clearance';
+                                    case 'lot_ownership': return 'Lot Ownership';
+                                    case 'digging_permit': return 'Digging Permit';
+                                    case 'fencing_permit': return 'Fencing Permit';
+                                    case 'request_for_assistance': return 'Request for Assistance';
+                                    case 'certificate_of_indigency': return 'Certificate of Indigency';
+                                    case 'certificate_of_residency': return 'Certificate of Residency';
+                                    case 'no_objection_certificate': return 'No Objection Certificate';
+                                    default: return docType;
+                                    }
+                                })()
+                                }
+                            </Typography>
+                            </Grid>
+                        </>
+                        )}
+                        
+                        {/* From referenceDetails - more comprehensive information */}
+                        {selectedTransaction.referenceDetails && (
+                        <>
+                            <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Purpose:</strong> {
+                                selectedTransaction.referenceDetails.documentType === 'digging_permit' && 
+                                selectedTransaction.referenceDetails.formData && 
+                                selectedTransaction.referenceDetails.formData.diggingPurpose
+                                    ? (() => {
+                                        const purpose = selectedTransaction.referenceDetails.formData.diggingPurpose;
+                                        switch(purpose) {
+                                        case 'water_supply': return 'Water Supply Connection';
+                                        case 'electrical': return 'Electrical Connection';
+                                        case 'drainage': return 'Drainage System';
+                                        case 'other': return 'Other';
+                                        default: return purpose;
+                                        }
+                                    })()
+                                    : selectedTransaction.referenceDetails.purpose
+                                }
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Status:</strong> {
+                                (() => {
+                                    const status = selectedTransaction.referenceDetails.status;
+                                    switch(status) {
+                                    case 'pending': return 'Pending';
+                                    case 'in_progress': return 'In Progress';
+                                    case 'completed': return 'Completed';
+                                    case 'rejected': return 'Rejected';
+                                    case 'cancelled': return 'Cancelled';
+                                    default: return status.replace('_', ' ');
+                                    }
+                                })()
+                                }
+                            </Typography>
+                            </Grid>
+                            
+                            {/* Display different fields based on document type */}
+                            {selectedTransaction.referenceDetails.documentType === 'certificate_of_residency' && (
+                            <>
+                                <Grid item xs={12} sm={6}>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Age:</strong> {selectedTransaction.referenceDetails.formData.age}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address} Barangay Maahas, Los Baños, Laguna
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Date of Birth:</strong> {
+                                    selectedTransaction.referenceDetails.formData.dateOfBirth ? 
+                                    format(new Date(selectedTransaction.referenceDetails.formData.dateOfBirth), 'MMM dd, yyyy') : 
+                                    'N/A'
+                                    }
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Place of Birth:</strong> {selectedTransaction.referenceDetails.formData.placeOfBirth}
+                                </Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Nationality:</strong> {selectedTransaction.referenceDetails.formData.nationality}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Civil Status:</strong> {selectedTransaction.referenceDetails.formData.civilStatus}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Years of Stay:</strong> {selectedTransaction.referenceDetails.formData.yearsOfStay}
+                                </Typography>
+                                </Grid>
+                            </>
+                            )}
+                            
+                            {/* Barangay Clearance Details */}
+                            {selectedTransaction.referenceDetails.documentType === 'barangay_clearance' && (
+                            <>
+                                <Grid item xs={12} sm={6}>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Gender:</strong> {selectedTransaction.referenceDetails.formData.gender === 'male' ? 'Male' : 'Female'}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030
+                                </Typography>
+                                </Grid>
+                            </>
+                            )}
+                            {/* Lot Ownership Details */}
+                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'lot_ownership' && (
+                            <>
+                                <Grid item xs={12} sm={6}>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>TD Number:</strong> {selectedTransaction.referenceDetails.formData.tdNumber}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Survey Number:</strong> {selectedTransaction.referenceDetails.formData.surveyNumber}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Lot Area:</strong> {selectedTransaction.referenceDetails.formData.lotArea} {
+                                    (() => {
+                                        const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
+                                        switch(areaUnit) {
+                                        case 'square_meters': return 'square meters';
+                                        case 'square_feet': return 'square feet';
+                                        case 'hectares': return 'hectares';
+                                        default: return areaUnit;
+                                        }
+                                    })()
+                                    }
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Property Location:</strong> {selectedTransaction.referenceDetails.formData.lotLocation}, Barangay Maahas, Los Baños, Laguna
+                                </Typography>
+                                </Grid>
+                                
+                                <Grid item xs={12} sm={6}>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Owner Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Owner Address:</strong> {selectedTransaction.referenceDetails.formData.ownerAddress}
+                                </Typography>
+                                </Grid>
+                            </>
+                            )}
+
+                            {/* Barangay ID Details */}
+                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'barangay_id' && (
+                            <>
+                                <Grid item xs={12} sm={6}>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>First Name:</strong> {selectedTransaction.referenceDetails.formData.firstName}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Middle Name:</strong> {selectedTransaction.referenceDetails.formData.middleName || 'N/A'}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Last Name:</strong> {selectedTransaction.referenceDetails.formData.lastName}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
+                                </Typography>
+                                </Grid>
+                                
+                                <Grid item xs={12} sm={6}>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Date of Birth:</strong> {selectedTransaction.referenceDetails.formData.birthDate}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Emergency Contact Name:</strong> {selectedTransaction.referenceDetails.formData.emergencyContactName}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Emergency Contact Number:</strong> {selectedTransaction.referenceDetails.formData.emergencyContactNumber}
+                                </Typography>
+                                </Grid>
+                            </>
+                            )}
+
+                            {/* Fencing Permit Details */}
+                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'fencing_permit' && (
+                                <>
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2">
+                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Residential Address:</strong> {selectedTransaction.referenceDetails.formData.residentAddress}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Property Location:</strong> {selectedTransaction.referenceDetails.formData.propertyLocation}, Barangay Maahas, Los Baños, Laguna
+                                    </Typography>
+                                </Grid>
+                                
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2">
+                                    <strong>Tax Declaration No.:</strong> {selectedTransaction.referenceDetails.formData.taxDeclarationNumber}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Property ID No.:</strong> {selectedTransaction.referenceDetails.formData.propertyIdentificationNumber}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Property Area:</strong> {selectedTransaction.referenceDetails.formData.propertyArea} {
+                                        (() => {
+                                        const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
+                                        switch(areaUnit) {
+                                            case 'square_meters': return 'square meters';
+                                            case 'square_feet': return 'square feet';
+                                            case 'hectares': return 'hectares';
+                                            default: return areaUnit;
+                                        }
+                                        })()
+                                    }
+                                    </Typography>
+                                </Grid>
+                                </>
+                            )}
+        
+                            {/* Digging Permit Details */}
+                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'digging_permit' && (
+                                <>
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2">
+                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
+                                    </Typography>
+                                </Grid>
+                                
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2">
+                                    <strong>Company:</strong> {selectedTransaction.referenceDetails.formData.companyName}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Application Details:</strong> {selectedTransaction.referenceDetails.formData.applicationDetails}
+                                    </Typography>
+                                </Grid>
+                                </>
+                            )}
+                            
+                            {/* Business Clearance Details */}
+                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'business_clearance' && (
+                                <>
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2">
+                                    <strong>Business Name:</strong> {selectedTransaction.referenceDetails.formData.businessName}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Business Address:</strong> {selectedTransaction.referenceDetails.formData.businessAddress}, Barangay Maahas, Los Baños, Laguna
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Line of Business:</strong> {selectedTransaction.referenceDetails.formData.lineOfBusiness}
+                                    </Typography>
+                                </Grid>
+                                
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2">
+                                    <strong>Business Status:</strong> {selectedTransaction.referenceDetails.formData.businessStatus}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Amount:</strong> ₱{selectedTransaction.referenceDetails.formData.amount}
+                                    </Typography>
+                                </Grid>
+                                </>
+                            )}
+        
+                            {/* No Objection Certificate Details */}
+                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'no_objection_certificate' && (
+                                <>
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2">
+                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
+                                    </Typography>
+                                </Grid>
+                                
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2">
+                                    <strong>Activity Type:</strong> {
+                                        (() => {
+                                        const objectType = selectedTransaction.referenceDetails.formData.objectType;
+                                        switch(objectType) {
+                                            case 'tree_cutting': return 'Tree Cutting';
+                                            case 'construction': return 'Construction';
+                                            case 'event': return 'Event/Gathering';
+                                            case 'business': return 'Business Operation';
+                                            case 'other': return 'Other Activity';
+                                            default: return objectType;
+                                        }
+                                        })()
+                                    }
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Details:</strong> {selectedTransaction.referenceDetails.formData.objectDetails}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Quantity:</strong> {selectedTransaction.referenceDetails.formData.quantity}
+                                    </Typography>
+                                    {selectedTransaction.referenceDetails.formData.objectType === 'other' && (
+                                    <Typography variant="body2">
+                                        <strong>Additional Info:</strong> {selectedTransaction.referenceDetails.formData.additionalInfo}
+                                    </Typography>
+                                    )}
+                                </Grid>
+                                </>
+                            )}
+        
+                            {/* Request for Assistance Details */}
+                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'request_for_assistance' && (
+                                <>
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2">
+                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Years of Stay:</strong> {selectedTransaction.referenceDetails.formData.yearsOfStay}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                    <strong>Marginalized Group:</strong> {
+                                        (() => {
+                                        const group = selectedTransaction.referenceDetails.formData.marginGroupType;
+                                        switch(group) {
+                                            case 'urban_poor': return 'Urban Poor';
+                                            case 'senior_citizen': return 'Senior Citizen';
+                                            case 'single_parent': return 'Single Parent';
+                                            case 'pwd': return 'Person with Disability (PWD)';
+                                            case 'indigenous': return 'Indigenous Person';
+                                            case 'solo_parent': return 'Solo Parent';
+                                            case 'other': return 'Other';
+                                            default: return group;
+                                        }
+                                        })()
+                                    }
+                                    </Typography>
+                                </Grid>
+                                
+                                <Grid item xs={12} sm={6}>
+                                    <Typography variant="body2">
+                                    <strong>Request For:</strong> {selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'}
+                                    </Typography>
+                                    {!selectedTransaction.referenceDetails.formData.isSelf && (
+                                    <>
+                                        <Typography variant="body2">
+                                        <strong>Beneficiary Name:</strong> {selectedTransaction.referenceDetails.formData.beneficiaryName}
+                                        </Typography>
+                                        <Typography variant="body2">
+                                        <strong>Relationship:</strong> {selectedTransaction.referenceDetails.formData.beneficiaryRelation}
+                                        </Typography>
+                                    </>
+                                    )}
+                                    <Typography variant="body2">
+                                    <strong>Assistance Type:</strong> {
+                                        (() => {
+                                        const type = selectedTransaction.referenceDetails.formData.assistanceType;
+                                        switch(type) {
+                                            case 'financial': return 'Financial Assistance';
+                                            case 'medical': return 'Medical Assistance';
+                                            case 'burial': return 'Burial Assistance';
+                                            case 'educational': return 'Educational Assistance';
+                                            case 'food': return 'Food Assistance';
+                                            case 'housing': return 'Housing Assistance';
+                                            case 'other': return selectedTransaction.referenceDetails.formData.otherAssistanceType || 'Other Assistance';
+                                            default: return type;
+                                        }
+                                        })()
+                                    }
+                                    </Typography>
+                                </Grid>
+                                </>
+                            )}
+                            {/* Certificate of Indigency Details */}
+                            {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (
+                            <>
+                                <Grid item xs={12} sm={6}>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Age:</strong> {selectedTransaction.referenceDetails.formData.age} years old
+                                </Typography>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030
+                                </Typography>
+                                </Grid>
+                                
+                                <Grid item xs={12} sm={6}>
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Certificate For:</strong> {selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'}
+                                </Typography>
+                                
+                                {!selectedTransaction.referenceDetails.formData.isSelf ? (
+                                    <>
+                                    <Typography variant="body2" sx={{ my: 0.5 }}>
+                                        <strong>Recipient:</strong> {selectedTransaction.referenceDetails.formData.guardian}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ my: 0.5 }}>
+                                        <strong>Relationship:</strong> {selectedTransaction.referenceDetails.formData.guardianRelation}
+                                    </Typography>
+                                    </>
+                                ) : (
+                                    <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Recipient:</strong> Self (Same as applicant)
+                                    </Typography>
+                                )}
+                                
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                    <strong>Purpose:</strong> {selectedTransaction.referenceDetails.purpose}
+                                </Typography>
+                                </Grid>
+                            </>
+                            )}
+                        </>
+                        )}
+                    </>
+                    )}
+                
+                {/* Resident Registration Details */}
+                {selectedTransaction?.serviceType === 'resident_registration' && (
+                  <>
+                    {/* Copy the resident registration section from above */}
+                    <Grid item xs={12}>
+                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                            Resident Registration Information
+                        </Typography>
+                        <Divider />
+                        </Grid>
+                        
+                        {/* From transaction.details */}
+                        {selectedTransaction.details && (
+                        <>
+                            <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Service ID:</strong> {selectedTransaction.referenceDetails?.serviceId || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Name:</strong> {`${selectedTransaction.details.firstName} ${selectedTransaction.details.middleName ? selectedTransaction.details.middleName + ' ' : ''}${selectedTransaction.details.lastName}`}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Address:</strong> {selectedTransaction.details.address}
+                            </Typography>
+                            </Grid>
+                        </>
+                        )}
+                        
+                        {/* From referenceDetails - more comprehensive information */}
+                        {selectedTransaction.referenceDetails && (
+                        <>
+                            <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Email:</strong> {selectedTransaction.referenceDetails.email || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Precinct Level:</strong> {selectedTransaction.referenceDetails.precinctLevel || 'N/A'}
+                            </Typography>
+                            </Grid>
+                            
+                            <Grid item xs={12}>
+                            {selectedTransaction.referenceDetails.types && selectedTransaction.referenceDetails.types.length > 0 && (
+                                <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Categories:</strong> {selectedTransaction.referenceDetails.types.join(', ')}
+                                </Typography>
+                            )}
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Voter:</strong> {selectedTransaction.referenceDetails.isVoter ? 'Yes' : 'No'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Status:</strong> {selectedTransaction.referenceDetails.isVerified ? 'Verified' : 'Pending Verification'}
+                            </Typography>
+                            </Grid>
+                        </>
+                        )}
+                  </>
+                )}
+                
+                {/* Project Proposal Details */}
+                {selectedTransaction?.serviceType === 'project_proposal' && (
+                  <>
+                    {/* Copy the project proposal section from above */}
+                    <Grid item xs={12}>
+                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                            Project Proposal Information
+                        </Typography>
+                        <Divider />
+                        </Grid>
+                        
+                        <Grid item xs={12}>
+                        <Typography variant="body2" sx={{ my: 0.5 }}>
+                            <strong>Proposal ID:</strong> {
+                            selectedTransaction.referenceDetails?.serviceId || 
+                            selectedTransaction.details?.serviceId || 
+                            'N/A'
+                            }
+                        </Typography>
+                        </Grid>
+
+                        {/* From transaction.details */}
+                        {selectedTransaction.details && (
+                        <>
+                            <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Project Title:</strong> {selectedTransaction.details.projectTitle || 'N/A'}
+                            </Typography>
+                            </Grid>
+                        </>
+                        )}
+                        
+                        {/* From referenceDetails - more comprehensive information */}
+                        {selectedTransaction.referenceDetails && (
+                        <>
+                            <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Submitter:</strong> {selectedTransaction.referenceDetails.fullName}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Email:</strong> {selectedTransaction.referenceDetails.email}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Submitted:</strong> {formatDate(selectedTransaction.referenceDetails.createdAt)}
+                            </Typography>
+                            </Grid>
+                            
+                            <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Project Title:</strong> {selectedTransaction.referenceDetails.projectTitle}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Status:</strong> {
+                                (() => {
+                                    const status = selectedTransaction.referenceDetails.status;
+                                    switch(status) {
+                                    case 'pending': return 'Pending';
+                                    case 'in_review': return 'In Review';
+                                    case 'considered': return 'Considered';
+                                    case 'approved': return 'Approved';
+                                    case 'rejected': return 'Rejected';
+                                    default: return status.replace('_', ' ');
+                                    }
+                                })()
+                                }
+                            </Typography>
+                            {selectedTransaction.referenceDetails.documentPath && (
+                                <Typography variant="body2" sx={{ mt: 1 }}>
+                                <FileIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <Link 
+                                    href={`http://localhost:3002${selectedTransaction.referenceDetails.documentPath}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    View Proposal Document
+                                </Link>
+                                </Typography>
+                            )}
+                            </Grid>
+                            
+                            <Grid item xs={12}>
+                            <Typography variant="body2" sx={{ mt: 1, mb: 1 }}>
+                                <strong>Project Description:</strong>
+                            </Typography>
+                            <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f9f9f9' }}>
+                                <Typography variant="body2" style={{ whiteSpace: 'pre-line' }}>
+                                {selectedTransaction.referenceDetails.description}
+                                </Typography>
+                            </Paper>
+                            </Grid>
+                        </>
+                        )}
+                  </>
+                )}
+                
+                {/* Infrastructure Report Details */}
+                {selectedTransaction?.serviceType === 'infrastructure_report' && (
+                  <>
+                    {/* Copy the infrastructure report section from above */}
+                    <Grid item xs={12}>
+                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                            Infrastructure Report Information
+                        </Typography>
+                        <Divider />
+                        </Grid>
+                        
+                        {/* From transaction.details */}
+                        {selectedTransaction.details && (
+                        <>
+                            <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Report ID:</strong> {selectedTransaction.referenceDetails?.serviceId || 'N/A'}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Issue Type:</strong> {selectedTransaction.details.issueType || 'N/A'}
+                            </Typography>
+                            </Grid>
+                        </>
+                        )}
+                        
+                        {/* From referenceDetails - more comprehensive information */}
+                        {selectedTransaction.referenceDetails && (
+                        <>
+                            <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Reported By:</strong> {selectedTransaction.referenceDetails.fullName}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Contact Number:</strong> {selectedTransaction.referenceDetails.contactNumber}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Date Observed:</strong> {formatDate(selectedTransaction.referenceDetails.dateObserved)}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Issue Type:</strong> {selectedTransaction.referenceDetails.issueType}
+                            </Typography>
+                            </Grid>
+                            
+                            <Grid item xs={12} sm={6}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Location:</strong> {selectedTransaction.referenceDetails.location}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <strong>Nearest Landmark:</strong> {selectedTransaction.referenceDetails.nearestLandmark}
+                            </Typography>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Status:</strong> {selectedTransaction.referenceDetails.status}
+                            </Typography>
+                            </Grid>
+                            
+                            <Grid item xs={12}>
+                            <Typography variant="body2" sx={{ my: 0.5 }}>
+                                <strong>Description:</strong> {selectedTransaction.referenceDetails.description}
+                            </Typography>
+                            {selectedTransaction.referenceDetails.additionalComments && (
+                                <Typography variant="body2" sx={{ mt: 1 }}>
+                                <strong>Additional Comments:</strong> {selectedTransaction.referenceDetails.additionalComments}
+                                </Typography>
+                            )}
+                            </Grid>
+                            
+                            {/* Admin Comments Section */}
+                            {selectedTransaction.referenceDetails.adminComments && (
+                            <Grid item xs={12}>
+                                <Typography variant="body2" sx={{ mt: 1 }}>
+                                <strong>Admin Comments:</strong> {selectedTransaction.referenceDetails.adminComments}
+                                </Typography>
+                            </Grid>
+                            )}
+                            
+                            {/* Resident Feedback Section */}
+                            {selectedTransaction.referenceDetails.residentFeedback && 
+                            (selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined || 
+                            selectedTransaction.referenceDetails.residentFeedback.comments) && (
+                            <Grid item xs={12}>
+                                <Card sx={{ mt: 2, bgcolor: '#f8f9fa' }}>
+                                <CardContent>
+                                    <Typography variant="subtitle2" gutterBottom>
+                                    Your Feedback:
+                                    </Typography>
+                                    {selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined && (
+                                    <Typography variant="body2" sx={{ my: 0.5 }}>
+                                        <strong>Satisfied:</strong> {selectedTransaction.referenceDetails.residentFeedback.satisfied ? 'Yes' : 'No'}
+                                    </Typography>
+                                    )}
+                                    {selectedTransaction.referenceDetails.residentFeedback.comments && (
+                                    <Typography variant="body2" sx={{ my: 0.5 }}>
+                                        <strong>Comments:</strong> {selectedTransaction.referenceDetails.residentFeedback.comments}
+                                    </Typography>
+                                    )}
+                                </CardContent>
+                                </Card>
+                            </Grid>
+                            )}
+                            
+                            {/* Display attached media if available */}
+                            {selectedTransaction.referenceDetails.mediaUrls && 
+                            selectedTransaction.referenceDetails.mediaUrls.length > 0 && (
+                            <Grid item xs={12}>
+                                <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
+                                Attached Media:
+                                </Typography>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                {selectedTransaction.referenceDetails.mediaUrls.map((url, index) => (
+                                    <Box 
+                                    key={index}
+                                    component="a" 
+                                    href={`http://localhost:3002${url}`} 
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={{ 
+                                        border: '1px solid #ddd',
+                                        padding: '5px',
+                                        borderRadius: '4px'
+                                    }}
+                                    >
+                                    <Typography variant="body2">View Attachment {index + 1}</Typography>
+                                    </Box>
+                                ))}
+                                </Box>
+                            </Grid>
+                            )}
+                        </>
+                        )}
+                  </>
+                )}
+                
+                {/* Admin Comments Section */}
+                {selectedTransaction.adminComment && (
+                  <Grid item xs={12}>
+                    <Card sx={{ mt: 2, bgcolor: '#f5f5f5' }}>
+                      <CardContent>
+                        <Typography variant="subtitle2" gutterBottom>
+                          Admin Comment:
+                        </Typography>
+                        <Typography variant="body2">
+                          {selectedTransaction.adminComment}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
                 )}
               </Grid>
-              
-              {/* Ambulance Booking Details */}
-              {selectedTransaction.serviceType === 'ambulance_booking' && (
-                <>
-                  <Grid item xs={12}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                      Ambulance Booking Information
-                    </Typography>
-                    <Divider />
-                  </Grid>
-                  
-                  {selectedTransaction.serviceType === 'ambulance_booking' && selectedTransaction.referenceDetails && (
-                    <Typography variant="body2">
-                      <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId || 'N/A'}
-                    </Typography>
-                  )}
-                  
-                  {/* From referenceDetails - more comprehensive information */}
-                  {selectedTransaction.referenceDetails && (
-                    <>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Patient:</strong> {selectedTransaction.referenceDetails.patientName}
-                        </Typography>
-                        <Typography variant="body2">
-                          <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Pickup Date:</strong> {formatDate(selectedTransaction.referenceDetails.pickupDate)}
-                        </Typography>
-                        <Typography variant="body2">
-                          <TimeIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Pickup Time:</strong> {selectedTransaction.referenceDetails.pickupTime}
-                        </Typography>
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Duration:</strong> {selectedTransaction.referenceDetails.duration}
-                        </Typography>
-                      </Grid>
-                      
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Pickup Address:</strong> {selectedTransaction.referenceDetails.pickupAddress}
-                        </Typography>
-                        <Typography variant="body2">
-                          <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Destination:</strong> {selectedTransaction.referenceDetails.destination}
-                        </Typography>
-                        <Typography variant="body2">
-                          <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
-                        </Typography>
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Submitter Relation:</strong> {selectedTransaction.referenceDetails.submitterRelation}
-                        </Typography>
-                      </Grid>
-                      
-                      <Grid item xs={12}>
-                        <Typography variant="body2">
-                          <strong>Emergency Details:</strong> {selectedTransaction.referenceDetails.emergencyDetails || 'None'}
-                        </Typography>
-                        {selectedTransaction.referenceDetails.additionalNote && (
-                          <Typography variant="body2">
-                            <strong>Additional Notes:</strong> {selectedTransaction.referenceDetails.additionalNote}
-                          </Typography>
-                        )}
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Diesel Cost Required:</strong> {selectedTransaction.details.dieselCost ? 'Yes' : 'No'}
-                        </Typography>
-                      </Grid>
-                    </>
-                  )}
-                </>
-              )}
-              
-              {/* Court Reservation Details */}
-              {selectedTransaction.serviceType === 'court_reservation' && (
-                <>
-                  <Grid item xs={12}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                      Court Reservation Information
-                    </Typography>
-                    <Divider />
-                  </Grid>
-                  
-                  {/* From referenceDetails - more comprehensive information */}
-                  {selectedTransaction.referenceDetails && (
-                    <>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId}
-                        </Typography>
-                        <Typography variant="body2">
-                          <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Representative:</strong> {selectedTransaction.referenceDetails.representativeName}
-                        </Typography>
-                        <Typography variant="body2">
-                          <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Date:</strong> {formatDate(selectedTransaction.referenceDetails.reservationDate)}
-                        </Typography>
-                        <Typography variant="body2">
-                          <TimeIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Time:</strong> {selectedTransaction.referenceDetails.startTime}
-                        </Typography>
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Duration:</strong> {selectedTransaction.referenceDetails.duration} hours
-                        </Typography>
-                      </Grid>
-                      
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
-                        </Typography>
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Purpose:</strong> {selectedTransaction.referenceDetails.purpose}
-                        </Typography>
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Number of People:</strong> {selectedTransaction.referenceDetails.numberOfPeople}
-                        </Typography>
-                      </Grid>
-                      
-                      {selectedTransaction.referenceDetails.additionalNotes && (
-                        <Grid item xs={12}>
-                          <Typography variant="body2">
-                            <strong>Additional Notes:</strong> {selectedTransaction.referenceDetails.additionalNotes}
-                          </Typography>
-                        </Grid>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
-              
-              {/* Document Request Details - Add Barangay Clearance section */}
-              {selectedTransaction?.serviceType === 'document_request' && (
-                <>
-                  <Grid item xs={12}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                      Document Request Information
-                    </Typography>
-                    <Divider />
-                  </Grid>
-                  
-                  {/* From transaction.details */}
-                  {selectedTransaction.details && (
-                    <>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <strong>Document Type:</strong> {
-                            (() => {
-                              const docType = selectedTransaction.details.documentType;
-                              switch(docType) {
-                                case 'barangay_id': return 'Barangay ID';
-                                case 'barangay_clearance': return 'Barangay Clearance';
-                                case 'business_clearance': return 'Business Clearance';
-                                case 'lot_ownership': return 'Lot Ownership';
-                                case 'digging_permit': return 'Digging Permit';
-                                case 'fencing_permit': return 'Fencing Permit';
-                                case 'request_for_assistance': return 'Request for Assistance';
-                                case 'certificate_of_indigency': return 'Certificate of Indigency';
-                                case 'certificate_of_residency': return 'Certificate of Residency';
-                                case 'no_objection_certificate': return 'No Objection Certificate';
-                                default: return docType;
-                              }
-                            })()
-                          }
-                        </Typography>
-                      </Grid>
-                    </>
-                  )}
-                  
-                  {/* From referenceDetails - more comprehensive information */}
-                  {selectedTransaction.referenceDetails && (
-                    <>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId || 'N/A'}
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>Purpose:</strong> {
-                            selectedTransaction.referenceDetails.documentType === 'digging_permit' && 
-                            selectedTransaction.referenceDetails.formData && 
-                            selectedTransaction.referenceDetails.formData.diggingPurpose
-                              ? (() => {
-                                  const purpose = selectedTransaction.referenceDetails.formData.diggingPurpose;
-                                  switch(purpose) {
-                                    case 'water_supply': return 'Water Supply Connection';
-                                    case 'electrical': return 'Electrical Connection';
-                                    case 'drainage': return 'Drainage System';
-                                    case 'other': return 'Other';
-                                    default: return purpose;
-                                  }
-                                })()
-                              : selectedTransaction.referenceDetails.purpose
-                          }
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>Status:</strong> {
-                            (() => {
-                              const status = selectedTransaction.referenceDetails.status;
-                              switch(status) {
-                                case 'pending': return 'Pending';
-                                case 'in_progress': return 'In Progress';
-                                case 'completed': return 'Completed';
-                                case 'rejected': return 'Rejected';
-                                case 'cancelled': return 'Cancelled';
-                                default: return status.replace('_', ' ');
-                              }
-                            })()
-                          }
-                        </Typography>
-                      </Grid>
-                      
-                      {/* Display different fields based on document type */}
-                      {selectedTransaction.referenceDetails.documentType === 'certificate_of_residency' && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Age:</strong> {selectedTransaction.referenceDetails.formData.age}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address} Barangay Maahas, Los Baños, Laguna
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Date of Birth:</strong> {
-                                selectedTransaction.referenceDetails.formData.dateOfBirth ? 
-                                format(new Date(selectedTransaction.referenceDetails.formData.dateOfBirth), 'MMM dd, yyyy') : 
-                                'N/A'
-                              }
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Place of Birth:</strong> {selectedTransaction.referenceDetails.formData.placeOfBirth}
-                            </Typography>
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Nationality:</strong> {selectedTransaction.referenceDetails.formData.nationality}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Civil Status:</strong> {selectedTransaction.referenceDetails.formData.civilStatus}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Years of Stay:</strong> {selectedTransaction.referenceDetails.formData.yearsOfStay}
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-                      
-                      {/* Barangay Clearance Details */}
-                      {selectedTransaction.referenceDetails.documentType === 'barangay_clearance' && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Gender:</strong> {selectedTransaction.referenceDetails.formData.gender === 'male' ? 'Male' : 'Female'}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-                      {/* Lot Ownership Details */}
-                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'lot_ownership' && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>TD Number:</strong> {selectedTransaction.referenceDetails.formData.tdNumber}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Survey Number:</strong> {selectedTransaction.referenceDetails.formData.surveyNumber}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Lot Area:</strong> {selectedTransaction.referenceDetails.formData.lotArea} {
-                                (() => {
-                                  const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
-                                  switch(areaUnit) {
-                                    case 'square_meters': return 'square meters';
-                                    case 'square_feet': return 'square feet';
-                                    case 'hectares': return 'hectares';
-                                    default: return areaUnit;
-                                  }
-                                })()
-                              }
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Property Location:</strong> {selectedTransaction.referenceDetails.formData.lotLocation}, Barangay Maahas, Los Baños, Laguna
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Owner Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Owner Address:</strong> {selectedTransaction.referenceDetails.formData.ownerAddress}
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-
-                      {/* Barangay ID Details */}
-                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'barangay_id' && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>First Name:</strong> {selectedTransaction.referenceDetails.formData.firstName}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Middle Name:</strong> {selectedTransaction.referenceDetails.formData.middleName || 'N/A'}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Last Name:</strong> {selectedTransaction.referenceDetails.formData.lastName}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Date of Birth:</strong> {selectedTransaction.referenceDetails.formData.birthDate}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Emergency Contact Name:</strong> {selectedTransaction.referenceDetails.formData.emergencyContactName}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Emergency Contact Number:</strong> {selectedTransaction.referenceDetails.formData.emergencyContactNumber}
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-
-                      {/* Fencing Permit Details */}
-                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'fencing_permit' && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Residential Address:</strong> {selectedTransaction.referenceDetails.formData.residentAddress}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Property Location:</strong> {selectedTransaction.referenceDetails.formData.propertyLocation}, Barangay Maahas, Los Baños, Laguna
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Tax Declaration No.:</strong> {selectedTransaction.referenceDetails.formData.taxDeclarationNumber}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Property ID No.:</strong> {selectedTransaction.referenceDetails.formData.propertyIdentificationNumber}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Property Area:</strong> {selectedTransaction.referenceDetails.formData.propertyArea} {
-                                (() => {
-                                  const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
-                                  switch(areaUnit) {
-                                    case 'square_meters': return 'square meters';
-                                    case 'square_feet': return 'square feet';
-                                    case 'hectares': return 'hectares';
-                                    default: return areaUnit;
-                                  }
-                                })()
-                              }
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-
-                      {/* Digging Permit Details */}
-                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'digging_permit' && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Company:</strong> {selectedTransaction.referenceDetails.formData.companyName}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Application Details:</strong> {selectedTransaction.referenceDetails.formData.applicationDetails}
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-                      
-                      {/* Business Clearance Details */}
-                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'business_clearance' && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Business Name:</strong> {selectedTransaction.referenceDetails.formData.businessName}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Business Address:</strong> {selectedTransaction.referenceDetails.formData.businessAddress}, Barangay Maahas, Los Baños, Laguna
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Line of Business:</strong> {selectedTransaction.referenceDetails.formData.lineOfBusiness}
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Business Status:</strong> {selectedTransaction.referenceDetails.formData.businessStatus}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Amount:</strong> ₱{selectedTransaction.referenceDetails.formData.amount}
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-
-                      {/* No Objection Certificate Details */}
-                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'no_objection_certificate' && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Activity Type:</strong> {
-                                (() => {
-                                  const objectType = selectedTransaction.referenceDetails.formData.objectType;
-                                  switch(objectType) {
-                                    case 'tree_cutting': return 'Tree Cutting';
-                                    case 'construction': return 'Construction';
-                                    case 'event': return 'Event/Gathering';
-                                    case 'business': return 'Business Operation';
-                                    case 'other': return 'Other Activity';
-                                    default: return objectType;
-                                  }
-                                })()
-                              }
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Details:</strong> {selectedTransaction.referenceDetails.formData.objectDetails}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Quantity:</strong> {selectedTransaction.referenceDetails.formData.quantity}
-                            </Typography>
-                            {selectedTransaction.referenceDetails.formData.objectType === 'other' && (
-                              <Typography variant="body2">
-                                <strong>Additional Info:</strong> {selectedTransaction.referenceDetails.formData.additionalInfo}
-                              </Typography>
-                            )}
-                          </Grid>
-                        </>
-                      )}
-
-                      {/* Request for Assistance Details */}
-                      {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'request_for_assistance' && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Years of Stay:</strong> {selectedTransaction.referenceDetails.formData.yearsOfStay}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Marginalized Group:</strong> {
-                                (() => {
-                                  const group = selectedTransaction.referenceDetails.formData.marginGroupType;
-                                  switch(group) {
-                                    case 'urban_poor': return 'Urban Poor';
-                                    case 'senior_citizen': return 'Senior Citizen';
-                                    case 'single_parent': return 'Single Parent';
-                                    case 'pwd': return 'Person with Disability (PWD)';
-                                    case 'indigenous': return 'Indigenous Person';
-                                    case 'solo_parent': return 'Solo Parent';
-                                    case 'other': return 'Other';
-                                    default: return group;
-                                  }
-                                })()
-                              }
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Request For:</strong> {selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'}
-                            </Typography>
-                            {!selectedTransaction.referenceDetails.formData.isSelf && (
-                              <>
-                                <Typography variant="body2">
-                                  <strong>Beneficiary Name:</strong> {selectedTransaction.referenceDetails.formData.beneficiaryName}
-                                </Typography>
-                                <Typography variant="body2">
-                                  <strong>Relationship:</strong> {selectedTransaction.referenceDetails.formData.beneficiaryRelation}
-                                </Typography>
-                              </>
-                            )}
-                            <Typography variant="body2">
-                              <strong>Assistance Type:</strong> {
-                                (() => {
-                                  const type = selectedTransaction.referenceDetails.formData.assistanceType;
-                                  switch(type) {
-                                    case 'financial': return 'Financial Assistance';
-                                    case 'medical': return 'Medical Assistance';
-                                    case 'burial': return 'Burial Assistance';
-                                    case 'educational': return 'Educational Assistance';
-                                    case 'food': return 'Food Assistance';
-                                    case 'housing': return 'Housing Assistance';
-                                    case 'other': return selectedTransaction.referenceDetails.formData.otherAssistanceType || 'Other Assistance';
-                                    default: return type;
-                                  }
-                                })()
-                              }
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-
-
-                      {/* certificate of indigency details */}
-                      {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Age:</strong> {selectedTransaction.referenceDetails.formData.age} years old
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2">
-                              <strong>Certificate For:</strong> {selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'}
-                            </Typography>
-                            
-                            {!selectedTransaction.referenceDetails.formData.isSelf ? (
-                              <>
-                                <Typography variant="body2">
-                                  <strong>Recipient:</strong> {selectedTransaction.referenceDetails.formData.guardian}
-                                </Typography>
-                                <Typography variant="body2">
-                                  <strong>Relationship:</strong> {selectedTransaction.referenceDetails.formData.guardianRelation}
-                                </Typography>
-                              </>
-                            ) : (
-                              <Typography variant="body2">
-                                <strong>Recipient:</strong> Self (Same as applicant)
-                              </Typography>
-                            )}
-                            
-                            <Typography variant="body2">
-                              <strong>Purpose:</strong> {selectedTransaction.referenceDetails.purpose}
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* Resident Registration Details in the dialog*/}
-              {selectedTransaction?.serviceType === 'resident_registration' && (
-                <>
-                  <Grid item xs={12}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                      Resident Registration Information
-                    </Typography>
-                    <Divider />
-                  </Grid>
-                  
-                  {/* From transaction.details */}
-                  {selectedTransaction.details && (
-                    <>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <strong>Service ID:</strong> {selectedTransaction.referenceDetails?.serviceId || 'N/A'}
-                        </Typography>
-                        <Typography variant="body2">
-                          <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Name:</strong> {`${selectedTransaction.details.firstName} ${selectedTransaction.details.middleName ? selectedTransaction.details.middleName + ' ' : ''}${selectedTransaction.details.lastName}`}
-                        </Typography>
-                        <Typography variant="body2">
-                          <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Address:</strong> {selectedTransaction.details.address}
-                        </Typography>
-                      </Grid>
-                    </>
-                  )}
-                  
-                  {/* From referenceDetails - more comprehensive information */}
-                  {selectedTransaction.referenceDetails && (
-                    <>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber || 'N/A'}
-                        </Typography>
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Email:</strong> {selectedTransaction.referenceDetails.email || 'N/A'}
-                        </Typography>
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Precinct Level:</strong> {selectedTransaction.referenceDetails.precinctLevel || 'N/A'}
-                        </Typography>
-                      </Grid>
-                      
-                      <Grid item xs={12}>
-                        {selectedTransaction.referenceDetails.types && selectedTransaction.referenceDetails.types.length > 0 && (
-                          <Typography variant="body2">
-                            <strong>Categories:</strong> {selectedTransaction.referenceDetails.types.join(', ')}
-                          </Typography>
-                        )}
-                        <Typography variant="body2">
-                          <strong>Voter:</strong> {selectedTransaction.referenceDetails.isVoter ? 'Yes' : 'No'}
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>Status:</strong> {selectedTransaction.referenceDetails.isVerified ? 'Verified' : 'Pending Verification'}
-                        </Typography>
-                      </Grid>
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* Project Proposal Details */}
-              {selectedTransaction?.serviceType === 'project_proposal' && (
-                <>
-                  <Grid item xs={12}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                      Project Proposal Information
-                    </Typography>
-                    <Divider />
-                  </Grid>
-                  
-                  <Grid item xs={12}>
-                    <Typography variant="body2">
-                      <strong>Proposal ID:</strong> {
-                        selectedTransaction.referenceDetails?.serviceId || 
-                        selectedTransaction.details?.serviceId || 
-                        'N/A'
-                      }
-                    </Typography>
-                  </Grid>
-
-                  {/* From transaction.details */}
-                  {selectedTransaction.details && (
-                    <>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <strong>Project Title:</strong> {selectedTransaction.details.projectTitle || 'N/A'}
-                        </Typography>
-                      </Grid>
-                    </>
-                  )}
-                  
-                  {/* From referenceDetails - more comprehensive information */}
-                  {selectedTransaction.referenceDetails && (
-                    <>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Submitter:</strong> {selectedTransaction.referenceDetails.fullName}
-                        </Typography>
-                        <Typography variant="body2">
-                          <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
-                        </Typography>
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Email:</strong> {selectedTransaction.referenceDetails.email}
-                        </Typography>
-                        <Typography variant="body2">
-                          <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Submitted:</strong> {formatDate(selectedTransaction.referenceDetails.createdAt)}
-                        </Typography>
-                      </Grid>
-                      
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <strong>Project Title:</strong> {selectedTransaction.referenceDetails.projectTitle}
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>Status:</strong> {
-                            (() => {
-                              const status = selectedTransaction.referenceDetails.status;
-                              switch(status) {
-                                case 'pending': return 'Pending';
-                                case 'in_review': return 'In Review';
-                                case 'considered': return 'Considered';
-                                case 'approved': return 'Approved';
-                                case 'rejected': return 'Rejected';
-                                default: return status.replace('_', ' ');
-                              }
-                            })()
-                          }
-                        </Typography>
-                        {selectedTransaction.referenceDetails.documentPath && (
-                          <Typography variant="body2" sx={{ mt: 1 }}>
-                            <FileIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                            <Link 
-                              href={`http://localhost:3002${selectedTransaction.referenceDetails.documentPath}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              View Proposal Document
-                            </Link>
-                          </Typography>
-                        )}
-                      </Grid>
-                      
-                      <Grid item xs={12}>
-                        <Typography variant="body2" sx={{ mt: 1, mb: 1 }}>
-                          <strong>Project Description:</strong>
-                        </Typography>
-                        <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f9f9f9' }}>
-                          <Typography variant="body2" style={{ whiteSpace: 'pre-line' }}>
-                            {selectedTransaction.referenceDetails.description}
-                          </Typography>
-                        </Paper>
-                      </Grid>
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* Infrastructure Report Details */}
-              {selectedTransaction?.serviceType === 'infrastructure_report' && (
-                <>
-                  <Grid item xs={12}>
-                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                      Infrastructure Report Information
-                    </Typography>
-                    <Divider />
-                  </Grid>
-                  
-                  {/* From transaction.details */}
-                  {selectedTransaction.details && (
-                    <>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <strong>Report ID:</strong> {selectedTransaction.referenceDetails?.serviceId || 'N/A'}
-                        </Typography>
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Issue Type:</strong> {selectedTransaction.details.issueType || 'N/A'}
-                        </Typography>
-                      </Grid>
-                    </>
-                  )}
-                  
-                  {/* From referenceDetails - more comprehensive information */}
-                  {selectedTransaction.referenceDetails && (
-                    <>
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Reported By:</strong> {selectedTransaction.referenceDetails.fullName}
-                        </Typography>
-                        <Typography variant="body2">
-                          <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Contact Number:</strong> {selectedTransaction.referenceDetails.contactNumber}
-                        </Typography>
-                        <Typography variant="body2">
-                          <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Date Observed:</strong> {formatDate(selectedTransaction.referenceDetails.dateObserved)}
-                        </Typography>
-                        <Typography variant="body2">
-                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Issue Type:</strong> {selectedTransaction.referenceDetails.issueType}
-                        </Typography>
-                      </Grid>
-                      
-                      <Grid item xs={12} sm={6}>
-                        <Typography variant="body2">
-                          <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Location:</strong> {selectedTransaction.referenceDetails.location}
-                        </Typography>
-                        <Typography variant="body2">
-                          <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                          <strong>Nearest Landmark:</strong> {selectedTransaction.referenceDetails.nearestLandmark}
-                        </Typography>
-                        <Typography variant="body2">
-                          <strong>Status:</strong> {selectedTransaction.referenceDetails.status}
-                        </Typography>
-                      </Grid>
-                      
-                      <Grid item xs={12}>
-                        <Typography variant="body2">
-                          <strong>Description:</strong> {selectedTransaction.referenceDetails.description}
-                        </Typography>
-                        {selectedTransaction.referenceDetails.additionalComments && (
-                          <Typography variant="body2" sx={{ mt: 1 }}>
-                            <strong>Additional Comments:</strong> {selectedTransaction.referenceDetails.additionalComments}
-                          </Typography>
-                        )}
-                      </Grid>
-                      
-                      {/* Admin Comments Section */}
-                      {selectedTransaction.referenceDetails.adminComments && (
-                        <Grid item xs={12}>
-                          <Typography variant="body2" sx={{ mt: 1 }}>
-                            <strong>Admin Comments:</strong> {selectedTransaction.referenceDetails.adminComments}
-                          </Typography>
-                        </Grid>
-                      )}
-                      
-                      {/* Resident Feedback Section */}
-                      {selectedTransaction.referenceDetails.residentFeedback && 
-                        (selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined || 
-                        selectedTransaction.referenceDetails.residentFeedback.comments) && (
-                        <Grid item xs={12}>
-                          <Card sx={{ mt: 2, bgcolor: '#f8f9fa' }}>
-                            <CardContent>
-                              <Typography variant="subtitle2" gutterBottom>
-                                Your Feedback:
-                              </Typography>
-                              {selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined && (
-                                <Typography variant="body2">
-                                  <strong>Satisfied:</strong> {selectedTransaction.referenceDetails.residentFeedback.satisfied ? 'Yes' : 'No'}
-                                </Typography>
-                              )}
-                              {selectedTransaction.referenceDetails.residentFeedback.comments && (
-                                <Typography variant="body2">
-                                  <strong>Comments:</strong> {selectedTransaction.referenceDetails.residentFeedback.comments}
-                                </Typography>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </Grid>
-                      )}
-                      
-                      {/* Display attached media if available */}
-                      {selectedTransaction.referenceDetails.mediaUrls && 
-                      selectedTransaction.referenceDetails.mediaUrls.length > 0 && (
-                        <Grid item xs={12}>
-                          <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
-                            Attached Media:
-                          </Typography>
-                          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                            {selectedTransaction.referenceDetails.mediaUrls.map((url, index) => (
-                              <Box 
-                                key={index}
-                                component="a" 
-                                href={`http://localhost:3002${url}`} 
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                sx={{ 
-                                  border: '1px solid #ddd',
-                                  padding: '5px',
-                                  borderRadius: '4px'
-                                }}
-                              >
-                                <Typography variant="body2">View Attachment {index + 1}</Typography>
-                              </Box>
-                            ))}
-                          </Box>
-                        </Grid>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
-              
-              {/* Admin Comments Section */}
-              {selectedTransaction.adminComment && (
-                <Grid item xs={12}>
-                  <Card sx={{ mt: 2, bgcolor: '#f5f5f5' }}>
-                    <CardContent>
-                      <Typography variant="subtitle2" gutterBottom>
-                        Admin Comment:
-                      </Typography>
-                      <Typography variant="body2">
-                        {selectedTransaction.adminComment}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              )}
-            </Grid>
+            </Box>
           )}
         </DialogContent>
-        <DialogActions>
-          {selectedTransaction && 
-          selectedTransaction.serviceType === 'infrastructure_report' && 
-          (
-            // If using transaction status (lowercase)
-            (selectedTransaction.status === 'completed' || 
-            // Or if using report status (PascalCase) from referenceDetails
-            (selectedTransaction.referenceDetails?.status === 'Resolved'))
-          ) && 
-          !selectedTransaction.referenceDetails?.residentFeedback && (
+        <DialogActions sx={{ px: 3, py: 2, bgcolor: '#f9f9f9', borderTop: '1px solid #eee' }}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, width: '100%', justifyContent: isMobile ? 'center' : 'flex-end' }}>
+            {selectedTransaction && 
+            selectedTransaction.serviceType === 'infrastructure_report' && 
+            (
+              // If using transaction status (lowercase)
+              (selectedTransaction.status === 'completed' || 
+              // Or if using report status (PascalCase) from referenceDetails
+              (selectedTransaction.referenceDetails?.status === 'Resolved'))
+            ) && 
+            !selectedTransaction.referenceDetails?.residentFeedback && (
+              <Button 
+                onClick={() => {
+                  // Store the report ID before opening feedback dialog
+                  let reportId = null;
+                  if (selectedTransaction.referenceId) {
+                    reportId = selectedTransaction.referenceId;
+                  } else if (selectedTransaction.details && selectedTransaction.details.reportId) {
+                    reportId = selectedTransaction.details.reportId;
+                  } else if (selectedTransaction.referenceDetails && selectedTransaction.referenceDetails._id) {
+                    reportId = selectedTransaction.referenceDetails._id;
+                  }
+                  
+                  if (reportId) {
+                    setFeedbackReportId(reportId);
+                    setOpenFeedbackDialog(true);
+                  } else {
+                    setSnackbar({
+                      open: true,
+                      message: 'Cannot determine report ID for feedback',
+                      severity: 'error'
+                    });
+                  }
+                }} 
+                color="primary"
+                variant="contained"
+                startIcon={<ReplyIcon />}
+                size={isMobile ? "large" : "medium"}
+                sx={{ 
+                  borderRadius: '4px', 
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  ...(isMobile && { flex: '1 1 auto' })
+                }}
+              >
+                Provide Feedback
+              </Button>
+            )}
+            {selectedTransaction && needsDieselResponse(selectedTransaction) && (
+              <Button 
+                onClick={() => {
+                  handleCloseDetails();
+                  handleRespondToDiesel(selectedTransaction);
+                }} 
+                color="secondary"
+                variant="contained"
+                startIcon={<ReplyIcon />}
+                size={isMobile ? "large" : "medium"}
+                sx={{ 
+                  borderRadius: '4px', 
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  ...(isMobile && { flex: '1 1 auto' })
+                }}
+              >
+                Respond to Diesel Request
+              </Button>
+            )}
+            {selectedTransaction && canCancel(selectedTransaction) && (
+              <Button 
+                onClick={() => {
+                  handleCloseDetails();
+                  handleCancelRequest(selectedTransaction);
+                }} 
+                color="error"
+                variant="contained"
+                startIcon={<CancelIcon />}
+                size={isMobile ? "large" : "medium"}
+                sx={{ 
+                  borderRadius: '4px', 
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  ...(isMobile && { flex: '1 1 auto' })
+                }}
+              >
+                Cancel Request
+              </Button>
+            )}
             <Button 
-              onClick={() => {
-                // Store the report ID before opening feedback dialog
-                let reportId = null;
-                if (selectedTransaction.referenceId) {
-                  reportId = selectedTransaction.referenceId;
-                } else if (selectedTransaction.details && selectedTransaction.details.reportId) {
-                  reportId = selectedTransaction.details.reportId;
-                } else if (selectedTransaction.referenceDetails && selectedTransaction.referenceDetails._id) {
-                  reportId = selectedTransaction.referenceDetails._id;
-                }
-                
-                if (reportId) {
-                  setFeedbackReportId(reportId);
-                  setOpenFeedbackDialog(true);
-                } else {
-                  setSnackbar({
-                    open: true,
-                    message: 'Cannot determine report ID for feedback',
-                    severity: 'error'
-                  });
-                }
-              }} 
-              color="primary"
-              variant="contained"
-              sx={{ mr: 1 }}
+              onClick={handleCloseDetails}
+              variant={isMobile ? "outlined" : "text"}
+              size={isMobile ? "large" : "medium"}
+              sx={{ ...(isMobile && { flex: '1 1 auto' }) }}
             >
-              Provide Feedback
+              Close
             </Button>
-          )}
-          {selectedTransaction && needsDieselResponse(selectedTransaction) && (
-            <Button 
-              onClick={() => {
-                handleCloseDetails();
-                handleRespondToDiesel(selectedTransaction);
-              }} 
-              color="secondary"
-              variant={isMobile ? "contained" : "outlined"}
-              sx={{ mr: 1 }}
-            >
-              Respond to Diesel Request
-            </Button>
-          )}
-          {selectedTransaction && canCancel(selectedTransaction) && (
-            <Button 
-              onClick={() => {
-                handleCloseDetails();
-                handleCancelRequest(selectedTransaction);
-              }} 
-              color="error"
-              variant={isMobile ? "contained" : "outlined"}
-              fullWidth={isMobile}
-            >
-              Cancel Request
-            </Button>
-          )}
-          {!isMobile && <Button onClick={handleCloseDetails}>Close</Button>}
+          </Box>
         </DialogActions>
       </Dialog>
 
