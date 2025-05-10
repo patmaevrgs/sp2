@@ -48,6 +48,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRight from '@mui/icons-material/KeyboardArrowRight';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 
 // Dialog transition effect
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -71,6 +72,8 @@ const ResidentAnnouncements = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [selectedVideoIndex, setSelectedVideoIndex] = useState(0);
+  const [activeMedia, setActiveMedia] = useState('images');
   const theme = useTheme();
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
   
@@ -226,9 +229,20 @@ const ResidentAnnouncements = () => {
   
   const handleAnnouncementClick = (announcement) => {
     setSelectedAnnouncement(announcement);
-    setSelectedImageIndex(0); // Reset image index
+    setSelectedImageIndex(0);
+    setSelectedVideoIndex(0);
+    
+    const hasVideos = announcement.videos && announcement.videos.length > 0;
+    const hasImages = announcement.images && announcement.images.length > 0;
+    
+    if (hasVideos && !hasImages) {
+      setActiveMedia('videos');
+    } else {
+      setActiveMedia('images');
+    }
+    
     setOpenDialog(true);
-  };
+};
   
   const handleDialogClose = () => {
     setOpenDialog(false);
@@ -268,6 +282,8 @@ const ResidentAnnouncements = () => {
     
     const announcement = filteredAnnouncements[0];
     const hasImages = announcement.images && announcement.images.length > 0;
+    const hasVideos = announcement.videos && announcement.videos.length > 0;
+    const mediaToShow = hasImages ? 'image' : (hasVideos ? 'video' : null);
     
     return (
       <Card 
@@ -307,19 +323,37 @@ const ResidentAnnouncements = () => {
         )}
         
         <Grid container>
-          {hasImages && (
+          {mediaToShow && (
             <Grid item xs={12} md={6}>
               <Box sx={{ position: 'relative', height: '100%', maxHeight: 300 }}>
-                <CardMedia
-                  component="img"
-                  image={`http://localhost:3002${announcement.images[0]}`}
-                  alt="Featured announcement image"
-                  sx={{ 
-                    height: 300,
-                    objectFit: 'cover'
-                  }}
-                />
-                {announcement.images.length > 1 && (
+                {mediaToShow === 'image' ? (
+                  <CardMedia
+                    component="img"
+                    image={`http://localhost:3002${announcement.images[0]}`}
+                    alt="Featured announcement image"
+                    sx={{ 
+                      height: 300,
+                      objectFit: 'cover'
+                    }}
+                  />
+                ) : (
+                  <Box sx={{ height: 300, width: '100%', bgcolor: 'black', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <CardMedia
+                      component="video"
+                      src={`http://localhost:3002${announcement.videos[0].path}`}
+                      sx={{ 
+                        height: '100%',
+                        maxWidth: '100%'
+                      }}
+                      image={announcement.videos[0].thumbnail ? `http://localhost:3002${announcement.videos[0].thumbnail}` : ''}
+                    />
+                    <Box sx={{ position: 'absolute', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <VideocamIcon sx={{ fontSize: 48, color: 'rgba(255,255,255,0.8)' }} />
+                    </Box>
+                  </Box>
+                )}
+                
+                {mediaToShow === 'image' && announcement.images.length > 1 && (
                   <Box sx={{ 
                     position: 'absolute',
                     bottom: 16,
@@ -334,6 +368,24 @@ const ResidentAnnouncements = () => {
                   }}>
                     <PhotoLibraryIcon sx={{ fontSize: 16, mr: 0.5 }} />
                     <Typography variant="caption">{announcement.images.length} Photos</Typography>
+                  </Box>
+                )}
+                
+                {mediaToShow === 'video' && announcement.videos.length > 1 && (
+                  <Box sx={{ 
+                    position: 'absolute',
+                    bottom: 16,
+                    right: 16,
+                    bgcolor: 'rgba(0,0,0,0.6)',
+                    color: 'white',
+                    py: 0.5,
+                    px: 1.5,
+                    borderRadius: 1,
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    <VideocamIcon sx={{ fontSize: 16, mr: 0.5 }} />
+                    <Typography variant="caption">{announcement.videos.length} Videos</Typography>
                   </Box>
                 )}
               </Box>
@@ -409,23 +461,6 @@ const ResidentAnnouncements = () => {
                     )}
                   </Typography>
                 </Box>
-                
-                <Box>
-                  <IconButton 
-                    size="small" 
-                    sx={{ color: theme.palette.text.secondary }}
-                    onClick={handleShare}
-                  >
-                    <ShareIcon fontSize="small" />
-                  </IconButton>
-                  <IconButton 
-                    size="small" 
-                    sx={{ color: theme.palette.text.secondary }}
-                    onClick={handleBookmark}
-                  >
-                    <BookmarkBorderIcon fontSize="small" />
-                  </IconButton>
-                </Box>
               </Box>
             </CardContent>
           </Grid>
@@ -473,31 +508,16 @@ const ResidentAnnouncements = () => {
           <Typography variant="h5" component="h2" sx={{ fontWeight: 600, color: primaryColor }}>
             Recent Announcements
           </Typography>
-          
-          <Button 
-            startIcon={<NotificationsActiveIcon />}
-            variant="outlined"
-            size="small"
-            sx={{ 
-              borderColor: primaryColor, 
-              color: primaryColor,
-              '&:hover': {
-                bgcolor: primaryLight,
-                borderColor: primaryColor
-              }
-            }}
-          >
-            Subscribe
-          </Button>
         </Box>
         
         <Grid container spacing={3}>
           {remainingAnnouncements.map((announcement) => (
-            <Grid item xs={12} md={6} key={announcement._id} id={announcement._id}>
+            <Grid item xs={12} md={6} key={announcement._id} id={announcement._id} sx={{ display: 'flex', width: '100%' }}>
               <Card 
                 elevation={1}
                 sx={{ 
                   height: '100%',
+                  width: '100%', // Ensure full width
                   display: 'flex',
                   flexDirection: 'column',
                   transition: 'all 0.2s ease',
@@ -511,37 +531,119 @@ const ResidentAnnouncements = () => {
                 }}
                 onClick={() => handleAnnouncementClick(announcement)}
               >
-                {announcement.images && announcement.images.length > 0 && (
-                  <Box sx={{ position: 'relative', height: 180 }}>
-                    <CardMedia
-                      component="img"
-                      image={`http://localhost:3002${announcement.images[0]}`}
-                      alt={`Announcement image`}
-                      sx={{ 
-                        height: '100%',
-                        objectFit: 'cover'
-                      }}
-                    />
-                    {isRecent(announcement.postedAt) && (
-                      <Box 
-                        sx={{ 
-                          position: 'absolute', 
-                          top: 10, 
-                          left: 0, 
-                          bgcolor: primaryColor,
-                          color: 'white',
-                          py: 0.25,
-                          px: 1,
-                          zIndex: 5,
-                          fontSize: '0.7rem',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        NEW
-                      </Box>
-                    )}
-                  </Box>
-                )}
+                {/* Check for media content */}
+                {(() => {
+                  // We need to reference announcement here since we're in a code block
+                  const hasImages = announcement.images && announcement.images.length > 0;
+                  const hasVideos = announcement.videos && announcement.videos.length > 0;
+                  
+                  // Always render the media box with the same dimensions
+                  return (
+                    <Box sx={{ 
+                      position: 'relative', 
+                      height: 180, 
+                      width: '100%',  // Ensure full width
+                      overflow: 'hidden',
+                      display: 'block' // Force block-level rendering
+                    }}>
+                      {hasImages ? (
+                        <CardMedia
+                          component="img"
+                          image={`http://localhost:3002${announcement.images[0]}`}
+                          alt={`Announcement image`}
+                          sx={{ 
+                            height: '100%',
+                            width: '100%',
+                            objectFit: 'cover',
+                            display: 'block'
+                          }}
+                        />
+                      ) : hasVideos ? (
+                        <Box sx={{ 
+                          height: '100%', 
+                          width: '100%', 
+                          bgcolor: 'black', 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center',
+                          position: 'relative'
+                        }}>
+                          {/* This first box ensures the entire container is filled */}
+                          <Box sx={{ 
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            bgcolor: 'black'
+                          }} />
+                          
+                          {/* Play button overlay */}
+                          <Box sx={{ 
+                            position: 'absolute',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: '100%',
+                            height: '100%',
+                            zIndex: 2
+                          }}>
+                            <PlayArrowIcon sx={{ fontSize: 48, color: 'rgba(255,255,255,0.8)' }} />
+                          </Box>
+                          
+                          {/* Video label */}
+                          <Box 
+                            sx={{ 
+                              position: 'absolute', 
+                              bottom: 8, 
+                              left: 8, 
+                              color: 'white',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.5,
+                              fontSize: '0.7rem',
+                              zIndex: 2
+                            }}
+                          >
+                            <VideocamIcon sx={{ fontSize: 14 }} />
+                            <span>Video</span>
+                          </Box>
+                        </Box>
+                      ) : (
+                        // Placeholder when no media is present - same dimensions as other cases
+                        <Box sx={{ 
+                          height: '100%', 
+                          width: '100%', 
+                          bgcolor: theme.palette.grey[100], 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center' 
+                        }}>
+                          <CampaignIcon sx={{ fontSize: 48, color: theme.palette.grey[400] }} />
+                        </Box>
+                      )}
+                      
+                      {isRecent(announcement.postedAt) && (
+                        <Box 
+                          sx={{ 
+                            position: 'absolute', 
+                            top: 10, 
+                            left: 0, 
+                            bgcolor: primaryColor,
+                            color: 'white',
+                            py: 0.25,
+                            px: 1,
+                            zIndex: 5,
+                            fontSize: '0.7rem',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          NEW
+                        </Box>
+                      )}
+                    </Box>
+                  );
+                })()}
                 
                 <CardContent sx={{ p: 2, pt: 2, pb: 1, flex: 1 }}>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -596,14 +698,6 @@ const ResidentAnnouncements = () => {
                       {formatDate(announcement.postedAt)}
                     </Typography>
                   </Box>
-                  
-                  <IconButton 
-                    size="small" 
-                    sx={{ color: theme.palette.text.secondary }}
-                    onClick={handleShare}
-                  >
-                    <ShareIcon fontSize="small" />
-                  </IconButton>
                 </CardActions>
               </Card>
             </Grid>
@@ -797,39 +891,45 @@ const ResidentAnnouncements = () => {
             </Box>
           )}
           
-          {/* Videos */}
+          {/* Videos section */}
           {hasVideos && (
             <Box sx={{ mt: 3 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                Videos
+                <VideocamIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 0.5 }} />
+                Videos:
               </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {selectedAnnouncement.videos.map((video, index) => (
-                  <Chip
-                    key={index}
-                    icon={<VideocamIcon />}
-                    label={video.name || `Video ${index + 1}`}
-                    component={Link}
-                    href={`http://localhost:3002${video.path}`}
-                    target="_blank"
-                    clickable
-                    variant="outlined"
-                    color="primary"
-                  />
-                ))}
-              </Box>
+              <Grid container spacing={1}>
+                {selectedAnnouncement.videos.map((video, index) => {
+                  // Handle both formats: string paths or objects with path property
+                  const videoPath = typeof video === 'string' ? video : video.path;
+                  
+                  return (
+                    <Grid item xs={12} sm={6} md={4} key={index}>
+                      <Box
+                        component="video"
+                        controls
+                        sx={{
+                          width: '100%',
+                          borderRadius: 1,
+                          maxHeight: 200,
+                        }}
+                      >
+                        <source src={`http://localhost:3002${videoPath}`} />
+                        Your browser does not support video playback.
+                      </Box>
+                      {/* <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
+                        {typeof video === 'object' && video.name ? video.name : `Video ${index + 1}`}
+                      </Typography> */}
+                    </Grid>
+                  );
+                })}
+              </Grid>
             </Box>
           )}
         </DialogContent>
         
         <DialogActions>
-          <Button startIcon={<ShareIcon />} onClick={handleShare}>
-            Share
-          </Button>
-          <Button startIcon={<BookmarkBorderIcon />} onClick={handleBookmark}>
-            Save
-          </Button>
-          <Button onClick={handleDialogClose} variant="contained" color="primary" autoFocus>
+          <Button onClick={handleDialogClose} variant="contained" color="primary">
             Close
           </Button>
         </DialogActions>
@@ -857,22 +957,6 @@ const ResidentAnnouncements = () => {
               BARANGAY MAAHAS ANNOUNCEMENTS
             </Typography>
           </Box>
-          
-          <Button 
-            color="inherit" 
-            size="small"
-            sx={{ 
-              borderRadius: 5,
-              px: 2,
-              bgcolor: 'rgba(255,255,255,0.1)',
-              '&:hover': {
-                bgcolor: 'rgba(255,255,255,0.2)',
-              }
-            }}
-          >
-            <NotificationsActiveIcon sx={{ mr: 1, fontSize: 18 }} />
-            Subscribe
-          </Button>
         </Box>
       </Paper>
       
