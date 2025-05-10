@@ -138,8 +138,8 @@ const ResidentAnnouncements = () => {
           // Scroll the element into view with smooth behavior
           element.scrollIntoView({ behavior: 'smooth', block: 'start' });
           
-          // Add a highlight effect
-          element.style.boxShadow = '0 0 20px rgba(33, 150, 243, 0.8)';
+          // Add a highlight effect using primaryColor
+          element.style.boxShadow = `0 0 20px ${alpha(primaryColor, 0.8)}`;
           highlightedCardRef.current = element;
           
           // Remove the highlight effect after 3 seconds
@@ -929,7 +929,16 @@ const ResidentAnnouncements = () => {
         </DialogContent>
         
         <DialogActions>
-          <Button onClick={handleDialogClose} variant="contained" color="primary">
+          <Button 
+            onClick={handleDialogClose} 
+            variant="contained" 
+            sx={{ 
+              bgcolor: primaryColor,
+              '&:hover': {
+                bgcolor: alpha(primaryColor, 0.9)
+              }
+            }}
+          >
             Close
           </Button>
         </DialogActions>

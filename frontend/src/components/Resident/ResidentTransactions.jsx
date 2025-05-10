@@ -68,6 +68,7 @@ const ResidentTransaction = () => {
     INFRASTRUCTURE: 'infrastructure_report',
     PROJECT_PROPOSAL: 'project_proposal',
     DOCUMENT: 'document_request',
+    RESIDENT: 'resident_registration',
     OTHER: 'other'
   };
   
@@ -211,6 +212,15 @@ const ResidentTransaction = () => {
           }
         }
       }
+      else if (transaction.serviceType === 'resident_registration' && transaction.referenceId) {
+        const refResponse = await fetch(`http://localhost:3002/residents/${transaction.referenceId}`);
+        if (refResponse.ok) {
+          const residentData = await refResponse.json();
+          if (residentData.success && residentData.data) {
+            referenceDetails = residentData.data;
+          }
+        }
+      }
       
       // Combine the data
       setSelectedTransaction({
@@ -238,7 +248,7 @@ const ResidentTransaction = () => {
       // Only fetch if we have a referenceId and the service type is one we can handle
       if (transaction.referenceId && 
           [SERVICE_TYPES.AMBULANCE, SERVICE_TYPES.COURT, SERVICE_TYPES.INFRASTRUCTURE, 
-          SERVICE_TYPES.PROJECT_PROPOSAL, SERVICE_TYPES.DOCUMENT].includes(transaction.serviceType)) {
+          SERVICE_TYPES.PROJECT_PROPOSAL, SERVICE_TYPES.DOCUMENT, SERVICE_TYPES.RESIDENT].includes(transaction.serviceType)) {
         
         setLoading(true);
         
@@ -259,6 +269,9 @@ const ResidentTransaction = () => {
             break;
           case SERVICE_TYPES.DOCUMENT:
             endpoint = `http://localhost:3002/documents/${transaction.referenceId}`;
+            break;
+          case SERVICE_TYPES.RESIDENT:
+            endpoint = `http://localhost:3002/residents/${transaction.referenceId}`;
             break;
           default:
             endpoint = null;
@@ -397,6 +410,9 @@ const ResidentTransaction = () => {
       } else if (selectedTransaction.serviceType === 'document_request' && selectedTransaction.referenceId) {
         cancelEndpoint = `http://localhost:3002/documents/${selectedTransaction.referenceId}/cancel`;
         method = 'PATCH';
+      } else if (selectedTransaction.serviceType === 'resident_registration' && selectedTransaction.referenceId) {
+          cancelEndpoint = `http://localhost:3002/residents/${selectedTransaction.referenceId}/cancel`;
+          method = 'PATCH';
       } else {
         throw new Error('Cannot cancel this type of transaction');
       }
@@ -406,6 +422,7 @@ const ResidentTransaction = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           userId,
           cancellationReason
@@ -665,7 +682,7 @@ const ResidentTransaction = () => {
         label = formatStatusText(status);
     }
   
-    return <Chip size="small" label={label} color={color} />;
+    return <span className="status-chip-wrapper">{<Chip size="small" label={label} color={color} />}</span>;
   };
 
   const getServiceTypeLabel = (type) => {
@@ -680,6 +697,8 @@ const ResidentTransaction = () => {
         return 'Project Proposal';
       case SERVICE_TYPES.DOCUMENT:
         return 'Document Request';
+      case SERVICE_TYPES.RESIDENT:
+        return 'Resident Registration';
       case SERVICE_TYPES.OTHER:
         return 'Other Service';
       default:
@@ -758,6 +777,12 @@ const ResidentTransaction = () => {
       return transaction.status === STATUS.PENDING;
     }
     
+    // Special case for resident registration
+    if (transaction.serviceType === SERVICE_TYPES.RESIDENT) {
+      // Only allow cancellation if status is 'pending'
+      return transaction.status === STATUS.PENDING;
+    }
+
     // For other transaction types
     return [STATUS.PENDING, STATUS.NEEDS_APPROVAL, STATUS.BOOKED, STATUS.APPROVED].includes(transaction.status)
       && transaction.status !== STATUS.COMPLETED;
@@ -832,7 +857,7 @@ const ResidentTransaction = () => {
           </Alert>
         )}
 
-        <Box sx={{ mb: 3 }}>
+        {/* <Box sx={{ mb: 3 }}>
           <FormControl fullWidth variant="outlined" size="small">
             <InputLabel id="filter-select-label">Filter</InputLabel>
             <Select
@@ -845,6 +870,8 @@ const ResidentTransaction = () => {
               <MenuItem value="ambulance">Ambulance Bookings</MenuItem>
               <MenuItem value="document">Document Requests</MenuItem>
               <MenuItem value="court">Court Reservations</MenuItem>
+              <MenuItem value="court">Court Reservations</MenuItem>
+              <MenuItem value="resident_registration">Resident Registration</MenuItem>
               <Divider />
               <MenuItem value="pending">Pending</MenuItem>
               <MenuItem value="approved">Approved</MenuItem>
@@ -853,13 +880,13 @@ const ResidentTransaction = () => {
               <MenuItem value="cancelled">Cancelled</MenuItem>
             </Select>
           </FormControl>
-        </Box>
+        </Box> */}
 
         <List sx={{ bgcolor: 'background.paper' }}>
           {filteredTransactions.map((transaction) => (
             <Paper key={transaction._id} sx={{ mb: 2, overflow: 'hidden' }}>
               <ListItem 
-                button 
+                component="div" 
                 onClick={() => handleViewDetails(transaction._id)}
                 sx={{ 
                   borderLeft: '4px solid',
@@ -879,17 +906,19 @@ const ResidentTransaction = () => {
                 <ListItemText
                   primary={getServiceTypeLabel(transaction.serviceType)}
                   secondary={
-                    <>
-                      <Typography component="span" variant="body2" color="text.primary">
-                        {getStatusChip(transaction.status, transaction.serviceType, transaction)}
-                      </Typography>
-                      {" — "}{formatDate(transaction.createdAt)}
+                    <Box component="div">
+                      <Box component="span" display="flex" alignItems="center">
+                        <span>{getStatusChip(transaction.status, transaction.serviceType, transaction)}</span>
+                        <Typography component="span" variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+                          {formatDate(transaction.createdAt)}
+                        </Typography>
+                      </Box>
                       {needsDieselResponse(transaction) && (
                         <Chip 
                           size="small" 
                           label="Action Required" 
                           color="secondary" 
-                          sx={{ ml: 1 }}
+                          sx={{ mt: 1 }}
                           variant="outlined"
                         />
                       )}
@@ -928,7 +957,7 @@ const ResidentTransaction = () => {
                           })()}
                         </Typography>
                       )}
-                    </>
+                    </Box>
                   }
                 />
                 <ListItemSecondaryAction>
@@ -999,7 +1028,9 @@ const ResidentTransaction = () => {
                   <Typography variant="h6" gutterBottom>
                     {getServiceTypeLabel(selectedTransaction.serviceType)}
                   </Typography>
-                  {getStatusChip(selectedTransaction.status)}
+                  <Box component="div">
+                    {getStatusChip(selectedTransaction.status)}
+                  </Box>
                   <Divider sx={{ my: 1 }} />
                 </Grid>
                 
@@ -1223,6 +1254,7 @@ const ResidentTransaction = () => {
             <MenuItem value="document">Document Requests</MenuItem>
             <MenuItem value="infrastructure">Infrastructure Reports</MenuItem>
             <MenuItem value="project_proposal">Project Proposals</MenuItem>
+            <MenuItem value="resident_registration">Resident Registration</MenuItem>
             <Divider />
             <MenuItem value="pending">Pending</MenuItem>
             <MenuItem value="approved">Approved</MenuItem>
@@ -1264,7 +1296,7 @@ const ResidentTransaction = () => {
                   )}
                 </TableCell>
                 <TableCell>{formatDate(transaction.createdAt)}</TableCell>
-                <TableCell>
+                <TableCell component="div">
                   {getStatusChip(transaction.status, transaction.serviceType, transaction)}
                   {needsDieselResponse(transaction) && (
                     <Chip 
@@ -1276,7 +1308,7 @@ const ResidentTransaction = () => {
                     />
                   )}
                 </TableCell>
-                <TableCell>
+                <TableCell component="div">
                   {/* Ambulance booking details */}
                   {transaction.serviceType === SERVICE_TYPES.AMBULANCE && transaction.details && (
                     <>
@@ -1325,6 +1357,18 @@ const ResidentTransaction = () => {
                     </>
                   )}
                   
+                  {/* Resident Registration details */}
+                  {transaction.serviceType === SERVICE_TYPES.RESIDENT && transaction.details && (
+                    <>
+                      <Typography variant="body2">
+                        <strong>Name:</strong> {`${transaction.details.firstName} ${transaction.details.middleName ? transaction.details.middleName + ' ' : ''}${transaction.details.lastName}`}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Address:</strong> {transaction.details.address || 'N/A'}
+                      </Typography>
+                    </>
+                  )}
+  
                   {/* Document request details */}
                   {transaction.serviceType === SERVICE_TYPES.DOCUMENT && transaction.details && (
                     <>
@@ -2027,6 +2071,71 @@ const ResidentTransaction = () => {
                           </Grid>
                         </>
                       )}
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* Resident Registration Details in the dialog*/}
+              {selectedTransaction?.serviceType === 'resident_registration' && (
+                <>
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
+                      Resident Registration Information
+                    </Typography>
+                    <Divider />
+                  </Grid>
+                  
+                  {/* From transaction.details */}
+                  {selectedTransaction.details && (
+                    <>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2">
+                          <strong>Service ID:</strong> {selectedTransaction.referenceDetails?.serviceId || 'N/A'}
+                        </Typography>
+                        <Typography variant="body2">
+                          <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Name:</strong> {`${selectedTransaction.details.firstName} ${selectedTransaction.details.middleName ? selectedTransaction.details.middleName + ' ' : ''}${selectedTransaction.details.lastName}`}
+                        </Typography>
+                        <Typography variant="body2">
+                          <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Address:</strong> {selectedTransaction.details.address}
+                        </Typography>
+                      </Grid>
+                    </>
+                  )}
+                  
+                  {/* From referenceDetails - more comprehensive information */}
+                  {selectedTransaction.referenceDetails && (
+                    <>
+                      <Grid item xs={12} sm={6}>
+                        <Typography variant="body2">
+                          <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber || 'N/A'}
+                        </Typography>
+                        <Typography variant="body2">
+                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Email:</strong> {selectedTransaction.referenceDetails.email || 'N/A'}
+                        </Typography>
+                        <Typography variant="body2">
+                          <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
+                          <strong>Precinct Level:</strong> {selectedTransaction.referenceDetails.precinctLevel || 'N/A'}
+                        </Typography>
+                      </Grid>
+                      
+                      <Grid item xs={12}>
+                        {selectedTransaction.referenceDetails.types && selectedTransaction.referenceDetails.types.length > 0 && (
+                          <Typography variant="body2">
+                            <strong>Categories:</strong> {selectedTransaction.referenceDetails.types.join(', ')}
+                          </Typography>
+                        )}
+                        <Typography variant="body2">
+                          <strong>Voter:</strong> {selectedTransaction.referenceDetails.isVoter ? 'Yes' : 'No'}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Status:</strong> {selectedTransaction.referenceDetails.isVerified ? 'Verified' : 'Pending Verification'}
+                        </Typography>
+                      </Grid>
                     </>
                   )}
                 </>

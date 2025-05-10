@@ -1,5 +1,6 @@
 import Resident from '../models/Resident.js';
 import User from '../models/User.js';
+import Transaction from '../models/Transaction.js';
 import { createLog } from './userLogController.js';
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
@@ -573,6 +574,14 @@ export const requestAddToDatabase = async (req, res) => {
     });
 
     const savedResident = await resident.save();
+    
+    // Create a transaction for the resident request
+    try {
+      await createTransactionFromResidentRequest(savedResident._id);
+    } catch (transactionError) {
+      console.error('Error creating transaction for resident request:', transactionError);
+      // Continue with response even if transaction creation fails
+    }
 
     return res.status(201).json({
       success: true,
@@ -636,6 +645,28 @@ export const verifyResident = async (req, res) => {
       { new: true }
     );
 
+    // Update the transaction status to approved
+    try {
+      // First check if a transaction exists for this resident request
+      const transaction = await Transaction.findOne({
+        serviceType: 'resident_registration',
+        referenceId: id
+      });
+
+      if (transaction) {
+        transaction.status = 'approved';
+        transaction.processedBy = userId;
+        transaction.updatedAt = Date.now();
+        await transaction.save();
+      } else {
+        // Create a new transaction if one doesn't exist
+        await createTransactionFromResidentRequest(id);
+      }
+    } catch (transactionError) {
+      console.error('Error updating transaction for resident verification:', transactionError);
+      // Continue with response even if transaction update fails
+    }
+
     // Log the action
     await logResidentAction(
       userId,
@@ -693,6 +724,24 @@ export const rejectResidentRequest = async (req, res) => {
         success: false,
         message: 'Cannot reject an already verified resident'
       });
+    }
+
+    // Update the transaction status to rejected before deleting the resident
+    try {
+      const transaction = await Transaction.findOne({
+        serviceType: 'resident_registration',
+        referenceId: id
+      });
+
+      if (transaction) {
+        transaction.status = 'cancelled';
+        transaction.processedBy = userId;
+        transaction.updatedAt = Date.now();
+        await transaction.save();
+      }
+    } catch (transactionError) {
+      console.error('Error updating transaction for resident rejection:', transactionError);
+      // Continue with response even if transaction update fails
     }
 
     await Resident.findByIdAndDelete(id);
@@ -910,6 +959,143 @@ export const checkDuplicateResident = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Error checking for duplicate residents',
+      error: error.message
+    });
+  }
+};
+
+// Create a transaction from a resident registration request
+export const createTransactionFromResidentRequest = async (residentId) => {
+  try {
+    const resident = await Resident.findById(residentId);
+    
+    if (!resident) {
+      throw new Error('Resident request not found');
+    }
+    
+    // Check if a transaction already exists for this request
+    const existingTransaction = await Transaction.findOne({
+      serviceType: 'resident_registration',
+      referenceId: residentId
+    });
+    
+    if (existingTransaction) {
+      // Update existing transaction status based on resident verification status
+      existingTransaction.status = resident.isVerified ? 'approved' : 'pending';
+      existingTransaction.details = {
+        firstName: resident.firstName,
+        middleName: resident.middleName,
+        lastName: resident.lastName,
+        address: resident.address,
+        contactNumber: resident.contactNumber,
+        email: resident.email
+      };
+      
+      existingTransaction.updatedAt = Date.now();
+      await existingTransaction.save();
+      console.log('Updated existing transaction for resident registration:', residentId);
+      return existingTransaction;
+    }
+    
+    // Create new transaction
+    const newTransaction = new Transaction({
+      userId: resident.registeredBy || resident.addedBy,
+      serviceType: 'resident_registration',
+      status: resident.isVerified ? 'approved' : 'pending',
+      details: {
+        firstName: resident.firstName,
+        middleName: resident.middleName,
+        lastName: resident.lastName,
+        address: resident.address,
+        contactNumber: resident.contactNumber,
+        email: resident.email
+      },
+      referenceId: residentId,
+      processedBy: resident.updatedBy
+    });
+    
+    await newTransaction.save();
+    console.log('Created new transaction for resident request:', residentId);
+    return newTransaction;
+  } catch (error) {
+    console.error('Error creating/updating transaction from resident request:', error);
+    throw error;
+  }
+};
+
+// Cancel resident registration request (by resident)
+export const cancelResidentRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Get user ID from cookie
+    const userId = getUserIdFromCookie(req);
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+    
+    // Check if resident exists
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid resident ID format'
+      });
+    }
+
+    const resident = await Resident.findById(id);
+    if (!resident) {
+      return res.status(404).json({
+        success: false,
+        message: 'Resident request not found'
+      });
+    }
+
+    // Only allow cancellation if not verified and if requested by the same user
+    if (resident.isVerified) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot cancel an already verified resident registration'
+      });
+    }
+
+    if (resident.registeredBy.toString() !== userId && resident.addedBy.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'You are not authorized to cancel this registration request'
+      });
+    }
+
+    // Update the transaction status to cancelled before deleting the resident
+    try {
+      const transaction = await Transaction.findOne({
+        serviceType: 'resident_registration',
+        referenceId: id
+      });
+
+      if (transaction) {
+        transaction.status = 'cancelled';
+        transaction.updatedAt = Date.now();
+        await transaction.save();
+      }
+    } catch (transactionError) {
+      console.error('Error updating transaction for resident cancellation:', transactionError);
+      // Continue with response even if transaction update fails
+    }
+
+    await Resident.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Resident registration request cancelled successfully'
+    });
+  } catch (error) {
+    console.error('Error cancelling resident request:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error cancelling resident request',
       error: error.message
     });
   }

@@ -68,7 +68,8 @@ import {
   verifyResident,
   rejectResidentRequest,
   importResidentsFromCSV,
-  checkDuplicateResident
+  checkDuplicateResident,
+  cancelResidentRequest
 } from './controllers/residentController.js';
 import {
   getHomepageContent,
@@ -196,6 +197,7 @@ router.patch('/residents/:id/verify', verifyResident);
 router.patch('/residents/:id/reject', rejectResidentRequest);
 router.post('/residents/import', csvUpload.single('file'), importResidentsFromCSV);
 router.get('/residents/check-duplicate', checkDuplicateResident);
+router.patch('/residents/:id/cancel', cancelResidentRequest);
 
 // Admin User Management Routes
 router.get('/users', getAllUsers);
