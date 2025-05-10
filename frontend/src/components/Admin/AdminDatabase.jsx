@@ -33,7 +33,6 @@ import {
   OutlinedInput,
   InputAdornment
 } from '@mui/material';
-import AlertTitle from '@mui/material/AlertTitle';
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -45,6 +44,7 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon
 } from '@mui/icons-material';
+import AlertTitle from '@mui/material/AlertTitle';
 
 // Resident type options
 const residentTypes = ['Minor', '18-30', 'Illiterate', 'PWD', 'Senior Citizen', 'Indigent'];
@@ -69,6 +69,7 @@ function AdminDatabase() {
   const [selectedResident, setSelectedResident] = useState(null);
   const [openVerifyConfirmDialog, setOpenVerifyConfirmDialog] = useState(false);
   const [openRejectConfirmDialog, setOpenRejectConfirmDialog] = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -641,15 +642,28 @@ function AdminDatabase() {
     }
   };
 
-  // Reject resident request - FIX
-  const handleRejectResident = async () => {
+  // Reject resident request with reason
+  const handleRejectWithReason = async () => {
     try {
+      // Make sure there's a rejection reason
+      if (!rejectReason.trim()) {
+        setSnackbar({
+          open: true,
+          message: 'Rejection reason is required',
+          severity: 'error'
+        });
+        return;
+      }
+      
       const response = await fetch(`http://localhost:3002/residents/${selectedResident._id}/reject`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include' // Add this for cookies
+        credentials: 'include',
+        body: JSON.stringify({
+          rejectReason: rejectReason  // Send the rejection reason
+        })
       });
 
       const data = await response.json();
@@ -657,10 +671,11 @@ function AdminDatabase() {
       if (data.success) {
         setSnackbar({
           open: true,
-          message: 'Resident request rejected',
+          message: 'Resident request rejected successfully',
           severity: 'success'
         });
-        setOpenVerifyDialog(false);
+        // Clear the state variables
+        setRejectReason('');
         fetchPendingRequests();
       } else {
         setSnackbar({
@@ -1307,6 +1322,56 @@ function AdminDatabase() {
           </Button>
         </DialogActions>
       </Dialog>
+          {/* reason reject dialog */}
+          <Dialog 
+            open={openRejectConfirmDialog} 
+            onClose={() => setOpenRejectConfirmDialog(false)}
+          >
+            <DialogTitle>Provide Rejection Reason</DialogTitle>
+            <DialogContent>
+              <DialogContentText>
+                Please provide a reason for rejecting the registration request from {selectedResident?.firstName} {selectedResident?.lastName}.
+                This information will be visible to the resident.
+              </DialogContentText>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="Rejection Reason"
+                type="text"
+                fullWidth
+                required
+                multiline
+                rows={3}
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                error={!rejectReason}
+                helperText={!rejectReason ? "Rejection reason is required" : ""}
+                sx={{ mt: 2 }}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setOpenRejectConfirmDialog(false)}>Cancel</Button>
+              <Button 
+                onClick={() => {
+                  if (!rejectReason.trim()) {
+                    setSnackbar({
+                      open: true,
+                      message: 'Please provide a rejection reason',
+                      severity: 'error'
+                    });
+                    return;
+                  }
+                  handleRejectWithReason();
+                  setOpenRejectConfirmDialog(false);
+                }} 
+                color="error" 
+                variant="contained"
+                disabled={!rejectReason.trim()}
+              >
+                Reject Request
+              </Button>
+            </DialogActions>
+          </Dialog>
 
       {/* Enhanced Verify Resident Dialog */}
       <Dialog 
@@ -1570,29 +1635,7 @@ function AdminDatabase() {
         </DialogActions>
       </Dialog>
 
-      {/* Reject Confirmation Dialog */}
-      <Dialog open={openRejectConfirmDialog} onClose={() => setOpenRejectConfirmDialog(false)}>
-        <DialogTitle>Confirm Rejection</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to reject the registration request from {selectedResident?.firstName} {selectedResident?.lastName}?
-            This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenRejectConfirmDialog(false)}>Cancel</Button>
-          <Button 
-            onClick={() => {
-              handleRejectResident();
-              setOpenRejectConfirmDialog(false);
-            }} 
-            color="error" 
-            variant="contained"
-          >
-            Yes, Reject Request
-          </Button>
-        </DialogActions>
-      </Dialog>
+      
       
       {/* Snackbar for notifications */}
       <Snackbar

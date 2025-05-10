@@ -693,6 +693,15 @@ export const verifyResident = async (req, res) => {
 export const rejectResidentRequest = async (req, res) => {
   try {
     const { id } = req.params;
+    const { rejectReason } = req.body; // Extract the rejection reason
+    
+    // Require a rejection reason
+    if (!rejectReason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rejection reason is required'
+      });
+    }
     
     // Get user ID from cookie
     const userId = getUserIdFromCookie(req);
@@ -726,7 +735,20 @@ export const rejectResidentRequest = async (req, res) => {
       });
     }
 
-    // Update the transaction status to rejected before deleting the resident
+    // Make a copy of the resident data before deleting it
+    const residentData = {
+      firstName: resident.firstName,
+      middleName: resident.middleName,
+      lastName: resident.lastName,
+      address: resident.address,
+      precinctLevel: resident.precinctLevel,
+      contactNumber: resident.contactNumber,
+      email: resident.email,
+      types: resident.types,
+      isVoter: resident.isVoter
+    };
+
+    // Update the transaction to rejected and include the rejection reason
     try {
       const transaction = await Transaction.findOne({
         serviceType: 'resident_registration',
@@ -734,10 +756,32 @@ export const rejectResidentRequest = async (req, res) => {
       });
 
       if (transaction) {
-        transaction.status = 'cancelled';
+        // Store all resident data in the transaction
+        transaction.status = 'rejected';
         transaction.processedBy = userId;
         transaction.updatedAt = Date.now();
+        transaction.adminComment = rejectReason; // Save rejection reason as admin comment
+        transaction.details = {
+          ...transaction.details,
+          ...residentData,
+          rejectionReason: rejectReason
+        };
         await transaction.save();
+      } else {
+        // Create a new transaction if none exists
+        const newTransaction = new Transaction({
+          userId: resident.registeredBy || resident.addedBy,
+          serviceType: 'resident_registration',
+          status: 'rejected',
+          details: {
+            ...residentData,
+            rejectionReason: rejectReason
+          },
+          referenceId: id,
+          processedBy: userId,
+          adminComment: rejectReason
+        });
+        await newTransaction.save();
       }
     } catch (transactionError) {
       console.error('Error updating transaction for resident rejection:', transactionError);
@@ -1027,6 +1071,7 @@ export const createTransactionFromResidentRequest = async (residentId) => {
 export const cancelResidentRequest = async (req, res) => {
   try {
     const { id } = req.params;
+    const { cancellationReason } = req.body; // Optional cancellation reason from resident
     
     // Get user ID from cookie
     const userId = getUserIdFromCookie(req);
@@ -1068,6 +1113,19 @@ export const cancelResidentRequest = async (req, res) => {
       });
     }
 
+    // Make a copy of the resident data before deleting it
+    const residentData = {
+      firstName: resident.firstName,
+      middleName: resident.middleName,
+      lastName: resident.lastName,
+      address: resident.address,
+      precinctLevel: resident.precinctLevel,
+      contactNumber: resident.contactNumber,
+      email: resident.email,
+      types: resident.types,
+      isVoter: resident.isVoter
+    };
+
     // Update the transaction status to cancelled before deleting the resident
     try {
       const transaction = await Transaction.findOne({
@@ -1076,13 +1134,31 @@ export const cancelResidentRequest = async (req, res) => {
       });
 
       if (transaction) {
+        // Store complete resident data in the transaction
         transaction.status = 'cancelled';
         transaction.updatedAt = Date.now();
+        transaction.details = {
+          ...transaction.details,
+          ...residentData,
+          cancellationReason: cancellationReason || 'Cancelled by resident'
+        };
         await transaction.save();
+      } else {
+        // Create a new transaction if none exists
+        const newTransaction = new Transaction({
+          userId: resident.registeredBy || resident.addedBy,
+          serviceType: 'resident_registration',
+          status: 'cancelled',
+          details: {
+            ...residentData,
+            cancellationReason: cancellationReason || 'Cancelled by resident'
+          },
+          referenceId: id
+        });
+        await newTransaction.save();
       }
     } catch (transactionError) {
       console.error('Error updating transaction for resident cancellation:', transactionError);
-      // Continue with response even if transaction update fails
     }
 
     await Resident.findByIdAndDelete(id);

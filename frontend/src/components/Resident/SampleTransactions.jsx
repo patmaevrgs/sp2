@@ -1131,10 +1131,10 @@ const ResidentTransaction = () => {
                     
                     <Grid container spacing={2}>
                   
-                  {/* Ambulance Booking Details */}
-                  {selectedTransaction.serviceType === 'ambulance_booking' && (
+                    {/* Ambulance Booking Details */}
+                    {selectedTransaction.serviceType === 'ambulance_booking' && (
                     <>
-                      <Grid item xs={12}>
+                        <Grid item xs={12}>
                         <Box sx={{ 
                             mt: 2, 
                             mb: 2, 
@@ -1152,908 +1152,1797 @@ const ResidentTransaction = () => {
                             </Typography>
                         </Box>
                         </Grid>
-                      
-                      {selectedTransaction.serviceType === 'ambulance_booking' && selectedTransaction.referenceDetails && (
-                        <Typography variant="body2" sx={{ my: 0.5 }}>
-                          <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId || 'N/A'}
-                        </Typography>
-                      )}
-                      
-                      {/* From referenceDetails - more comprehensive information */}
-                      {selectedTransaction.referenceDetails && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <ListItem sx={{ px: 0, py: 0.75 }}>
-                                <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
-                                <ListItemText 
-                                    primary="Patient Name" 
-                                    secondary={selectedTransaction.referenceDetails.patientName} 
-                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
-                                />
-                            </ListItem>
-                            <ListItem sx={{ px: 0, py: 0.75 }}>
-                                <EventIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
-                                <ListItemText 
-                                    primary="Pickup Date" 
-                                    secondary={formatDate(selectedTransaction.referenceDetails.pickupDate)} 
-                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
-                                />
-                            </ListItem>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <TimeIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Pickup Time:</strong> {selectedTransaction.referenceDetails.pickupTime}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Duration:</strong> {selectedTransaction.referenceDetails.duration}
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Pickup Address:</strong> {selectedTransaction.referenceDetails.pickupAddress}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Destination:</strong> {selectedTransaction.referenceDetails.destination}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Submitter Relation:</strong> {selectedTransaction.referenceDetails.submitterRelation}
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Emergency Details:</strong> {selectedTransaction.referenceDetails.emergencyDetails || 'None'}
-                            </Typography>
-                            {selectedTransaction.referenceDetails.additionalNote && (
-                              <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Additional Notes:</strong> {selectedTransaction.referenceDetails.additionalNote}
-                              </Typography>
-                            )}
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Diesel Cost Required:</strong> {selectedTransaction.details?.dieselCost ? 'Yes' : 'No'}
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-                    </>
-                  )}
-                  
-                  {/* Court Reservation Details */}
-                  {selectedTransaction.serviceType === 'court_reservation' && (
-                    <>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                          Court Reservation Information
-                        </Typography>
-                        <Divider />
-                      </Grid>
-                      
-                      {/* From referenceDetails - more comprehensive information */}
-                      {selectedTransaction.referenceDetails && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Representative:</strong> {selectedTransaction.referenceDetails.representativeName}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Date:</strong> {formatDate(selectedTransaction.referenceDetails.reservationDate)}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <TimeIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Time:</strong> {selectedTransaction.referenceDetails.startTime}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Duration:</strong> {selectedTransaction.referenceDetails.duration} hours
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Purpose:</strong> {selectedTransaction.referenceDetails.purpose}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Number of People:</strong> {selectedTransaction.referenceDetails.numberOfPeople}
-                            </Typography>
-                          </Grid>
-                          
-                          {selectedTransaction.referenceDetails.additionalNotes && (
-                            <Grid item xs={12}>
-                              <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Additional Notes:</strong> {selectedTransaction.referenceDetails.additionalNotes}
-                              </Typography>
+                        
+                        {selectedTransaction.referenceDetails && (
+                        <Card variant="outlined" sx={{ borderRadius: '8px', mb: 2, width: '100%' }}>
+                            <CardContent sx={{ px: 2, py: 2 }}>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                <List dense disablePadding>
+                                    {selectedTransaction.referenceDetails.serviceId && (
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                        primary="Service ID" 
+                                        secondary={selectedTransaction.referenceDetails.serviceId} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                    </ListItem>
+                                    )}
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Patient Name" 
+                                        secondary={selectedTransaction.referenceDetails.patientName} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <EventIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Pickup Date" 
+                                        secondary={formatDate(selectedTransaction.referenceDetails.pickupDate)} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <TimeIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Pickup Time" 
+                                        secondary={selectedTransaction.referenceDetails.pickupTime} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Duration" 
+                                        secondary={selectedTransaction.referenceDetails.duration} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                </List>
+                                </Grid>
+                                
+                                <Grid item xs={12} sm={6}>
+                                <List dense disablePadding>
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Pickup Address" 
+                                        secondary={selectedTransaction.referenceDetails.pickupAddress} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Destination" 
+                                        secondary={selectedTransaction.referenceDetails.destination} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Contact Number" 
+                                        secondary={selectedTransaction.referenceDetails.contactNumber} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Submitter Relation" 
+                                        secondary={selectedTransaction.referenceDetails.submitterRelation} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Diesel Cost Required" 
+                                        secondary={selectedTransaction.details?.dieselCost ? 'Yes' : 'No'} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                </List>
+                                </Grid>
+                                
+                                {/* Additional Details Section */}
+                                {(selectedTransaction.referenceDetails.emergencyDetails || 
+                                selectedTransaction.referenceDetails.additionalNote) && (
+                                <Grid item xs={12}>
+                                    <Divider sx={{ my: 2 }} />
+                                    
+                                    {selectedTransaction.referenceDetails.emergencyDetails && (
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                                        Emergency Details
+                                        </Typography>
+                                        <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fff9f0' }}>
+                                        <Typography variant="body1">
+                                            {selectedTransaction.referenceDetails.emergencyDetails}
+                                        </Typography>
+                                        </Paper>
+                                    </Box>
+                                    )}
+                                    
+                                    {selectedTransaction.referenceDetails.additionalNote && (
+                                    <Box sx={{ mt: 2 }}>
+                                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                                        Additional Notes
+                                        </Typography>
+                                        <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f9f9f9' }}>
+                                        <Typography variant="body1">
+                                            {selectedTransaction.referenceDetails.additionalNote}
+                                        </Typography>
+                                        </Paper>
+                                    </Box>
+                                    )}
+                                </Grid>
+                                )}
                             </Grid>
-                          )}
-                        </>
-                      )}
+                            </CardContent>
+                        </Card>
+                        )}
                     </>
-                  )}
+                    )}
                   
-                  {/* Document Request Details - Add Barangay Clearance section */}
-                  {selectedTransaction?.serviceType === 'document_request' && (
+                    {/* Court Reservation Details */}
+                    {selectedTransaction.serviceType === 'court_reservation' && (
                     <>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                          Document Request Information
-                        </Typography>
-                        <Divider />
-                      </Grid>
-                      
-                      {/* From transaction.details */}
-                      {selectedTransaction.details && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Document Type:</strong> {
-                                (() => {
-                                  const docType = selectedTransaction.details.documentType;
-                                  switch(docType) {
-                                    case 'barangay_id': return 'Barangay ID';
-                                    case 'barangay_clearance': return 'Barangay Clearance';
-                                    case 'business_clearance': return 'Business Clearance';
-                                    case 'lot_ownership': return 'Lot Ownership';
-                                    case 'digging_permit': return 'Digging Permit';
-                                    case 'fencing_permit': return 'Fencing Permit';
-                                    case 'request_for_assistance': return 'Request for Assistance';
-                                    case 'certificate_of_indigency': return 'Certificate of Indigency';
-                                    case 'certificate_of_residency': return 'Certificate of Residency';
-                                    case 'no_objection_certificate': return 'No Objection Certificate';
-                                    default: return docType;
-                                  }
-                                })()
-                              }
+                        <Grid item xs={12}>
+                        <Box sx={{ 
+                            mt: 2, 
+                            mb: 2, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            backgroundColor: '#f8f9fa', 
+                            p: 1.5, 
+                            borderRadius: '8px',
+                            borderLeft: '4px solid',
+                            borderLeftColor: 'primary.main' 
+                        }}>
+                            <EventIcon sx={{ mr: 2, color: 'primary.main' }} />
+                            <Typography variant="subtitle1" component="h3">
+                            Court Reservation Information
                             </Typography>
-                          </Grid>
-                        </>
-                      )}
-                      {/* From referenceDetails - more comprehensive information */}
-                      {selectedTransaction.referenceDetails && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId || 'N/A'}
+                        </Box>
+                        </Grid>
+                        
+                        {/* From referenceDetails - more comprehensive information */}
+                        {selectedTransaction.referenceDetails && (
+                        <Card variant="outlined" sx={{ borderRadius: '8px', mb: 2, width: '100%' }}>
+                            <CardContent sx={{ px: 2, py: 2 }}>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                <List dense disablePadding>
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Service ID" 
+                                        secondary={selectedTransaction.referenceDetails.serviceId || 'N/A'} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Representative" 
+                                        secondary={selectedTransaction.referenceDetails.representativeName} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <EventIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Date" 
+                                        secondary={formatDate(selectedTransaction.referenceDetails.reservationDate)}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <TimeIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Time" 
+                                        secondary={selectedTransaction.referenceDetails.startTime}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Duration" 
+                                        secondary={`${selectedTransaction.referenceDetails.duration} hours`}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                </List>
+                                </Grid>
+                                
+                                <Grid item xs={12} sm={6}>
+                                <List dense disablePadding>
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Contact Number" 
+                                        secondary={selectedTransaction.referenceDetails.contactNumber}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Purpose" 
+                                        secondary={selectedTransaction.referenceDetails.purpose}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Number of People" 
+                                        secondary={selectedTransaction.referenceDetails.numberOfPeople}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                </List>
+                                </Grid>
+                                
+                                {selectedTransaction.referenceDetails.additionalNotes && (
+                                <Grid item xs={12}>
+                                    <Divider sx={{ my: 1 }} />
+                                    <Box sx={{ mt: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                                        Additional Notes
+                                    </Typography>
+                                    <Typography variant="body1" paragraph sx={{ pl: 1 }}>
+                                        {selectedTransaction.referenceDetails.additionalNotes}
+                                    </Typography>
+                                    </Box>
+                                </Grid>
+                                )}
+                            </Grid>
+                            </CardContent>
+                        </Card>
+                        )}
+                    </>
+                    )}
+                  
+                    {/* Document Request Details */}
+                    {selectedTransaction?.serviceType === 'document_request' && (
+                    <>
+                        <Grid item xs={12}>
+                        <Box sx={{ 
+                            mt: 2, 
+                            mb: 2, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            backgroundColor: '#f8f9fa', 
+                            p: 1.5, 
+                            borderRadius: '8px',
+                            borderLeft: '4px solid',
+                            borderLeftColor: 'primary.main' 
+                        }}>
+                            <FileIcon sx={{ mr: 2, color: 'primary.main' }} />
+                            <Typography variant="subtitle1" component="h3">
+                            Document Request Information
                             </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Purpose:</strong> {
-                                selectedTransaction.referenceDetails.documentType === 'digging_permit' && 
-                                selectedTransaction.referenceDetails.formData && 
-                                selectedTransaction.referenceDetails.formData.diggingPurpose
-                                  ? (() => {
-                                      const purpose = selectedTransaction.referenceDetails.formData.diggingPurpose;
-                                      switch(purpose) {
-                                        case 'water_supply': return 'Water Supply Connection';
-                                        case 'electrical': return 'Electrical Connection';
-                                        case 'drainage': return 'Drainage System';
-                                        case 'other': return 'Other';
-                                        default: return purpose;
-                                      }
-                                    })()
-                                  : selectedTransaction.referenceDetails.purpose
-                              }
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Status:</strong> {
-                                (() => {
-                                  const status = selectedTransaction.referenceDetails.status;
-                                  switch(status) {
-                                    case 'pending': return 'Pending';
-                                    case 'in_progress': return 'In Progress';
-                                    case 'completed': return 'Completed';
-                                    case 'rejected': return 'Rejected';
-                                    case 'cancelled': return 'Cancelled';
-                                    default: return status.replace('_', ' ');
-                                  }
-                                })()
-                              }
-                            </Typography>
-                          </Grid>
-                          
-                          {/* Display different fields based on document type */}
-                          {selectedTransaction.referenceDetails.documentType === 'certificate_of_residency' && (
-                            <>
-                              <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                  <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                  <strong>Age:</strong> {selectedTransaction.referenceDetails.formData.age}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                  <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address} Barangay Maahas, Los Baños, Laguna
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                  <strong>Date of Birth:</strong> {
-                                    selectedTransaction.referenceDetails.formData.dateOfBirth ? 
-                                    format(new Date(selectedTransaction.referenceDetails.formData.dateOfBirth), 'MMM dd, yyyy') : 
-                                    'N/A'
-                                  }
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                  <strong>Place of Birth:</strong> {selectedTransaction.referenceDetails.formData.placeOfBirth}
-                                </Typography>
-                              </Grid>
-                              <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                  <strong>Nationality:</strong> {selectedTransaction.referenceDetails.formData.nationality}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                  <strong>Civil Status:</strong> {selectedTransaction.referenceDetails.formData.civilStatus}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                  <strong>Years of Stay:</strong> {selectedTransaction.referenceDetails.formData.yearsOfStay}
-                                </Typography>
-                              </Grid>
-                            </>
-                          )}
-                          
-                          {/* Add other document type conditionals here */}
-                          {/* Barangay Clearance Details */}
-                                                {selectedTransaction.referenceDetails.documentType === 'barangay_clearance' && (
-                                                  <>
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Gender:</strong> {selectedTransaction.referenceDetails.formData.gender === 'male' ? 'Male' : 'Female'}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030
-                                                      </Typography>
-                                                    </Grid>
-                                                  </>
-                                                )}
-                                                {/* Lot Ownership Details */}
-                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'lot_ownership' && (
-                                                  <>
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>TD Number:</strong> {selectedTransaction.referenceDetails.formData.tdNumber}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Survey Number:</strong> {selectedTransaction.referenceDetails.formData.surveyNumber}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Lot Area:</strong> {selectedTransaction.referenceDetails.formData.lotArea} {
-                                                          (() => {
-                                                            const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
-                                                            switch(areaUnit) {
-                                                              case 'square_meters': return 'square meters';
-                                                              case 'square_feet': return 'square feet';
-                                                              case 'hectares': return 'hectares';
-                                                              default: return areaUnit;
-                                                            }
-                                                          })()
-                                                        }
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Property Location:</strong> {selectedTransaction.referenceDetails.formData.lotLocation}, Barangay Maahas, Los Baños, Laguna
-                                                      </Typography>
-                                                    </Grid>
-                                                    
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Owner Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Owner Address:</strong> {selectedTransaction.referenceDetails.formData.ownerAddress}
-                                                      </Typography>
-                                                    </Grid>
-                                                  </>
-                                                )}
-                          
-                                                {/* Barangay ID Details */}
-                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'barangay_id' && (
-                                                  <>
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>First Name:</strong> {selectedTransaction.referenceDetails.formData.firstName}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Middle Name:</strong> {selectedTransaction.referenceDetails.formData.middleName || 'N/A'}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Last Name:</strong> {selectedTransaction.referenceDetails.formData.lastName}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
-                                                      </Typography>
-                                                    </Grid>
-                                                    
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Date of Birth:</strong> {selectedTransaction.referenceDetails.formData.birthDate}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Emergency Contact Name:</strong> {selectedTransaction.referenceDetails.formData.emergencyContactName}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Emergency Contact Number:</strong> {selectedTransaction.referenceDetails.formData.emergencyContactNumber}
-                                                      </Typography>
-                                                    </Grid>
-                                                  </>
-                                                )}
-                          
-                                                {/* Fencing Permit Details */}
-                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'fencing_permit' && (
-                                                  <>
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Residential Address:</strong> {selectedTransaction.referenceDetails.formData.residentAddress}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Property Location:</strong> {selectedTransaction.referenceDetails.formData.propertyLocation}, Barangay Maahas, Los Baños, Laguna
-                                                      </Typography>
-                                                    </Grid>
-                                                    
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Tax Declaration No.:</strong> {selectedTransaction.referenceDetails.formData.taxDeclarationNumber}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Property ID No.:</strong> {selectedTransaction.referenceDetails.formData.propertyIdentificationNumber}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Property Area:</strong> {selectedTransaction.referenceDetails.formData.propertyArea} {
-                                                          (() => {
-                                                            const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
-                                                            switch(areaUnit) {
-                                                              case 'square_meters': return 'square meters';
-                                                              case 'square_feet': return 'square feet';
-                                                              case 'hectares': return 'hectares';
-                                                              default: return areaUnit;
-                                                            }
-                                                          })()
-                                                        }
-                                                      </Typography>
-                                                    </Grid>
-                                                  </>
-                                                )}
-                          
-                                                {/* Digging Permit Details */}
-                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'digging_permit' && (
-                                                  <>
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
-                                                      </Typography>
-                                                    </Grid>
-                                                    
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Company:</strong> {selectedTransaction.referenceDetails.formData.companyName}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Application Details:</strong> {selectedTransaction.referenceDetails.formData.applicationDetails}
-                                                      </Typography>
-                                                    </Grid>
-                                                  </>
-                                                )}
+                        </Box>
+                        </Grid>
+                        
+                        {selectedTransaction.referenceDetails && (
+                        <Card variant="outlined" sx={{ borderRadius: '8px', mb: 2, width: '100%' }}>
+                            <CardContent sx={{ px: 2, py: 2 }}>
+                            <Grid container spacing={2}>
+                                {/* Document summary - Left column */}
+                                <Grid item xs={12} sm={6}>
+                                <List dense disablePadding>
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <FileIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Document Type" 
+                                        secondary={
+                                        (() => {
+                                            const docType = selectedTransaction.details?.documentType;
+                                            switch(docType) {
+                                            case 'barangay_id': return 'Barangay ID';
+                                            case 'barangay_clearance': return 'Barangay Clearance';
+                                            case 'business_clearance': return 'Business Clearance';
+                                            case 'lot_ownership': return 'Lot Ownership';
+                                            case 'digging_permit': return 'Digging Permit';
+                                            case 'fencing_permit': return 'Fencing Permit';
+                                            case 'request_for_assistance': return 'Request for Assistance';
+                                            case 'certificate_of_indigency': return 'Certificate of Indigency';
+                                            case 'certificate_of_residency': return 'Certificate of Residency';
+                                            case 'no_objection_certificate': return 'No Objection Certificate';
+                                            default: return docType;
+                                            }
+                                        })()
+                                        } 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Service ID" 
+                                        secondary={selectedTransaction.referenceDetails.serviceId || 'N/A'} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                </List>
+                                </Grid>
+                                
+                                {/* Document summary - Right column */}
+                                <Grid item xs={12} sm={6}>
+                                <List dense disablePadding>
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Purpose" 
+                                        secondary={
+                                        selectedTransaction.referenceDetails.documentType === 'digging_permit' && 
+                                        selectedTransaction.referenceDetails.formData && 
+                                        selectedTransaction.referenceDetails.formData.diggingPurpose
+                                            ? (() => {
+                                                const purpose = selectedTransaction.referenceDetails.formData.diggingPurpose;
+                                                switch(purpose) {
+                                                case 'water_supply': return 'Water Supply Connection';
+                                                case 'electrical': return 'Electrical Connection';
+                                                case 'drainage': return 'Drainage System';
+                                                case 'other': return 'Other';
+                                                default: return purpose;
+                                                }
+                                            })()
+                                            : selectedTransaction.referenceDetails.purpose
+                                        }
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Status" 
+                                        secondary={
+                                        (() => {
+                                            const status = selectedTransaction.referenceDetails.status;
+                                            switch(status) {
+                                            case 'pending': return 'Pending';
+                                            case 'in_progress': return 'In Progress';
+                                            case 'completed': return 'Completed';
+                                            case 'rejected': return 'Rejected';
+                                            case 'cancelled': return 'Cancelled';
+                                            default: return status.replace('_', ' ');
+                                            }
+                                        })()
+                                        }
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                </List>
+                                </Grid>
+                                
+                                {/* Document Type-specific Sections */}
+                                {selectedTransaction.referenceDetails.documentType && (
+                                <Grid item xs={12}>
+                                    <Divider sx={{ my: 2 }} />
+                                    <Typography variant="subtitle2" gutterBottom sx={{ mb: 2 }}>
+                                    Document Details
+                                    </Typography>
+                                    
+                                    {/* Certificate of Residency */}
+                                    {selectedTransaction.referenceDetails.documentType === 'certificate_of_residency' && (
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Full Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Age" 
+                                                secondary={selectedTransaction.referenceDetails.formData.age} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Address" 
+                                                secondary={`${selectedTransaction.referenceDetails.formData.address} Barangay Maahas, Los Baños, Laguna`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <EventIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Date of Birth" 
+                                                secondary={
+                                                selectedTransaction.referenceDetails.formData.dateOfBirth ? 
+                                                format(new Date(selectedTransaction.referenceDetails.formData.dateOfBirth), 'MMM dd, yyyy') : 
+                                                'N/A'
+                                                } 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Place of Birth" 
+                                                secondary={selectedTransaction.referenceDetails.formData.placeOfBirth} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                        
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Nationality" 
+                                                secondary={selectedTransaction.referenceDetails.formData.nationality} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Civil Status" 
+                                                secondary={selectedTransaction.referenceDetails.formData.civilStatus} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Years of Stay" 
+                                                secondary={selectedTransaction.referenceDetails.formData.yearsOfStay} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                    </Grid>
+                                    )}
+                                    
+                                    {/* Barangay Clearance */}
+                                    {selectedTransaction.referenceDetails.documentType === 'barangay_clearance' && (
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Full Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Gender" 
+                                                secondary={selectedTransaction.referenceDetails.formData.gender === 'male' ? 'Male' : 'Female'} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Address" 
+                                                secondary={`${selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                    </Grid>
+                                    )}
+                                    
+                                    {/* Continue with other document types in similar format */}
+                                    {/* Lot Ownership */}
+                                    {selectedTransaction.referenceDetails.documentType === 'lot_ownership' && (
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="TD Number" 
+                                                secondary={selectedTransaction.referenceDetails.formData.tdNumber} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Survey Number" 
+                                                secondary={selectedTransaction.referenceDetails.formData.surveyNumber} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Lot Area" 
+                                                secondary={`${selectedTransaction.referenceDetails.formData.lotArea} ${
+                                                (() => {
+                                                    const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
+                                                    switch(areaUnit) {
+                                                    case 'square_meters': return 'square meters';
+                                                    case 'square_feet': return 'square feet';
+                                                    case 'hectares': return 'hectares';
+                                                    default: return areaUnit;
+                                                    }
+                                                })()
+                                                }`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Property Location" 
+                                                secondary={`${selectedTransaction.referenceDetails.formData.lotLocation}, Barangay Maahas, Los Baños, Laguna`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                        
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Owner Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Owner Address" 
+                                                secondary={selectedTransaction.referenceDetails.formData.ownerAddress} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                    </Grid>
+                                    )}
+                                    
+                                    {/* Barangay ID */}
+                                    {selectedTransaction.referenceDetails.documentType === 'barangay_id' && (
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="First Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.firstName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Middle Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.middleName || 'N/A'} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Last Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.lastName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Address" 
+                                                secondary={`${selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                        
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <EventIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Date of Birth" 
+                                                secondary={selectedTransaction.referenceDetails.formData.birthDate} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Emergency Contact Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.emergencyContactName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Emergency Contact Number" 
+                                                secondary={selectedTransaction.referenceDetails.formData.emergencyContactNumber} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                    </Grid>
+                                    )}
+
+                                    {/* Certificate of Indigency */}
+                                    {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Full Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Age" 
+                                                secondary={`${selectedTransaction.referenceDetails.formData.age} years old`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Address" 
+                                                secondary={`${selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                        
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Certificate For" 
+                                                secondary={selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            {!selectedTransaction.referenceDetails.formData.isSelf ? (
+                                            <>
+                                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                                <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                                <ListItemText 
+                                                    primary="Recipient" 
+                                                    secondary={selectedTransaction.referenceDetails.formData.guardian} 
+                                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                                />
+                                                </ListItem>
                                                 
-                                                {/* Business Clearance Details */}
-                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'business_clearance' && (
-                                                  <>
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Business Name:</strong> {selectedTransaction.referenceDetails.formData.businessName}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Business Address:</strong> {selectedTransaction.referenceDetails.formData.businessAddress}, Barangay Maahas, Los Baños, Laguna
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Line of Business:</strong> {selectedTransaction.referenceDetails.formData.lineOfBusiness}
-                                                      </Typography>
-                                                    </Grid>
-                                                    
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Business Status:</strong> {selectedTransaction.referenceDetails.formData.businessStatus}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Amount:</strong> ₱{selectedTransaction.referenceDetails.formData.amount}
-                                                      </Typography>
-                                                    </Grid>
-                                                  </>
-                                                )}
-                          
-                                                {/* No Objection Certificate Details */}
-                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'no_objection_certificate' && (
-                                                  <>
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
-                                                      </Typography>
-                                                    </Grid>
-                                                    
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Activity Type:</strong> {
-                                                          (() => {
-                                                            const objectType = selectedTransaction.referenceDetails.formData.objectType;
-                                                            switch(objectType) {
-                                                              case 'tree_cutting': return 'Tree Cutting';
-                                                              case 'construction': return 'Construction';
-                                                              case 'event': return 'Event/Gathering';
-                                                              case 'business': return 'Business Operation';
-                                                              case 'other': return 'Other Activity';
-                                                              default: return objectType;
-                                                            }
-                                                          })()
-                                                        }
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Details:</strong> {selectedTransaction.referenceDetails.formData.objectDetails}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Quantity:</strong> {selectedTransaction.referenceDetails.formData.quantity}
-                                                      </Typography>
-                                                      {selectedTransaction.referenceDetails.formData.objectType === 'other' && (
-                                                        <Typography variant="body2">
-                                                          <strong>Additional Info:</strong> {selectedTransaction.referenceDetails.formData.additionalInfo}
-                                                        </Typography>
-                                                      )}
-                                                    </Grid>
-                                                  </>
-                                                )}
-                          
-                                                {/* Request for Assistance Details */}
-                                                {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'request_for_assistance' && (
-                                                  <>
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Years of Stay:</strong> {selectedTransaction.referenceDetails.formData.yearsOfStay}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Marginalized Group:</strong> {
-                                                          (() => {
-                                                            const group = selectedTransaction.referenceDetails.formData.marginGroupType;
-                                                            switch(group) {
-                                                              case 'urban_poor': return 'Urban Poor';
-                                                              case 'senior_citizen': return 'Senior Citizen';
-                                                              case 'single_parent': return 'Single Parent';
-                                                              case 'pwd': return 'Person with Disability (PWD)';
-                                                              case 'indigenous': return 'Indigenous Person';
-                                                              case 'solo_parent': return 'Solo Parent';
-                                                              case 'other': return 'Other';
-                                                              default: return group;
-                                                            }
-                                                          })()
-                                                        }
-                                                      </Typography>
-                                                    </Grid>
-                                                    
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Request For:</strong> {selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'}
-                                                      </Typography>
-                                                      {!selectedTransaction.referenceDetails.formData.isSelf && (
-                                                        <>
-                                                          <Typography variant="body2">
-                                                            <strong>Beneficiary Name:</strong> {selectedTransaction.referenceDetails.formData.beneficiaryName}
-                                                          </Typography>
-                                                          <Typography variant="body2">
-                                                            <strong>Relationship:</strong> {selectedTransaction.referenceDetails.formData.beneficiaryRelation}
-                                                          </Typography>
-                                                        </>
-                                                      )}
-                                                      <Typography variant="body2">
-                                                        <strong>Assistance Type:</strong> {
-                                                          (() => {
-                                                            const type = selectedTransaction.referenceDetails.formData.assistanceType;
-                                                            switch(type) {
-                                                              case 'financial': return 'Financial Assistance';
-                                                              case 'medical': return 'Medical Assistance';
-                                                              case 'burial': return 'Burial Assistance';
-                                                              case 'educational': return 'Educational Assistance';
-                                                              case 'food': return 'Food Assistance';
-                                                              case 'housing': return 'Housing Assistance';
-                                                              case 'other': return selectedTransaction.referenceDetails.formData.otherAssistanceType || 'Other Assistance';
-                                                              default: return type;
-                                                            }
-                                                          })()
-                                                        }
-                                                      </Typography>
-                                                    </Grid>
-                                                  </>
-                                                )}
-                          
-                          
-                                                {/* certificate of indigency details */}
-                                                {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (
-                                                  <>
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Age:</strong> {selectedTransaction.referenceDetails.formData.age} years old
-                                                      </Typography>
-                                                      <Typography variant="body2">
-                                                        <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030
-                                                      </Typography>
-                                                    </Grid>
-                                                    
-                                                    <Grid item xs={12} sm={6}>
-                                                      <Typography variant="body2">
-                                                        <strong>Certificate For:</strong> {selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'}
-                                                      </Typography>
-                                                      
-                                                      {!selectedTransaction.referenceDetails.formData.isSelf ? (
-                                                        <>
-                                                          <Typography variant="body2">
-                                                            <strong>Recipient:</strong> {selectedTransaction.referenceDetails.formData.guardian}
-                                                          </Typography>
-                                                          <Typography variant="body2">
-                                                            <strong>Relationship:</strong> {selectedTransaction.referenceDetails.formData.guardianRelation}
-                                                          </Typography>
-                                                        </>
-                                                      ) : (
-                                                        <Typography variant="body2">
-                                                          <strong>Recipient:</strong> Self (Same as applicant)
-                                                        </Typography>
-                                                      )}
-                                                      
-                                                      <Typography variant="body2">
-                                                        <strong>Purpose:</strong> {selectedTransaction.referenceDetails.purpose}
-                                                      </Typography>
-                                                    </Grid>
-                                                  </>
-                                                )}
-                        </>
-                      )}
-                    </>
-                  )}
+                                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                                <ListItemText 
+                                                    primary="Relationship" 
+                                                    secondary={selectedTransaction.referenceDetails.formData.guardianRelation} 
+                                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                                />
+                                                </ListItem>
+                                            </>
+                                            ) : (
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                                <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                                <ListItemText 
+                                                primary="Recipient" 
+                                                secondary="Self (Same as applicant)" 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                                />
+                                            </ListItem>
+                                            )}
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Purpose" 
+                                                secondary={selectedTransaction.referenceDetails.purpose} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                    </Grid>
+                                    )}
 
-                  {/* Resident Registration Details in the dialog*/}
-                  {selectedTransaction?.serviceType === 'resident_registration' && (
-                    <>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                          Resident Registration Information
-                        </Typography>
-                        <Divider />
-                      </Grid>
-                      
-                      {/* From transaction.details */}
-                      {selectedTransaction.details && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Service ID:</strong> {selectedTransaction.referenceDetails?.serviceId || 'N/A'}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Name:</strong> {`${selectedTransaction.details.firstName} ${selectedTransaction.details.middleName ? selectedTransaction.details.middleName + ' ' : ''}${selectedTransaction.details.lastName}`}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Address:</strong> {selectedTransaction.details.address}
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-                      
-                      {/* From referenceDetails - more comprehensive information */}
-                      {selectedTransaction.referenceDetails && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber || 'N/A'}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Email:</strong> {selectedTransaction.referenceDetails.email || 'N/A'}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Precinct Level:</strong> {selectedTransaction.referenceDetails.precinctLevel || 'N/A'}
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12}>
-                            {selectedTransaction.referenceDetails.types && selectedTransaction.referenceDetails.types.length > 0 && (
-                              <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Categories:</strong> {selectedTransaction.referenceDetails.types.join(', ')}
-                              </Typography>
-                            )}
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Voter:</strong> {selectedTransaction.referenceDetails.isVoter ? 'Yes' : 'No'}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Status:</strong> {selectedTransaction.referenceDetails.isVerified ? 'Verified' : 'Pending Verification'}
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-                    </>
-                  )}
+                                    {/* Fencing Permit */}
+                                    {selectedTransaction.referenceDetails.documentType === 'fencing_permit' && (
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Full Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Residential Address" 
+                                                secondary={selectedTransaction.referenceDetails.formData.residentAddress} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Property Location" 
+                                                secondary={`${selectedTransaction.referenceDetails.formData.propertyLocation}, Barangay Maahas, Los Baños, Laguna`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                        
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Tax Declaration No." 
+                                                secondary={selectedTransaction.referenceDetails.formData.taxDeclarationNumber} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Property ID No." 
+                                                secondary={selectedTransaction.referenceDetails.formData.propertyIdentificationNumber} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Property Area" 
+                                                secondary={`${selectedTransaction.referenceDetails.formData.propertyArea} ${
+                                                (() => {
+                                                    const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
+                                                    switch(areaUnit) {
+                                                    case 'square_meters': return 'square meters';
+                                                    case 'square_feet': return 'square feet';
+                                                    case 'hectares': return 'hectares';
+                                                    default: return areaUnit;
+                                                    }
+                                                })()
+                                                }`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                    </Grid>
+                                    )}
 
-                  {/* Project Proposal Details */}
-                  {selectedTransaction?.serviceType === 'project_proposal' && (
-                    <>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                          Project Proposal Information
-                        </Typography>
-                        <Divider />
-                      </Grid>
-                      
-                      <Grid item xs={12}>
-                        <Typography variant="body2" sx={{ my: 0.5 }}>
-                          <strong>Proposal ID:</strong> {
-                            selectedTransaction.referenceDetails?.serviceId || 
-                            selectedTransaction.details?.serviceId || 
-                            'N/A'
-                          }
-                        </Typography>
-                      </Grid>
+                                    {/* Digging Permit */}
+                                    {selectedTransaction.referenceDetails.documentType === 'digging_permit' && (
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Full Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Address" 
+                                                secondary={`${selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                        
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Company" 
+                                                secondary={selectedTransaction.referenceDetails.formData.companyName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Application Details" 
+                                                secondary={selectedTransaction.referenceDetails.formData.applicationDetails} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                    </Grid>
+                                    )}
 
-                      {/* From transaction.details */}
-                      {selectedTransaction.details && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Project Title:</strong> {selectedTransaction.details.projectTitle || 'N/A'}
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-                      
-                      {/* From referenceDetails - more comprehensive information */}
-                      {selectedTransaction.referenceDetails && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Submitter:</strong> {selectedTransaction.referenceDetails.fullName}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Email:</strong> {selectedTransaction.referenceDetails.email}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Submitted:</strong> {formatDate(selectedTransaction.referenceDetails.createdAt)}
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Project Title:</strong> {selectedTransaction.referenceDetails.projectTitle}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Status:</strong> {
-                                (() => {
-                                  const status = selectedTransaction.referenceDetails.status;
-                                  switch(status) {
-                                    case 'pending': return 'Pending';
-                                    case 'in_review': return 'In Review';
-                                    case 'considered': return 'Considered';
-                                    case 'approved': return 'Approved';
-                                    case 'rejected': return 'Rejected';
-                                    default: return status.replace('_', ' ');
-                                  }
-                                })()
-                              }
-                            </Typography>
-                            {selectedTransaction.referenceDetails.documentPath && (
-                              <Typography variant="body2" sx={{ mt: 1 }}>
-                                <FileIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <Link 
-                                  href={`http://localhost:3002${selectedTransaction.referenceDetails.documentPath}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  View Proposal Document
-                                </Link>
-                              </Typography>
-                            )}
-                          </Grid>
-                          
-                          <Grid item xs={12}>
-                            <Typography variant="body2" sx={{ mt: 1, mb: 1 }}>
-                              <strong>Project Description:</strong>
-                            </Typography>
-                            <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f9f9f9' }}>
-                              <Typography variant="body2" style={{ whiteSpace: 'pre-line' }}>
-                                {selectedTransaction.referenceDetails.description}
-                              </Typography>
-                            </Paper>
-                          </Grid>
-                        </>
-                      )}
-                    </>
-                  )}
+                                    {/* Business Clearance */}
+                                    {selectedTransaction.referenceDetails.documentType === 'business_clearance' && (
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Business Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.businessName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Business Address" 
+                                                secondary={`${selectedTransaction.referenceDetails.formData.businessAddress}, Barangay Maahas, Los Baños, Laguna`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Line of Business" 
+                                                secondary={selectedTransaction.referenceDetails.formData.lineOfBusiness} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                        
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Business Status" 
+                                                secondary={selectedTransaction.referenceDetails.formData.businessStatus} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Amount" 
+                                                secondary={`₱${selectedTransaction.referenceDetails.formData.amount}`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                    </Grid>
+                                    )}
 
-                  {/* Infrastructure Report Details */}
-                  {selectedTransaction?.serviceType === 'infrastructure_report' && (
-                    <>
-                      <Grid item xs={12}>
-                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                          Infrastructure Report Information
-                        </Typography>
-                        <Divider />
-                      </Grid>
-                      
-                      {/* From transaction.details */}
-                      {selectedTransaction.details && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Report ID:</strong> {selectedTransaction.referenceDetails?.serviceId || 'N/A'}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Issue Type:</strong> {selectedTransaction.details.issueType || 'N/A'}
-                            </Typography>
-                          </Grid>
-                        </>
-                      )}
-                      
-                      {/* From referenceDetails - more comprehensive information */}
-                      {selectedTransaction.referenceDetails && (
-                        <>
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Reported By:</strong> {selectedTransaction.referenceDetails.fullName}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Contact Number:</strong> {selectedTransaction.referenceDetails.contactNumber}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Date Observed:</strong> {formatDate(selectedTransaction.referenceDetails.dateObserved)}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Issue Type:</strong> {selectedTransaction.referenceDetails.issueType}
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Location:</strong> {selectedTransaction.referenceDetails.location}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                              <strong>Nearest Landmark:</strong> {selectedTransaction.referenceDetails.nearestLandmark}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Status:</strong> {selectedTransaction.referenceDetails.status}
-                            </Typography>
-                          </Grid>
-                          
-                          <Grid item xs={12}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Description:</strong> {selectedTransaction.referenceDetails.description}
-                            </Typography>
-                            {selectedTransaction.referenceDetails.additionalComments && (
-                              <Typography variant="body2" sx={{ mt: 1 }}>
-                                <strong>Additional Comments:</strong> {selectedTransaction.referenceDetails.additionalComments}
-                              </Typography>
-                            )}
-                          </Grid>
-                          
-                          {/* Admin Comments Section */}
-                            {selectedTransaction.adminComment && (
-                            <Grid item xs={12}>
-                                <Card sx={{ mt: 3, bgcolor: '#f5f5f5', borderRadius: '8px', boxShadow: 'none', border: '1px solid #eee' }}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', p: 2, borderBottom: '1px solid #eee' }}>
-                                    <InfoIcon fontSize="small" sx={{ color: 'info.main', mr: 1 }} />
-                                    <Typography variant="subtitle2">
-                                    Admin Comment
-                                    </Typography>
-                                </Box>
-                                <CardContent>
-                                    <Typography variant="body1">
-                                    {selectedTransaction.adminComment}
-                                    </Typography>
-                                </CardContent>
-                                </Card>
+                                    {/* No Objection Certificate */}
+                                    {selectedTransaction.referenceDetails.documentType === 'no_objection_certificate' && (
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Full Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Address" 
+                                                secondary={`${selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                        
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Activity Type" 
+                                                secondary={
+                                                (() => {
+                                                    const objectType = selectedTransaction.referenceDetails.formData.objectType;
+                                                    switch(objectType) {
+                                                    case 'tree_cutting': return 'Tree Cutting';
+                                                    case 'construction': return 'Construction';
+                                                    case 'event': return 'Event/Gathering';
+                                                    case 'business': return 'Business Operation';
+                                                    case 'other': return 'Other Activity';
+                                                    default: return objectType;
+                                                    }
+                                                })()
+                                                } 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Details" 
+                                                secondary={selectedTransaction.referenceDetails.formData.objectDetails} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Quantity" 
+                                                secondary={selectedTransaction.referenceDetails.formData.quantity} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            {selectedTransaction.referenceDetails.formData.objectType === 'other' && (
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                                <ListItemText 
+                                                primary="Additional Info" 
+                                                secondary={selectedTransaction.referenceDetails.formData.additionalInfo} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                                />
+                                            </ListItem>
+                                            )}
+                                        </List>
+                                        </Grid>
+                                    </Grid>
+                                    )}
+
+                                    {/* Request for Assistance */}
+                                    {selectedTransaction.referenceDetails.documentType === 'request_for_assistance' && (
+                                    <Grid container spacing={2}>
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Full Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Address" 
+                                                secondary={`${selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna`} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Years of Stay" 
+                                                secondary={selectedTransaction.referenceDetails.formData.yearsOfStay} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Marginalized Group" 
+                                                secondary={
+                                                (() => {
+                                                    const group = selectedTransaction.referenceDetails.formData.marginGroupType;
+                                                    switch(group) {
+                                                    case 'urban_poor': return 'Urban Poor';
+                                                    case 'senior_citizen': return 'Senior Citizen';
+                                                    case 'single_parent': return 'Single Parent';
+                                                    case 'pwd': return 'Person with Disability (PWD)';
+                                                    case 'indigenous': return 'Indigenous Person';
+                                                    case 'solo_parent': return 'Solo Parent';
+                                                    case 'other': return 'Other';
+                                                    default: return group;
+                                                    }
+                                                })()
+                                                } 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                        
+                                        <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Request For" 
+                                                secondary={selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            {!selectedTransaction.referenceDetails.formData.isSelf && (
+                                            <>
+                                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                                <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                                <ListItemText 
+                                                    primary="Beneficiary Name" 
+                                                    secondary={selectedTransaction.referenceDetails.formData.beneficiaryName} 
+                                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                                />
+                                                </ListItem>
+                                                
+                                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                                <ListItemText 
+                                                    primary="Relationship" 
+                                                    secondary={selectedTransaction.referenceDetails.formData.beneficiaryRelation} 
+                                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                                />
+                                                </ListItem>
+                                            </>
+                                            )}
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Assistance Type" 
+                                                secondary={
+                                                (() => {
+                                                    const type = selectedTransaction.referenceDetails.formData.assistanceType;
+                                                    switch(type) {
+                                                    case 'financial': return 'Financial Assistance';
+                                                    case 'medical': return 'Medical Assistance';
+                                                    case 'burial': return 'Burial Assistance';
+                                                    case 'educational': return 'Educational Assistance';
+                                                    case 'food': return 'Food Assistance';
+                                                    case 'housing': return 'Housing Assistance';
+                                                    case 'other': return selectedTransaction.referenceDetails.formData.otherAssistanceType || 'Other Assistance';
+                                                    default: return type;
+                                                    }
+                                                })()
+                                                } 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </List>
+                                        </Grid>
+                                    </Grid>
+                                    )}
+                                </Grid>
+                                )}
                             </Grid>
-                            )}
-                          
-                          {/* Resident Feedback Section */}
-                          {selectedTransaction.referenceDetails.residentFeedback && 
-                            (selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined || 
-                            selectedTransaction.referenceDetails.residentFeedback.comments) && (
-                            <Grid item xs={12}>
-                              <Card sx={{ mt: 2, bgcolor: '#f8f9fa' }}>
-                                <CardContent>
-                                  <Typography variant="subtitle2" gutterBottom>
-                                    Your Feedback:
-                                  </Typography>
-                                  {selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined && (
-                                    <Typography variant="body2" sx={{ my: 0.5 }}>
-                                      <strong>Satisfied:</strong> {selectedTransaction.referenceDetails.residentFeedback.satisfied ? 'Yes' : 'No'}
+                            </CardContent>
+                        </Card>
+                        )}
+                    </>
+                    )}
+
+                    {/* Resident Registration Details */}
+                    {selectedTransaction?.serviceType === 'resident_registration' && (
+                    <>
+                        <Grid item xs={12}>
+                        <Box sx={{ 
+                            mt: 2, 
+                            mb: 2, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            backgroundColor: '#f8f9fa', 
+                            p: 1.5, 
+                            borderRadius: '8px',
+                            borderLeft: '4px solid',
+                            borderLeftColor: 'primary.main' 
+                        }}>
+                            <PersonIcon sx={{ mr: 2, color: 'primary.main' }} />
+                            <Typography variant="subtitle1" component="h3">
+                            Resident Registration Information
+                            </Typography>
+                        </Box>
+                        </Grid>
+                        
+                        {selectedTransaction.details && (
+                        <Card variant="outlined" sx={{ borderRadius: '8px', mb: 2, width: '100%' }}>
+                            <CardContent sx={{ px: 2, py: 2 }}>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                <List dense disablePadding>
+                                    {selectedTransaction.referenceDetails?.serviceId && (
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                        primary="Service ID" 
+                                        secondary={selectedTransaction.referenceDetails.serviceId} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                    </ListItem>
+                                    )}
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Full Name" 
+                                        secondary={`${selectedTransaction.details.firstName} ${selectedTransaction.details.middleName ? selectedTransaction.details.middleName + ' ' : ''}${selectedTransaction.details.lastName}`} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Address" 
+                                        secondary={selectedTransaction.details.address} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                </List>
+                                </Grid>
+                                
+                                {selectedTransaction.referenceDetails && (
+                                <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                        primary="Contact Number" 
+                                        secondary={selectedTransaction.referenceDetails.contactNumber || 'N/A'} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                        primary="Email" 
+                                        secondary={selectedTransaction.referenceDetails.email || 'N/A'} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                        primary="Precinct Level" 
+                                        secondary={selectedTransaction.referenceDetails.precinctLevel || 'N/A'} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                    </ListItem>
+                                    </List>
+                                </Grid>
+                                )}
+                                
+                                {selectedTransaction.referenceDetails && (
+                                <Grid item xs={12}>
+                                    <Divider sx={{ my: 2 }} />
+                                    <Typography variant="subtitle2" gutterBottom>
+                                    Registration Status
                                     </Typography>
-                                  )}
-                                  {selectedTransaction.referenceDetails.residentFeedback.comments && (
-                                    <Typography variant="body2" sx={{ my: 0.5 }}>
-                                      <strong>Comments:</strong> {selectedTransaction.referenceDetails.residentFeedback.comments}
-                                    </Typography>
-                                  )}
-                                </CardContent>
-                              </Card>
+                                    
+                                    <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                        <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                            primary="Registration Status" 
+                                            secondary={
+                                                <Chip 
+                                                size="small"
+                                                label={selectedTransaction.referenceDetails.isVerified ? 'Verified' : 'Pending Verification'}
+                                                color={selectedTransaction.referenceDetails.isVerified ? 'success' : 'warning'}
+                                                sx={{ mt: 0.5 }}
+                                                />
+                                            }
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                            primary="Voter Status" 
+                                            secondary={selectedTransaction.referenceDetails.isVoter ? 'Yes' : 'No'} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                        </ListItem>
+                                        </List>
+                                    </Grid>
+                                    
+                                    {selectedTransaction.referenceDetails.types && selectedTransaction.referenceDetails.types.length > 0 && (
+                                        <Grid item xs={12} sm={6}>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                            primary="Categories" 
+                                            secondary={
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                                                {selectedTransaction.referenceDetails.types.map((type, index) => (
+                                                    <Chip 
+                                                    key={index}
+                                                    size="small"
+                                                    label={type}
+                                                    color="primary"
+                                                    variant="outlined"
+                                                    />
+                                                ))}
+                                                </Box>
+                                            }
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            />
+                                        </ListItem>
+                                        </Grid>
+                                    )}
+                                    </Grid>
+                                </Grid>
+                                )}
                             </Grid>
-                          )}
-                          
-                          {/* Display attached media if available */}
-                          {selectedTransaction.referenceDetails.mediaUrls && 
-                          selectedTransaction.referenceDetails.mediaUrls.length > 0 && (
-                            <Grid item xs={12}>
-                              <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
-                                Attached Media:
-                              </Typography>
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                {selectedTransaction.referenceDetails.mediaUrls.map((url, index) => (
-                                  <Box 
-                                    key={index}
-                                    component="a" 
-                                    href={`http://localhost:3002${url}`} 
+                            </CardContent>
+                        </Card>
+                        )}
+                    </>
+                    )}
+
+                    {/* Project Proposal Details */}
+                    {selectedTransaction?.serviceType === 'project_proposal' && (
+                    <>
+                        <Grid item xs={12}>
+                        <Box sx={{ 
+                            mt: 2, 
+                            mb: 2, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            backgroundColor: '#f8f9fa', 
+                            p: 1.5, 
+                            borderRadius: '8px',
+                            borderLeft: '4px solid',
+                            borderLeftColor: 'primary.main' 
+                        }}>
+                            <InfoIcon sx={{ mr: 2, color: 'primary.main' }} />
+                            <Typography variant="subtitle1" component="h3">
+                            Project Proposal Information
+                            </Typography>
+                        </Box>
+                        </Grid>
+                        
+                        {selectedTransaction.referenceDetails && (
+                        <Card variant="outlined" sx={{ borderRadius: '8px', mb: 2, width: '100%' }}>
+                            <CardContent sx={{ px: 2, py: 2 }}>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                <List dense disablePadding>
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Proposal ID" 
+                                        secondary={
+                                        selectedTransaction.referenceDetails?.serviceId || 
+                                        selectedTransaction.details?.serviceId || 
+                                        'N/A'
+                                        } 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Submitter" 
+                                        secondary={selectedTransaction.referenceDetails.fullName} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Contact" 
+                                        secondary={selectedTransaction.referenceDetails.contactNumber}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Email" 
+                                        secondary={selectedTransaction.referenceDetails.email}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                </List>
+                                </Grid>
+                                
+                                <Grid item xs={12} sm={6}>
+                                <List dense disablePadding>
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Project Title" 
+                                        secondary={selectedTransaction.referenceDetails.projectTitle || selectedTransaction.details?.projectTitle || 'N/A'}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <EventIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Submitted Date" 
+                                        secondary={formatDate(selectedTransaction.referenceDetails.createdAt)}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Status" 
+                                        secondary={
+                                        (() => {
+                                            const status = selectedTransaction.referenceDetails.status;
+                                            switch(status) {
+                                            case 'pending': return 'Pending';
+                                            case 'in_review': return 'In Review';
+                                            case 'considered': return 'Considered';
+                                            case 'approved': return 'Approved';
+                                            case 'rejected': return 'Rejected';
+                                            default: return status.replace('_', ' ');
+                                            }
+                                        })()
+                                        }
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                </List>
+                                
+                                {selectedTransaction.referenceDetails.documentPath && (
+                                    <Button
+                                    variant="outlined"
+                                    size="small"
+                                    startIcon={<FileIcon />}
+                                    component={Link}
+                                    href={`http://localhost:3002${selectedTransaction.referenceDetails.documentPath}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    sx={{ 
-                                      border: '1px solid #ddd',
-                                      padding: '5px',
-                                      borderRadius: '4px'
-                                    }}
-                                  >
-                                    <Typography variant="body2">View Attachment {index + 1}</Typography>
-                                  </Box>
-                                ))}
-                              </Box>
+                                    sx={{ mt: 2 }}
+                                    >
+                                    View Proposal Document
+                                    </Button>
+                                )}
+                                </Grid>
+                                
+                                <Grid item xs={12}>
+                                <Divider sx={{ my: 2 }} />
+                                <Typography variant="body2" color="text.secondary" gutterBottom>
+                                    Project Description
+                                </Typography>
+                                <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f9f9f9' }}>
+                                    <Typography variant="body1" style={{ whiteSpace: 'pre-line' }}>
+                                    {selectedTransaction.referenceDetails.description}
+                                    </Typography>
+                                </Paper>
+                                </Grid>
                             </Grid>
-                          )}
-                        </>
-                      )}
+                            </CardContent>
+                        </Card>
+                        )}
                     </>
-                  )}
+                    )}
+
+                    {/* Infrastructure Report Details */}
+                    {selectedTransaction?.serviceType === 'infrastructure_report' && (
+                    <>
+                        <Grid item xs={12}>
+                        <Box sx={{ 
+                            mt: 2, 
+                            mb: 2, 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            backgroundColor: '#f8f9fa', 
+                            p: 1.5, 
+                            borderRadius: '8px',
+                            borderLeft: '4px solid',
+                            borderLeftColor: 'primary.main' 
+                        }}>
+                            <InfoIcon sx={{ mr: 2, color: 'primary.main' }} />
+                            <Typography variant="subtitle1" component="h3">
+                            Infrastructure Report Information
+                            </Typography>
+                        </Box>
+                        </Grid>
+                        
+                        {selectedTransaction.referenceDetails && (
+                        <Card variant="outlined" sx={{ borderRadius: '8px', mb: 2, width: '100%' }}>
+                            <CardContent sx={{ px: 2, py: 2 }}>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                <List dense disablePadding>
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Report ID" 
+                                        secondary={selectedTransaction.referenceDetails?.serviceId || 'N/A'} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Reported By" 
+                                        secondary={selectedTransaction.referenceDetails.fullName} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Contact Number" 
+                                        secondary={selectedTransaction.referenceDetails.contactNumber}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <EventIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Date Observed" 
+                                        secondary={formatDate(selectedTransaction.referenceDetails.dateObserved)}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                </List>
+                                </Grid>
+                                
+                                <Grid item xs={12} sm={6}>
+                                <List dense disablePadding>
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Issue Type" 
+                                        secondary={selectedTransaction.referenceDetails.issueType || selectedTransaction.details?.issueType || 'N/A'}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Location" 
+                                        secondary={selectedTransaction.referenceDetails.location}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Nearest Landmark" 
+                                        secondary={selectedTransaction.referenceDetails.nearestLandmark}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                        primary="Status" 
+                                        secondary={selectedTransaction.referenceDetails.status}
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                    </ListItem>
+                                </List>
+                                </Grid>
+                                
+                                <Grid item xs={12}>
+                                <Divider sx={{ my: 2 }} />
+                                <Typography variant="body2" color="text.secondary" gutterBottom>
+                                    Description
+                                </Typography>
+                                <Typography variant="body1" paragraph sx={{ pl: 1 }}>
+                                    {selectedTransaction.referenceDetails.description}
+                                </Typography>
+                                
+                                {selectedTransaction.referenceDetails.additionalComments && (
+                                    <Box sx={{ mt: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                                        Additional Comments
+                                    </Typography>
+                                    <Typography variant="body1" paragraph sx={{ pl: 1 }}>
+                                        {selectedTransaction.referenceDetails.additionalComments}
+                                    </Typography>
+                                    </Box>
+                                )}
+                                </Grid>
+                                
+                                {/* Admin Comments Section */}
+                                {selectedTransaction.referenceDetails.adminComments && (
+                                <Grid item xs={12}>
+                                    <Card sx={{ mt: 1, bgcolor: '#f0f7ff', borderRadius: '8px', boxShadow: 'none', border: '1px solid #e1f0ff' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', p: 2, bgcolor: '#e1f0ff', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'primary.main', mr: 1 }} />
+                                        <Typography variant="subtitle2">
+                                        Admin Comments
+                                        </Typography>
+                                    </Box>
+                                    <CardContent>
+                                        <Typography variant="body1">
+                                        {selectedTransaction.referenceDetails.adminComments}
+                                        </Typography>
+                                    </CardContent>
+                                    </Card>
+                                </Grid>
+                                )}
+                                
+                                {/* Resident Feedback Section */}
+                                {selectedTransaction.referenceDetails.residentFeedback && 
+                                (selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined || 
+                                selectedTransaction.referenceDetails.residentFeedback.comments) && (
+                                <Grid item xs={12}>
+                                    <Card sx={{ mt: 2, bgcolor: '#f8f9fa', borderRadius: '8px', boxShadow: 'none', border: '1px solid #eeeeee' }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', p: 2, bgcolor: '#f0f0f0', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+                                        <ReplyIcon fontSize="small" sx={{ color: 'success.main', mr: 1 }} />
+                                        <Typography variant="subtitle2">
+                                        Your Feedback
+                                        </Typography>
+                                    </Box>
+                                    <CardContent>
+                                        {selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined && (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                            <Typography variant="body2" sx={{ mr: 1, color: 'text.secondary', minWidth: 100 }}>
+                                            Satisfaction:
+                                            </Typography>
+                                            <Chip 
+                                            size="small" 
+                                            color={selectedTransaction.referenceDetails.residentFeedback.satisfied ? "success" : "error"}
+                                            label={selectedTransaction.referenceDetails.residentFeedback.satisfied ? "Satisfied" : "Not Satisfied"}
+                                            />
+                                        </Box>
+                                        )}
+                                        
+                                        {selectedTransaction.referenceDetails.residentFeedback.comments && (
+                                        <Box>
+                                            <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.5 }}>
+                                            Comments:
+                                            </Typography>
+                                            <Typography variant="body1" sx={{ pl: 2 }}>
+                                            {selectedTransaction.referenceDetails.residentFeedback.comments}
+                                            </Typography>
+                                        </Box>
+                                        )}
+                                    </CardContent>
+                                    </Card>
+                                </Grid>
+                                )}
+                                
+                                {/* Display attached media if available */}
+                                {selectedTransaction.referenceDetails.mediaUrls && 
+                                selectedTransaction.referenceDetails.mediaUrls.length > 0 && (
+                                <Grid item xs={12}>
+                                    <Box sx={{ mt: 2, border: '1px dashed #ccc', borderRadius: '8px', p: 2 }}>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                        <FileIcon fontSize="small" sx={{ color: 'primary.main', mr: 1 }} />
+                                        <Typography variant="subtitle2">
+                                        Attached Media ({selectedTransaction.referenceDetails.mediaUrls.length})
+                                        </Typography>
+                                    </Box>
+                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                        {selectedTransaction.referenceDetails.mediaUrls.map((url, index) => (
+                                        <Button
+                                            key={index}
+                                            component="a" 
+                                            href={`http://localhost:3002${url}`} 
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            variant="outlined"
+                                            size="small"
+                                            startIcon={<FileIcon />}
+                                        >
+                                            Attachment {index + 1}
+                                        </Button>
+                                        ))}
+                                    </Box>
+                                    </Box>
+                                </Grid>
+                                )}
+                            </Grid>
+                            </CardContent>
+                        </Card>
+                        )}
+                    </>
+                    )}
                   
                   {/* Admin Comments Section */}
                     {selectedTransaction.adminComment && (
@@ -2604,46 +3493,55 @@ const ResidentTransaction = () => {
                 
                 {/* Ambulance Booking Details */}
                 {selectedTransaction.serviceType === 'ambulance_booking' && (
-                  <>
+                <>
                     <Grid item xs={12}>
-                        <Box sx={{ 
-                            mt: 2, 
-                            mb: 2, 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            backgroundColor: '#f8f9fa', 
-                            p: 1.5, 
-                            borderRadius: '8px',
-                            borderLeft: '4px solid',
-                            borderLeftColor: 'primary.main' 
-                        }}>
-                            <HospitalIcon sx={{ mr: 2, color: 'primary.main' }} />
-                            <Typography variant="subtitle1" component="h3">
-                            Ambulance Booking Information
-                            </Typography>
-                        </Box>
-                        </Grid>
+                    <Box sx={{ 
+                        mt: 2, 
+                        mb: 2, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        backgroundColor: '#f8f9fa', 
+                        p: 1.5, 
+                        borderRadius: '8px',
+                        borderLeft: '4px solid',
+                        borderLeftColor: 'primary.main' 
+                    }}>
+                        <HospitalIcon sx={{ mr: 2, color: 'primary.main' }} />
+                        <Typography variant="subtitle1" component="h3">
+                        Ambulance Booking Information
+                        </Typography>
+                    </Box>
+                    </Grid>
                     
-                    {selectedTransaction.serviceType === 'ambulance_booking' && selectedTransaction.referenceDetails && (
-                      <Typography variant="body2" sx={{ my: 0.5 }}>
-                        <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId || 'N/A'}
-                      </Typography>
-                    )}
-                    
-                    {/* From referenceDetails - more comprehensive information */}
                     {selectedTransaction.referenceDetails && (
-                      <>
-                        <Grid item xs={12} sm={6}>
-                          <ListItem sx={{ px: 0, py: 0.75 }}>
-                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
-                            <ListItemText 
-                                primary="Patient Name" 
-                                secondary={selectedTransaction.referenceDetails.patientName} 
-                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
-                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
-                            />
-                            </ListItem>
-                          <ListItem sx={{ px: 0, py: 0.75 }}>
+                    <Card variant="outlined" sx={{ borderRadius: '8px', mb: 2, width: '100%' }}>
+                        <CardContent sx={{ px: 2, py: 2 }}>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12} sm={6}>
+                            <List dense disablePadding>
+                                {selectedTransaction.referenceDetails.serviceId && (
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                    primary="Service ID" 
+                                    secondary={selectedTransaction.referenceDetails.serviceId} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                </ListItem>
+                                )}
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Patient Name" 
+                                    secondary={selectedTransaction.referenceDetails.patientName} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
                                 <EventIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
                                 <ListItemText 
                                     primary="Pickup Date" 
@@ -2651,815 +3549,1681 @@ const ResidentTransaction = () => {
                                     primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
                                     secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
                                 />
-                            </ListItem>
-                          <Typography variant="body2" sx={{ my: 0.5 }}>
-                            <TimeIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                            <strong>Pickup Time:</strong> {selectedTransaction.referenceDetails.pickupTime}
-                          </Typography>
-                          <Typography variant="body2" sx={{ my: 0.5 }}>
-                            <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                            <strong>Duration:</strong> {selectedTransaction.referenceDetails.duration}
-                          </Typography>
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <TimeIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Pickup Time" 
+                                    secondary={selectedTransaction.referenceDetails.pickupTime} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Duration" 
+                                    secondary={selectedTransaction.referenceDetails.duration} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                            </List>
+                            </Grid>
+                            
+                            <Grid item xs={12} sm={6}>
+                            <List dense disablePadding>
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Pickup Address" 
+                                    secondary={selectedTransaction.referenceDetails.pickupAddress} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Destination" 
+                                    secondary={selectedTransaction.referenceDetails.destination} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Contact Number" 
+                                    secondary={selectedTransaction.referenceDetails.contactNumber} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Submitter Relation" 
+                                    secondary={selectedTransaction.referenceDetails.submitterRelation} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Diesel Cost Required" 
+                                    secondary={selectedTransaction.details?.dieselCost ? 'Yes' : 'No'} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                            </List>
+                            </Grid>
+                            
+                            {/* Additional Details Section */}
+                            {(selectedTransaction.referenceDetails.emergencyDetails || 
+                            selectedTransaction.referenceDetails.additionalNote) && (
+                            <Grid item xs={12}>
+                                <Divider sx={{ my: 2 }} />
+                                
+                                {selectedTransaction.referenceDetails.emergencyDetails && (
+                                <Box sx={{ mb: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                                    Emergency Details
+                                    </Typography>
+                                    <Paper variant="outlined" sx={{ p: 2, bgcolor: '#fff9f0' }}>
+                                    <Typography variant="body1">
+                                        {selectedTransaction.referenceDetails.emergencyDetails}
+                                    </Typography>
+                                    </Paper>
+                                </Box>
+                                )}
+                                
+                                {selectedTransaction.referenceDetails.additionalNote && (
+                                <Box sx={{ mt: 2 }}>
+                                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                                    Additional Notes
+                                    </Typography>
+                                    <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f9f9f9' }}>
+                                    <Typography variant="body1">
+                                        {selectedTransaction.referenceDetails.additionalNote}
+                                    </Typography>
+                                    </Paper>
+                                </Box>
+                                )}
+                            </Grid>
+                            )}
                         </Grid>
-                        
-                        <Grid item xs={12} sm={6}>
-                          <Typography variant="body2" sx={{ my: 0.5 }}>
-                            <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                            <strong>Pickup Address:</strong> {selectedTransaction.referenceDetails.pickupAddress}
-                          </Typography>
-                          <Typography variant="body2" sx={{ my: 0.5 }}>
-                            <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                            <strong>Destination:</strong> {selectedTransaction.referenceDetails.destination}
-                          </Typography>
-                          <Typography variant="body2" sx={{ my: 0.5 }}>
-                            <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                            <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
-                          </Typography>
-                          <Typography variant="body2" sx={{ my: 0.5 }}>
-                            <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                            <strong>Submitter Relation:</strong> {selectedTransaction.referenceDetails.submitterRelation}
-                          </Typography>
-                        </Grid>
-                        
-                        <Grid item xs={12}>
-                          <Typography variant="body2" sx={{ my: 0.5 }}>
-                            <strong>Emergency Details:</strong> {selectedTransaction.referenceDetails.emergencyDetails || 'None'}
-                          </Typography>
-                          {selectedTransaction.referenceDetails.additionalNote && (
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                              <strong>Additional Notes:</strong> {selectedTransaction.referenceDetails.additionalNote}
-                            </Typography>
-                          )}
-                          <Typography variant="body2" sx={{ my: 0.5 }}>
-                            <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                            <strong>Diesel Cost Required:</strong> {selectedTransaction.details?.dieselCost ? 'Yes' : 'No'}
-                          </Typography>
-                        </Grid>
-                      </>
+                        </CardContent>
+                    </Card>
                     )}
-                  </>
+                </>
                 )}
                 
                 {/* All other service type sections copied from above */}
                 {/* Court Reservation Details */}
                 {selectedTransaction.serviceType === 'court_reservation' && (
-                  <>
-                    {/* Copy the court reservation section from above */}
+                <>
                     <Grid item xs={12}>
-                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                            Court Reservation Information
+                    <Box sx={{ 
+                        mt: 2, 
+                        mb: 2, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        backgroundColor: '#f8f9fa', 
+                        p: 1.5, 
+                        borderRadius: '8px',
+                        borderLeft: '4px solid',
+                        borderLeftColor: 'primary.main' 
+                    }}>
+                        <EventIcon sx={{ mr: 2, color: 'primary.main' }} />
+                        <Typography variant="subtitle1" component="h3">
+                        Court Reservation Information
                         </Typography>
-                        <Divider />
-                        </Grid>
-                        
-                        {/* From referenceDetails - more comprehensive information */}
-                        {selectedTransaction.referenceDetails && (
-                        <>
+                    </Box>
+                    </Grid>
+                    
+                    {/* From referenceDetails - more comprehensive information */}
+                    {selectedTransaction.referenceDetails && (
+                    <Card variant="outlined" sx={{ borderRadius: '8px', mb: 2, width: '100%' }}>
+                        <CardContent sx={{ px: 2, py: 2 }}>
+                        <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Representative:</strong> {selectedTransaction.referenceDetails.representativeName}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Date:</strong> {formatDate(selectedTransaction.referenceDetails.reservationDate)}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <TimeIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Time:</strong> {selectedTransaction.referenceDetails.startTime}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Duration:</strong> {selectedTransaction.referenceDetails.duration} hours
-                            </Typography>
+                            <List dense disablePadding>
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Service ID" 
+                                    secondary={selectedTransaction.referenceDetails.serviceId || 'N/A'} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Representative" 
+                                    secondary={selectedTransaction.referenceDetails.representativeName} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <EventIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Date" 
+                                    secondary={formatDate(selectedTransaction.referenceDetails.reservationDate)}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <TimeIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Time" 
+                                    secondary={selectedTransaction.referenceDetails.startTime}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Duration" 
+                                    secondary={`${selectedTransaction.referenceDetails.duration} hours`}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                            </List>
                             </Grid>
                             
                             <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Purpose:</strong> {selectedTransaction.referenceDetails.purpose}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Number of People:</strong> {selectedTransaction.referenceDetails.numberOfPeople}
-                            </Typography>
+                            <List dense disablePadding>
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Contact Number" 
+                                    secondary={selectedTransaction.referenceDetails.contactNumber}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Purpose" 
+                                    secondary={selectedTransaction.referenceDetails.purpose}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Number of People" 
+                                    secondary={selectedTransaction.referenceDetails.numberOfPeople}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                            </List>
                             </Grid>
                             
                             {selectedTransaction.referenceDetails.additionalNotes && (
                             <Grid item xs={12}>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Additional Notes:</strong> {selectedTransaction.referenceDetails.additionalNotes}
+                                <Divider sx={{ my: 1 }} />
+                                <Box sx={{ mt: 2 }}>
+                                <Typography variant="body2" color="text.secondary" gutterBottom>
+                                    Additional Notes
                                 </Typography>
+                                <Typography variant="body1" paragraph sx={{ pl: 1 }}>
+                                    {selectedTransaction.referenceDetails.additionalNotes}
+                                </Typography>
+                                </Box>
                             </Grid>
                             )}
-                        </>
-                        )}
-                  </>
+                        </Grid>
+                        </CardContent>
+                    </Card>
+                    )}
+                </>
                 )}
                 
                 {/* Document Request Details */}
                 {selectedTransaction?.serviceType === 'document_request' && (
-                  <>
-                    {/* Copy the document request section from above */}
+                <>
                     <Grid item xs={12}>
-                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                            Document Request Information
+                    <Box sx={{ 
+                        mt: 2, 
+                        mb: 2, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        backgroundColor: '#f8f9fa', 
+                        p: 1.5, 
+                        borderRadius: '8px',
+                        borderLeft: '4px solid',
+                        borderLeftColor: 'primary.main' 
+                    }}>
+                        <FileIcon sx={{ mr: 2, color: 'primary.main' }} />
+                        <Typography variant="subtitle1" component="h3">
+                        Document Request Information
                         </Typography>
-                        <Divider />
-                        </Grid>
-                        
-                        {/* From transaction.details */}
-                        {selectedTransaction.details && (
-                        <>
+                    </Box>
+                    </Grid>
+                    
+                    {selectedTransaction.referenceDetails && (
+                    <Card variant="outlined" sx={{ borderRadius: '8px', mb: 2, width: '100%' }}>
+                        <CardContent sx={{ px: 2, py: 2 }}>
+                        <Grid container spacing={2}>
+                            {/* Document summary - Left column */}
                             <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Document Type:</strong> {
-                                (() => {
-                                    const docType = selectedTransaction.details.documentType;
-                                    switch(docType) {
-                                    case 'barangay_id': return 'Barangay ID';
-                                    case 'barangay_clearance': return 'Barangay Clearance';
-                                    case 'business_clearance': return 'Business Clearance';
-                                    case 'lot_ownership': return 'Lot Ownership';
-                                    case 'digging_permit': return 'Digging Permit';
-                                    case 'fencing_permit': return 'Fencing Permit';
-                                    case 'request_for_assistance': return 'Request for Assistance';
-                                    case 'certificate_of_indigency': return 'Certificate of Indigency';
-                                    case 'certificate_of_residency': return 'Certificate of Residency';
-                                    case 'no_objection_certificate': return 'No Objection Certificate';
-                                    default: return docType;
-                                    }
-                                })()
-                                }
-                            </Typography>
-                            </Grid>
-                        </>
-                        )}
-                        
-                        {/* From referenceDetails - more comprehensive information */}
-                        {selectedTransaction.referenceDetails && (
-                        <>
-                            <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Service ID:</strong> {selectedTransaction.referenceDetails.serviceId || 'N/A'}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Purpose:</strong> {
-                                selectedTransaction.referenceDetails.documentType === 'digging_permit' && 
-                                selectedTransaction.referenceDetails.formData && 
-                                selectedTransaction.referenceDetails.formData.diggingPurpose
-                                    ? (() => {
-                                        const purpose = selectedTransaction.referenceDetails.formData.diggingPurpose;
-                                        switch(purpose) {
-                                        case 'water_supply': return 'Water Supply Connection';
-                                        case 'electrical': return 'Electrical Connection';
-                                        case 'drainage': return 'Drainage System';
-                                        case 'other': return 'Other';
-                                        default: return purpose;
-                                        }
-                                    })()
-                                    : selectedTransaction.referenceDetails.purpose
-                                }
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Status:</strong> {
-                                (() => {
-                                    const status = selectedTransaction.referenceDetails.status;
-                                    switch(status) {
-                                    case 'pending': return 'Pending';
-                                    case 'in_progress': return 'In Progress';
-                                    case 'completed': return 'Completed';
-                                    case 'rejected': return 'Rejected';
-                                    case 'cancelled': return 'Cancelled';
-                                    default: return status.replace('_', ' ');
-                                    }
-                                })()
-                                }
-                            </Typography>
-                            </Grid>
-                            
-                            {/* Display different fields based on document type */}
-                            {selectedTransaction.referenceDetails.documentType === 'certificate_of_residency' && (
-                            <>
-                                <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Age:</strong> {selectedTransaction.referenceDetails.formData.age}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address} Barangay Maahas, Los Baños, Laguna
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Date of Birth:</strong> {
-                                    selectedTransaction.referenceDetails.formData.dateOfBirth ? 
-                                    format(new Date(selectedTransaction.referenceDetails.formData.dateOfBirth), 'MMM dd, yyyy') : 
-                                    'N/A'
-                                    }
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Place of Birth:</strong> {selectedTransaction.referenceDetails.formData.placeOfBirth}
-                                </Typography>
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Nationality:</strong> {selectedTransaction.referenceDetails.formData.nationality}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Civil Status:</strong> {selectedTransaction.referenceDetails.formData.civilStatus}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Years of Stay:</strong> {selectedTransaction.referenceDetails.formData.yearsOfStay}
-                                </Typography>
-                                </Grid>
-                            </>
-                            )}
-                            
-                            {/* Barangay Clearance Details */}
-                            {selectedTransaction.referenceDetails.documentType === 'barangay_clearance' && (
-                            <>
-                                <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Gender:</strong> {selectedTransaction.referenceDetails.formData.gender === 'male' ? 'Male' : 'Female'}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030
-                                </Typography>
-                                </Grid>
-                            </>
-                            )}
-                            {/* Lot Ownership Details */}
-                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'lot_ownership' && (
-                            <>
-                                <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>TD Number:</strong> {selectedTransaction.referenceDetails.formData.tdNumber}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Survey Number:</strong> {selectedTransaction.referenceDetails.formData.surveyNumber}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Lot Area:</strong> {selectedTransaction.referenceDetails.formData.lotArea} {
+                            <List dense disablePadding>
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <FileIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Document Type" 
+                                    secondary={
                                     (() => {
-                                        const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
-                                        switch(areaUnit) {
-                                        case 'square_meters': return 'square meters';
-                                        case 'square_feet': return 'square feet';
-                                        case 'hectares': return 'hectares';
-                                        default: return areaUnit;
+                                        const docType = selectedTransaction.details?.documentType;
+                                        switch(docType) {
+                                        case 'barangay_id': return 'Barangay ID';
+                                        case 'barangay_clearance': return 'Barangay Clearance';
+                                        case 'business_clearance': return 'Business Clearance';
+                                        case 'lot_ownership': return 'Lot Ownership';
+                                        case 'digging_permit': return 'Digging Permit';
+                                        case 'fencing_permit': return 'Fencing Permit';
+                                        case 'request_for_assistance': return 'Request for Assistance';
+                                        case 'certificate_of_indigency': return 'Certificate of Indigency';
+                                        case 'certificate_of_residency': return 'Certificate of Residency';
+                                        case 'no_objection_certificate': return 'No Objection Certificate';
+                                        default: return docType;
+                                        }
+                                    })()
+                                    } 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Service ID" 
+                                    secondary={selectedTransaction.referenceDetails.serviceId || 'N/A'} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                            </List>
+                            </Grid>
+                            
+                            {/* Document summary - Right column */}
+                            <Grid item xs={12} sm={6}>
+                            <List dense disablePadding>
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Purpose" 
+                                    secondary={
+                                    selectedTransaction.referenceDetails.documentType === 'digging_permit' && 
+                                    selectedTransaction.referenceDetails.formData && 
+                                    selectedTransaction.referenceDetails.formData.diggingPurpose
+                                        ? (() => {
+                                            const purpose = selectedTransaction.referenceDetails.formData.diggingPurpose;
+                                            switch(purpose) {
+                                            case 'water_supply': return 'Water Supply Connection';
+                                            case 'electrical': return 'Electrical Connection';
+                                            case 'drainage': return 'Drainage System';
+                                            case 'other': return 'Other';
+                                            default: return purpose;
+                                            }
+                                        })()
+                                        : selectedTransaction.referenceDetails.purpose
+                                    }
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Status" 
+                                    secondary={
+                                    (() => {
+                                        const status = selectedTransaction.referenceDetails.status;
+                                        switch(status) {
+                                        case 'pending': return 'Pending';
+                                        case 'in_progress': return 'In Progress';
+                                        case 'completed': return 'Completed';
+                                        case 'rejected': return 'Rejected';
+                                        case 'cancelled': return 'Cancelled';
+                                        default: return status.replace('_', ' ');
                                         }
                                     })()
                                     }
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Property Location:</strong> {selectedTransaction.referenceDetails.formData.lotLocation}, Barangay Maahas, Los Baños, Laguna
-                                </Typography>
-                                </Grid>
-                                
-                                <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Owner Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Owner Address:</strong> {selectedTransaction.referenceDetails.formData.ownerAddress}
-                                </Typography>
-                                </Grid>
-                            </>
-                            )}
-
-                            {/* Barangay ID Details */}
-                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'barangay_id' && (
-                            <>
-                                <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>First Name:</strong> {selectedTransaction.referenceDetails.formData.firstName}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Middle Name:</strong> {selectedTransaction.referenceDetails.formData.middleName || 'N/A'}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Last Name:</strong> {selectedTransaction.referenceDetails.formData.lastName}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
-                                </Typography>
-                                </Grid>
-                                
-                                <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Date of Birth:</strong> {selectedTransaction.referenceDetails.formData.birthDate}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Emergency Contact Name:</strong> {selectedTransaction.referenceDetails.formData.emergencyContactName}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Emergency Contact Number:</strong> {selectedTransaction.referenceDetails.formData.emergencyContactNumber}
-                                </Typography>
-                                </Grid>
-                            </>
-                            )}
-
-                            {/* Fencing Permit Details */}
-                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'fencing_permit' && (
-                                <>
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2">
-                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Residential Address:</strong> {selectedTransaction.referenceDetails.formData.residentAddress}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Property Location:</strong> {selectedTransaction.referenceDetails.formData.propertyLocation}, Barangay Maahas, Los Baños, Laguna
-                                    </Typography>
-                                </Grid>
-                                
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2">
-                                    <strong>Tax Declaration No.:</strong> {selectedTransaction.referenceDetails.formData.taxDeclarationNumber}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Property ID No.:</strong> {selectedTransaction.referenceDetails.formData.propertyIdentificationNumber}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Property Area:</strong> {selectedTransaction.referenceDetails.formData.propertyArea} {
-                                        (() => {
-                                        const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
-                                        switch(areaUnit) {
-                                            case 'square_meters': return 'square meters';
-                                            case 'square_feet': return 'square feet';
-                                            case 'hectares': return 'hectares';
-                                            default: return areaUnit;
-                                        }
-                                        })()
-                                    }
-                                    </Typography>
-                                </Grid>
-                                </>
-                            )}
-        
-                            {/* Digging Permit Details */}
-                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'digging_permit' && (
-                                <>
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2">
-                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
-                                    </Typography>
-                                </Grid>
-                                
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2">
-                                    <strong>Company:</strong> {selectedTransaction.referenceDetails.formData.companyName}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Application Details:</strong> {selectedTransaction.referenceDetails.formData.applicationDetails}
-                                    </Typography>
-                                </Grid>
-                                </>
-                            )}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                            </List>
+                            </Grid>
                             
-                            {/* Business Clearance Details */}
-                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'business_clearance' && (
-                                <>
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2">
-                                    <strong>Business Name:</strong> {selectedTransaction.referenceDetails.formData.businessName}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Business Address:</strong> {selectedTransaction.referenceDetails.formData.businessAddress}, Barangay Maahas, Los Baños, Laguna
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Line of Business:</strong> {selectedTransaction.referenceDetails.formData.lineOfBusiness}
-                                    </Typography>
-                                </Grid>
-                                
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2">
-                                    <strong>Business Status:</strong> {selectedTransaction.referenceDetails.formData.businessStatus}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Amount:</strong> ₱{selectedTransaction.referenceDetails.formData.amount}
-                                    </Typography>
-                                </Grid>
-                                </>
-                            )}
-        
-                            {/* No Objection Certificate Details */}
-                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'no_objection_certificate' && (
-                                <>
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2">
-                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
-                                    </Typography>
-                                </Grid>
-                                
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2">
-                                    <strong>Activity Type:</strong> {
-                                        (() => {
-                                        const objectType = selectedTransaction.referenceDetails.formData.objectType;
-                                        switch(objectType) {
-                                            case 'tree_cutting': return 'Tree Cutting';
-                                            case 'construction': return 'Construction';
-                                            case 'event': return 'Event/Gathering';
-                                            case 'business': return 'Business Operation';
-                                            case 'other': return 'Other Activity';
-                                            default: return objectType;
-                                        }
-                                        })()
-                                    }
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Details:</strong> {selectedTransaction.referenceDetails.formData.objectDetails}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Quantity:</strong> {selectedTransaction.referenceDetails.formData.quantity}
-                                    </Typography>
-                                    {selectedTransaction.referenceDetails.formData.objectType === 'other' && (
-                                    <Typography variant="body2">
-                                        <strong>Additional Info:</strong> {selectedTransaction.referenceDetails.formData.additionalInfo}
-                                    </Typography>
-                                    )}
-                                </Grid>
-                                </>
-                            )}
-        
-                            {/* Request for Assistance Details */}
-                            {selectedTransaction.referenceDetails && selectedTransaction.referenceDetails.documentType === 'request_for_assistance' && (
-                                <>
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2">
-                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Years of Stay:</strong> {selectedTransaction.referenceDetails.formData.yearsOfStay}
-                                    </Typography>
-                                    <Typography variant="body2">
-                                    <strong>Marginalized Group:</strong> {
-                                        (() => {
-                                        const group = selectedTransaction.referenceDetails.formData.marginGroupType;
-                                        switch(group) {
-                                            case 'urban_poor': return 'Urban Poor';
-                                            case 'senior_citizen': return 'Senior Citizen';
-                                            case 'single_parent': return 'Single Parent';
-                                            case 'pwd': return 'Person with Disability (PWD)';
-                                            case 'indigenous': return 'Indigenous Person';
-                                            case 'solo_parent': return 'Solo Parent';
-                                            case 'other': return 'Other';
-                                            default: return group;
-                                        }
-                                        })()
-                                    }
-                                    </Typography>
-                                </Grid>
-                                
-                                <Grid item xs={12} sm={6}>
-                                    <Typography variant="body2">
-                                    <strong>Request For:</strong> {selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'}
-                                    </Typography>
-                                    {!selectedTransaction.referenceDetails.formData.isSelf && (
-                                    <>
-                                        <Typography variant="body2">
-                                        <strong>Beneficiary Name:</strong> {selectedTransaction.referenceDetails.formData.beneficiaryName}
-                                        </Typography>
-                                        <Typography variant="body2">
-                                        <strong>Relationship:</strong> {selectedTransaction.referenceDetails.formData.beneficiaryRelation}
-                                        </Typography>
-                                    </>
-                                    )}
-                                    <Typography variant="body2">
-                                    <strong>Assistance Type:</strong> {
-                                        (() => {
-                                        const type = selectedTransaction.referenceDetails.formData.assistanceType;
-                                        switch(type) {
-                                            case 'financial': return 'Financial Assistance';
-                                            case 'medical': return 'Medical Assistance';
-                                            case 'burial': return 'Burial Assistance';
-                                            case 'educational': return 'Educational Assistance';
-                                            case 'food': return 'Food Assistance';
-                                            case 'housing': return 'Housing Assistance';
-                                            case 'other': return selectedTransaction.referenceDetails.formData.otherAssistanceType || 'Other Assistance';
-                                            default: return type;
-                                        }
-                                        })()
-                                    }
-                                    </Typography>
-                                </Grid>
-                                </>
-                            )}
-                            {/* Certificate of Indigency Details */}
-                            {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (
-                            <>
-                                <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Full Name:</strong> {selectedTransaction.referenceDetails.formData.fullName}
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Age:</strong> {selectedTransaction.referenceDetails.formData.age} years old
-                                </Typography>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Address:</strong> {selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030
-                                </Typography>
-                                </Grid>
-                                
-                                <Grid item xs={12} sm={6}>
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Certificate For:</strong> {selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'}
+                            {/* Document Type-specific Sections */}
+                            {selectedTransaction.referenceDetails.documentType && (
+                            <Grid item xs={12}>
+                                <Divider sx={{ my: 2 }} />
+                                <Typography variant="subtitle2" gutterBottom sx={{ mb: 2 }}>
+                                Document Details
                                 </Typography>
                                 
-                                {!selectedTransaction.referenceDetails.formData.isSelf ? (
-                                    <>
-                                    <Typography variant="body2" sx={{ my: 0.5 }}>
-                                        <strong>Recipient:</strong> {selectedTransaction.referenceDetails.formData.guardian}
-                                    </Typography>
-                                    <Typography variant="body2" sx={{ my: 0.5 }}>
-                                        <strong>Relationship:</strong> {selectedTransaction.referenceDetails.formData.guardianRelation}
-                                    </Typography>
-                                    </>
-                                ) : (
-                                    <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Recipient:</strong> Self (Same as applicant)
-                                    </Typography>
+                                {/* Certificate of Residency */}
+                                {selectedTransaction.referenceDetails.documentType === 'certificate_of_residency' && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Full Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Age" 
+                                            secondary={selectedTransaction.referenceDetails.formData.age} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Address" 
+                                            secondary={`${selectedTransaction.referenceDetails.formData.address} Barangay Maahas, Los Baños, Laguna`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <EventIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Date of Birth" 
+                                            secondary={
+                                            selectedTransaction.referenceDetails.formData.dateOfBirth ? 
+                                            format(new Date(selectedTransaction.referenceDetails.formData.dateOfBirth), 'MMM dd, yyyy') : 
+                                            'N/A'
+                                            } 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Place of Birth" 
+                                            secondary={selectedTransaction.referenceDetails.formData.placeOfBirth} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                    
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Nationality" 
+                                            secondary={selectedTransaction.referenceDetails.formData.nationality} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Civil Status" 
+                                            secondary={selectedTransaction.referenceDetails.formData.civilStatus} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Years of Stay" 
+                                            secondary={selectedTransaction.referenceDetails.formData.yearsOfStay} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                </Grid>
                                 )}
                                 
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                    <strong>Purpose:</strong> {selectedTransaction.referenceDetails.purpose}
-                                </Typography>
+                                {/* Barangay Clearance */}
+                                {selectedTransaction.referenceDetails.documentType === 'barangay_clearance' && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Full Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Gender" 
+                                            secondary={selectedTransaction.referenceDetails.formData.gender === 'male' ? 'Male' : 'Female'} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Address" 
+                                            secondary={`${selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
                                 </Grid>
-                            </>
+                                )}
+                                
+                                {/* Continue with other document types in similar format */}
+                                {/* Lot Ownership */}
+                                {selectedTransaction.referenceDetails.documentType === 'lot_ownership' && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="TD Number" 
+                                            secondary={selectedTransaction.referenceDetails.formData.tdNumber} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Survey Number" 
+                                            secondary={selectedTransaction.referenceDetails.formData.surveyNumber} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Lot Area" 
+                                            secondary={`${selectedTransaction.referenceDetails.formData.lotArea} ${
+                                            (() => {
+                                                const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
+                                                switch(areaUnit) {
+                                                case 'square_meters': return 'square meters';
+                                                case 'square_feet': return 'square feet';
+                                                case 'hectares': return 'hectares';
+                                                default: return areaUnit;
+                                                }
+                                            })()
+                                            }`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Property Location" 
+                                            secondary={`${selectedTransaction.referenceDetails.formData.lotLocation}, Barangay Maahas, Los Baños, Laguna`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                    
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Owner Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Owner Address" 
+                                            secondary={selectedTransaction.referenceDetails.formData.ownerAddress} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                </Grid>
+                                )}
+                                
+                                {/* Barangay ID */}
+                                {selectedTransaction.referenceDetails.documentType === 'barangay_id' && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="First Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.firstName} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Middle Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.middleName || 'N/A'} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Last Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.lastName} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Address" 
+                                            secondary={`${selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                    
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <EventIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Date of Birth" 
+                                            secondary={selectedTransaction.referenceDetails.formData.birthDate} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Emergency Contact Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.emergencyContactName} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Emergency Contact Number" 
+                                            secondary={selectedTransaction.referenceDetails.formData.emergencyContactNumber} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                </Grid>
+                                )}
+
+                                {/* Certificate of Indigency */}
+                                {selectedTransaction.referenceDetails.documentType === 'certificate_of_indigency' && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Full Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Age" 
+                                            secondary={`${selectedTransaction.referenceDetails.formData.age} years old`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Address" 
+                                            secondary={`${selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna 4030`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                    
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Certificate For" 
+                                            secondary={selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        {!selectedTransaction.referenceDetails.formData.isSelf ? (
+                                        <>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Recipient" 
+                                                secondary={selectedTransaction.referenceDetails.formData.guardian} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Relationship" 
+                                                secondary={selectedTransaction.referenceDetails.formData.guardianRelation} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </>
+                                        ) : (
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                            primary="Recipient" 
+                                            secondary="Self (Same as applicant)" 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                        </ListItem>
+                                        )}
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Purpose" 
+                                            secondary={selectedTransaction.referenceDetails.purpose} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                </Grid>
+                                )}
+
+                                {/* Fencing Permit */}
+                                {selectedTransaction.referenceDetails.documentType === 'fencing_permit' && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Full Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Residential Address" 
+                                            secondary={selectedTransaction.referenceDetails.formData.residentAddress} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Property Location" 
+                                            secondary={`${selectedTransaction.referenceDetails.formData.propertyLocation}, Barangay Maahas, Los Baños, Laguna`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                    
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Tax Declaration No." 
+                                            secondary={selectedTransaction.referenceDetails.formData.taxDeclarationNumber} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Property ID No." 
+                                            secondary={selectedTransaction.referenceDetails.formData.propertyIdentificationNumber} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Property Area" 
+                                            secondary={`${selectedTransaction.referenceDetails.formData.propertyArea} ${
+                                            (() => {
+                                                const areaUnit = selectedTransaction.referenceDetails.formData.areaUnit;
+                                                switch(areaUnit) {
+                                                case 'square_meters': return 'square meters';
+                                                case 'square_feet': return 'square feet';
+                                                case 'hectares': return 'hectares';
+                                                default: return areaUnit;
+                                                }
+                                            })()
+                                            }`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                </Grid>
+                                )}
+
+                                {/* Digging Permit */}
+                                {selectedTransaction.referenceDetails.documentType === 'digging_permit' && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Full Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Address" 
+                                            secondary={`${selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                    
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Company" 
+                                            secondary={selectedTransaction.referenceDetails.formData.companyName} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Application Details" 
+                                            secondary={selectedTransaction.referenceDetails.formData.applicationDetails} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                </Grid>
+                                )}
+
+                                {/* Business Clearance */}
+                                {selectedTransaction.referenceDetails.documentType === 'business_clearance' && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Business Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.businessName} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Business Address" 
+                                            secondary={`${selectedTransaction.referenceDetails.formData.businessAddress}, Barangay Maahas, Los Baños, Laguna`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Line of Business" 
+                                            secondary={selectedTransaction.referenceDetails.formData.lineOfBusiness} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                    
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Business Status" 
+                                            secondary={selectedTransaction.referenceDetails.formData.businessStatus} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Amount" 
+                                            secondary={`₱${selectedTransaction.referenceDetails.formData.amount}`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                </Grid>
+                                )}
+
+                                {/* No Objection Certificate */}
+                                {selectedTransaction.referenceDetails.documentType === 'no_objection_certificate' && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Full Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Address" 
+                                            secondary={`${selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                    
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Activity Type" 
+                                            secondary={
+                                            (() => {
+                                                const objectType = selectedTransaction.referenceDetails.formData.objectType;
+                                                switch(objectType) {
+                                                case 'tree_cutting': return 'Tree Cutting';
+                                                case 'construction': return 'Construction';
+                                                case 'event': return 'Event/Gathering';
+                                                case 'business': return 'Business Operation';
+                                                case 'other': return 'Other Activity';
+                                                default: return objectType;
+                                                }
+                                            })()
+                                            } 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Details" 
+                                            secondary={selectedTransaction.referenceDetails.formData.objectDetails} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Quantity" 
+                                            secondary={selectedTransaction.referenceDetails.formData.quantity} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        {selectedTransaction.referenceDetails.formData.objectType === 'other' && (
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                            primary="Additional Info" 
+                                            secondary={selectedTransaction.referenceDetails.formData.additionalInfo} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                        </ListItem>
+                                        )}
+                                    </List>
+                                    </Grid>
+                                </Grid>
+                                )}
+
+                                {/* Request for Assistance */}
+                                {selectedTransaction.referenceDetails.documentType === 'request_for_assistance' && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Full Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.fullName} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Address" 
+                                            secondary={`${selectedTransaction.referenceDetails.formData.address}, Barangay Maahas, Los Baños, Laguna`} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Years of Stay" 
+                                            secondary={selectedTransaction.referenceDetails.formData.yearsOfStay} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Marginalized Group" 
+                                            secondary={
+                                            (() => {
+                                                const group = selectedTransaction.referenceDetails.formData.marginGroupType;
+                                                switch(group) {
+                                                case 'urban_poor': return 'Urban Poor';
+                                                case 'senior_citizen': return 'Senior Citizen';
+                                                case 'single_parent': return 'Single Parent';
+                                                case 'pwd': return 'Person with Disability (PWD)';
+                                                case 'indigenous': return 'Indigenous Person';
+                                                case 'solo_parent': return 'Solo Parent';
+                                                case 'other': return 'Other';
+                                                default: return group;
+                                                }
+                                            })()
+                                            } 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                    
+                                    <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Request For" 
+                                            secondary={selectedTransaction.referenceDetails.formData.isSelf ? 'Self' : 'Other Person'} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        {!selectedTransaction.referenceDetails.formData.isSelf && (
+                                        <>
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Beneficiary Name" 
+                                                secondary={selectedTransaction.referenceDetails.formData.beneficiaryName} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                            
+                                            <ListItem sx={{ px: 0, py: 0.75 }}>
+                                            <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                            <ListItemText 
+                                                primary="Relationship" 
+                                                secondary={selectedTransaction.referenceDetails.formData.beneficiaryRelation} 
+                                                primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                            />
+                                            </ListItem>
+                                        </>
+                                        )}
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Assistance Type" 
+                                            secondary={
+                                            (() => {
+                                                const type = selectedTransaction.referenceDetails.formData.assistanceType;
+                                                switch(type) {
+                                                case 'financial': return 'Financial Assistance';
+                                                case 'medical': return 'Medical Assistance';
+                                                case 'burial': return 'Burial Assistance';
+                                                case 'educational': return 'Educational Assistance';
+                                                case 'food': return 'Food Assistance';
+                                                case 'housing': return 'Housing Assistance';
+                                                case 'other': return selectedTransaction.referenceDetails.formData.otherAssistanceType || 'Other Assistance';
+                                                default: return type;
+                                                }
+                                            })()
+                                            } 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                    </List>
+                                    </Grid>
+                                </Grid>
+                                )}
+                            </Grid>
                             )}
-                        </>
-                        )}
-                    </>
+                        </Grid>
+                        </CardContent>
+                    </Card>
                     )}
+                </>
+                )}
                 
                 {/* Resident Registration Details */}
                 {selectedTransaction?.serviceType === 'resident_registration' && (
-                  <>
-                    {/* Copy the resident registration section from above */}
+                <>
                     <Grid item xs={12}>
-                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                            Resident Registration Information
+                    <Box sx={{ 
+                        mt: 2, 
+                        mb: 2, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        backgroundColor: '#f8f9fa', 
+                        p: 1.5, 
+                        borderRadius: '8px',
+                        borderLeft: '4px solid',
+                        borderLeftColor: 'primary.main' 
+                    }}>
+                        <PersonIcon sx={{ mr: 2, color: 'primary.main' }} />
+                        <Typography variant="subtitle1" component="h3">
+                        Resident Registration Information
                         </Typography>
-                        <Divider />
-                        </Grid>
-                        
-                        {/* From transaction.details */}
-                        {selectedTransaction.details && (
-                        <>
+                    </Box>
+                    </Grid>
+                    
+                    {selectedTransaction.details && (
+                    <Card variant="outlined" sx={{ borderRadius: '8px', mb: 2, width: '100%' }}>
+                        <CardContent sx={{ px: 2, py: 2 }}>
+                        <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Service ID:</strong> {selectedTransaction.referenceDetails?.serviceId || 'N/A'}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Name:</strong> {`${selectedTransaction.details.firstName} ${selectedTransaction.details.middleName ? selectedTransaction.details.middleName + ' ' : ''}${selectedTransaction.details.lastName}`}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Address:</strong> {selectedTransaction.details.address}
-                            </Typography>
-                            </Grid>
-                        </>
-                        )}
-                        
-                        {/* From referenceDetails - more comprehensive information */}
-                        {selectedTransaction.referenceDetails && (
-                        <>
-                            <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber || 'N/A'}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Email:</strong> {selectedTransaction.referenceDetails.email || 'N/A'}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Precinct Level:</strong> {selectedTransaction.referenceDetails.precinctLevel || 'N/A'}
-                            </Typography>
+                            <List dense disablePadding>
+                                {selectedTransaction.referenceDetails?.serviceId && (
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                    primary="Service ID" 
+                                    secondary={selectedTransaction.referenceDetails.serviceId} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                </ListItem>
+                                )}
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Full Name" 
+                                    secondary={`${selectedTransaction.details.firstName} ${selectedTransaction.details.middleName ? selectedTransaction.details.middleName + ' ' : ''}${selectedTransaction.details.lastName}`} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Address" 
+                                    secondary={selectedTransaction.details.address} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                            </List>
                             </Grid>
                             
-                            <Grid item xs={12}>
-                            {selectedTransaction.referenceDetails.types && selectedTransaction.referenceDetails.types.length > 0 && (
-                                <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Categories:</strong> {selectedTransaction.referenceDetails.types.join(', ')}
-                                </Typography>
-                            )}
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Voter:</strong> {selectedTransaction.referenceDetails.isVoter ? 'Yes' : 'No'}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Status:</strong> {selectedTransaction.referenceDetails.isVerified ? 'Verified' : 'Pending Verification'}
-                            </Typography>
+                            {selectedTransaction.referenceDetails && (
+                            <Grid item xs={12} sm={6}>
+                                <List dense disablePadding>
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                    primary="Contact Number" 
+                                    secondary={selectedTransaction.referenceDetails.contactNumber || 'N/A'} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                    primary="Email" 
+                                    secondary={selectedTransaction.referenceDetails.email || 'N/A'} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                    <ListItemText 
+                                    primary="Precinct Level" 
+                                    secondary={selectedTransaction.referenceDetails.precinctLevel || 'N/A'} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                    />
+                                </ListItem>
+                                </List>
                             </Grid>
-                        </>
-                        )}
-                  </>
+                            )}
+                            
+                            {selectedTransaction.referenceDetails && (
+                            <Grid item xs={12}>
+                                <Divider sx={{ my: 2 }} />
+                                <Typography variant="subtitle2" gutterBottom>
+                                Registration Status
+                                </Typography>
+                                
+                                <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                    <List dense disablePadding>
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                        primary="Registration Status" 
+                                        secondary={
+                                            <Chip 
+                                            size="small"
+                                            label={selectedTransaction.referenceDetails.isVerified ? 'Verified' : 'Pending Verification'}
+                                            color={selectedTransaction.referenceDetails.isVerified ? 'success' : 'warning'}
+                                            sx={{ mt: 0.5 }}
+                                            />
+                                        }
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        />
+                                    </ListItem>
+                                    
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                        primary="Voter Status" 
+                                        secondary={selectedTransaction.referenceDetails.isVoter ? 'Yes' : 'No'} 
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                    </ListItem>
+                                    </List>
+                                </Grid>
+                                
+                                {selectedTransaction.referenceDetails.types && selectedTransaction.referenceDetails.types.length > 0 && (
+                                    <Grid item xs={12} sm={6}>
+                                    <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                        primary="Categories" 
+                                        secondary={
+                                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                                            {selectedTransaction.referenceDetails.types.map((type, index) => (
+                                                <Chip 
+                                                key={index}
+                                                size="small"
+                                                label={type}
+                                                color="primary"
+                                                variant="outlined"
+                                                />
+                                            ))}
+                                            </Box>
+                                        }
+                                        primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                        />
+                                    </ListItem>
+                                    </Grid>
+                                )}
+                                </Grid>
+                            </Grid>
+                            )}
+                        </Grid>
+                        </CardContent>
+                    </Card>
+                    )}
+                </>
                 )}
                 
                 {/* Project Proposal Details */}
                 {selectedTransaction?.serviceType === 'project_proposal' && (
-                  <>
-                    {/* Copy the project proposal section from above */}
+                <>
                     <Grid item xs={12}>
-                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                            Project Proposal Information
+                    <Box sx={{ 
+                        mt: 2, 
+                        mb: 2, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        backgroundColor: '#f8f9fa', 
+                        p: 1.5, 
+                        borderRadius: '8px',
+                        borderLeft: '4px solid',
+                        borderLeftColor: 'primary.main' 
+                    }}>
+                        <InfoIcon sx={{ mr: 2, color: 'primary.main' }} />
+                        <Typography variant="subtitle1" component="h3">
+                        Project Proposal Information
                         </Typography>
-                        <Divider />
-                        </Grid>
-                        
-                        <Grid item xs={12}>
-                        <Typography variant="body2" sx={{ my: 0.5 }}>
-                            <strong>Proposal ID:</strong> {
-                            selectedTransaction.referenceDetails?.serviceId || 
-                            selectedTransaction.details?.serviceId || 
-                            'N/A'
-                            }
-                        </Typography>
-                        </Grid>
-
-                        {/* From transaction.details */}
-                        {selectedTransaction.details && (
-                        <>
+                    </Box>
+                    </Grid>
+                    
+                    {selectedTransaction.referenceDetails && (
+                    <Card variant="outlined" sx={{ borderRadius: '8px', mb: 2, width: '100%' }}>
+                        <CardContent sx={{ px: 2, py: 2 }}>
+                        <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Project Title:</strong> {selectedTransaction.details.projectTitle || 'N/A'}
-                            </Typography>
-                            </Grid>
-                        </>
-                        )}
-                        
-                        {/* From referenceDetails - more comprehensive information */}
-                        {selectedTransaction.referenceDetails && (
-                        <>
-                            <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Submitter:</strong> {selectedTransaction.referenceDetails.fullName}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Contact:</strong> {selectedTransaction.referenceDetails.contactNumber}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Email:</strong> {selectedTransaction.referenceDetails.email}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Submitted:</strong> {formatDate(selectedTransaction.referenceDetails.createdAt)}
-                            </Typography>
+                            <List dense disablePadding>
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Proposal ID" 
+                                    secondary={
+                                    selectedTransaction.referenceDetails?.serviceId || 
+                                    selectedTransaction.details?.serviceId || 
+                                    'N/A'
+                                    } 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Submitter" 
+                                    secondary={selectedTransaction.referenceDetails.fullName} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Contact" 
+                                    secondary={selectedTransaction.referenceDetails.contactNumber}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Email" 
+                                    secondary={selectedTransaction.referenceDetails.email}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                            </List>
                             </Grid>
                             
                             <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Project Title:</strong> {selectedTransaction.referenceDetails.projectTitle}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Status:</strong> {
-                                (() => {
-                                    const status = selectedTransaction.referenceDetails.status;
-                                    switch(status) {
-                                    case 'pending': return 'Pending';
-                                    case 'in_review': return 'In Review';
-                                    case 'considered': return 'Considered';
-                                    case 'approved': return 'Approved';
-                                    case 'rejected': return 'Rejected';
-                                    default: return status.replace('_', ' ');
+                            <List dense disablePadding>
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Project Title" 
+                                    secondary={selectedTransaction.referenceDetails.projectTitle || selectedTransaction.details?.projectTitle || 'N/A'}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <EventIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Submitted Date" 
+                                    secondary={formatDate(selectedTransaction.referenceDetails.createdAt)}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Status" 
+                                    secondary={
+                                    (() => {
+                                        const status = selectedTransaction.referenceDetails.status;
+                                        switch(status) {
+                                        case 'pending': return 'Pending';
+                                        case 'in_review': return 'In Review';
+                                        case 'considered': return 'Considered';
+                                        case 'approved': return 'Approved';
+                                        case 'rejected': return 'Rejected';
+                                        default: return status.replace('_', ' ');
+                                        }
+                                    })()
                                     }
-                                })()
-                                }
-                            </Typography>
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                            </List>
+                            
                             {selectedTransaction.referenceDetails.documentPath && (
-                                <Typography variant="body2" sx={{ mt: 1 }}>
-                                <FileIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <Link 
-                                    href={`http://localhost:3002${selectedTransaction.referenceDetails.documentPath}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<FileIcon />}
+                                component={Link}
+                                href={`http://localhost:3002${selectedTransaction.referenceDetails.documentPath}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                sx={{ mt: 2 }}
                                 >
-                                    View Proposal Document
-                                </Link>
-                                </Typography>
+                                View Proposal Document
+                                </Button>
                             )}
                             </Grid>
                             
                             <Grid item xs={12}>
-                            <Typography variant="body2" sx={{ mt: 1, mb: 1 }}>
-                                <strong>Project Description:</strong>
+                            <Divider sx={{ my: 2 }} />
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                                Project Description
                             </Typography>
                             <Paper variant="outlined" sx={{ p: 2, bgcolor: '#f9f9f9' }}>
-                                <Typography variant="body2" style={{ whiteSpace: 'pre-line' }}>
+                                <Typography variant="body1" style={{ whiteSpace: 'pre-line' }}>
                                 {selectedTransaction.referenceDetails.description}
                                 </Typography>
                             </Paper>
                             </Grid>
-                        </>
-                        )}
-                  </>
+                        </Grid>
+                        </CardContent>
+                    </Card>
+                    )}
+                </>
                 )}
                 
                 {/* Infrastructure Report Details */}
                 {selectedTransaction?.serviceType === 'infrastructure_report' && (
-                  <>
-                    {/* Copy the infrastructure report section from above */}
+                <>
                     <Grid item xs={12}>
-                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>
-                            Infrastructure Report Information
+                    <Box sx={{ 
+                        mt: 2, 
+                        mb: 2, 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        backgroundColor: '#f8f9fa', 
+                        p: 1.5, 
+                        borderRadius: '8px',
+                        borderLeft: '4px solid',
+                        borderLeftColor: 'primary.main' 
+                    }}>
+                        <InfoIcon sx={{ mr: 2, color: 'primary.main' }} />
+                        <Typography variant="subtitle1" component="h3">
+                        Infrastructure Report Information
                         </Typography>
-                        <Divider />
-                        </Grid>
-                        
-                        {/* From transaction.details */}
-                        {selectedTransaction.details && (
-                        <>
+                    </Box>
+                    </Grid>
+                    
+                    {selectedTransaction.referenceDetails && (
+                    <Card variant="outlined" sx={{ borderRadius: '8px', mb: 2, width: '100%' }}>
+                        <CardContent sx={{ px: 2, py: 2 }}>
+                        <Grid container spacing={2}>
                             <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Report ID:</strong> {selectedTransaction.referenceDetails?.serviceId || 'N/A'}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Issue Type:</strong> {selectedTransaction.details.issueType || 'N/A'}
-                            </Typography>
-                            </Grid>
-                        </>
-                        )}
-                        
-                        {/* From referenceDetails - more comprehensive information */}
-                        {selectedTransaction.referenceDetails && (
-                        <>
-                            <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <PersonIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Reported By:</strong> {selectedTransaction.referenceDetails.fullName}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <PhoneIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Contact Number:</strong> {selectedTransaction.referenceDetails.contactNumber}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <EventIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Date Observed:</strong> {formatDate(selectedTransaction.referenceDetails.dateObserved)}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <InfoIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Issue Type:</strong> {selectedTransaction.referenceDetails.issueType}
-                            </Typography>
+                            <List dense disablePadding>
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Report ID" 
+                                    secondary={selectedTransaction.referenceDetails?.serviceId || 'N/A'} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Reported By" 
+                                    secondary={selectedTransaction.referenceDetails.fullName} 
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <PhoneIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Contact Number" 
+                                    secondary={selectedTransaction.referenceDetails.contactNumber}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <EventIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Date Observed" 
+                                    secondary={formatDate(selectedTransaction.referenceDetails.dateObserved)}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                            </List>
                             </Grid>
                             
                             <Grid item xs={12} sm={6}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Location:</strong> {selectedTransaction.referenceDetails.location}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <LocationIcon fontSize="small" sx={{ verticalAlign: 'middle', mr: 1 }} />
-                                <strong>Nearest Landmark:</strong> {selectedTransaction.referenceDetails.nearestLandmark}
-                            </Typography>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Status:</strong> {selectedTransaction.referenceDetails.status}
-                            </Typography>
+                            <List dense disablePadding>
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Issue Type" 
+                                    secondary={selectedTransaction.referenceDetails.issueType || selectedTransaction.details?.issueType || 'N/A'}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary', fontWeight: 500 }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Location" 
+                                    secondary={selectedTransaction.referenceDetails.location}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <LocationIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Nearest Landmark" 
+                                    secondary={selectedTransaction.referenceDetails.nearestLandmark}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                                
+                                <ListItem sx={{ px: 0, py: 0.75 }}>
+                                <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                <ListItemText 
+                                    primary="Status" 
+                                    secondary={selectedTransaction.referenceDetails.status}
+                                    primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                    secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                />
+                                </ListItem>
+                            </List>
                             </Grid>
                             
                             <Grid item xs={12}>
-                            <Typography variant="body2" sx={{ my: 0.5 }}>
-                                <strong>Description:</strong> {selectedTransaction.referenceDetails.description}
+                            <Divider sx={{ my: 2 }} />
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                                Description
                             </Typography>
+                            <Typography variant="body1" paragraph sx={{ pl: 1 }}>
+                                {selectedTransaction.referenceDetails.description}
+                            </Typography>
+                            
                             {selectedTransaction.referenceDetails.additionalComments && (
-                                <Typography variant="body2" sx={{ mt: 1 }}>
-                                <strong>Additional Comments:</strong> {selectedTransaction.referenceDetails.additionalComments}
+                                <Box sx={{ mt: 2 }}>
+                                <Typography variant="body2" color="text.secondary" gutterBottom>
+                                    Additional Comments
                                 </Typography>
+                                <Typography variant="body1" paragraph sx={{ pl: 1 }}>
+                                    {selectedTransaction.referenceDetails.additionalComments}
+                                </Typography>
+                                </Box>
                             )}
                             </Grid>
                             
                             {/* Admin Comments Section */}
                             {selectedTransaction.referenceDetails.adminComments && (
                             <Grid item xs={12}>
-                                <Typography variant="body2" sx={{ mt: 1 }}>
-                                <strong>Admin Comments:</strong> {selectedTransaction.referenceDetails.adminComments}
-                                </Typography>
+                                <Card sx={{ mt: 1, bgcolor: '#f0f7ff', borderRadius: '8px', boxShadow: 'none', border: '1px solid #e1f0ff' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', p: 2, bgcolor: '#e1f0ff', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+                                    <InfoIcon fontSize="small" sx={{ color: 'primary.main', mr: 1 }} />
+                                    <Typography variant="subtitle2">
+                                    Admin Comments
+                                    </Typography>
+                                </Box>
+                                <CardContent>
+                                    <Typography variant="body1">
+                                    {selectedTransaction.referenceDetails.adminComments}
+                                    </Typography>
+                                </CardContent>
+                                </Card>
                             </Grid>
                             )}
                             
@@ -3468,20 +5232,36 @@ const ResidentTransaction = () => {
                             (selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined || 
                             selectedTransaction.referenceDetails.residentFeedback.comments) && (
                             <Grid item xs={12}>
-                                <Card sx={{ mt: 2, bgcolor: '#f8f9fa' }}>
+                                <Card sx={{ mt: 2, bgcolor: '#f8f9fa', borderRadius: '8px', boxShadow: 'none', border: '1px solid #eeeeee' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', p: 2, bgcolor: '#f0f0f0', borderTopLeftRadius: '8px', borderTopRightRadius: '8px' }}>
+                                    <ReplyIcon fontSize="small" sx={{ color: 'success.main', mr: 1 }} />
+                                    <Typography variant="subtitle2">
+                                    Your Feedback
+                                    </Typography>
+                                </Box>
                                 <CardContent>
-                                    <Typography variant="subtitle2" gutterBottom>
-                                    Your Feedback:
-                                    </Typography>
                                     {selectedTransaction.referenceDetails.residentFeedback.satisfied !== undefined && (
-                                    <Typography variant="body2" sx={{ my: 0.5 }}>
-                                        <strong>Satisfied:</strong> {selectedTransaction.referenceDetails.residentFeedback.satisfied ? 'Yes' : 'No'}
-                                    </Typography>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                                        <Typography variant="body2" sx={{ mr: 1, color: 'text.secondary', minWidth: 100 }}>
+                                        Satisfaction:
+                                        </Typography>
+                                        <Chip 
+                                        size="small" 
+                                        color={selectedTransaction.referenceDetails.residentFeedback.satisfied ? "success" : "error"}
+                                        label={selectedTransaction.referenceDetails.residentFeedback.satisfied ? "Satisfied" : "Not Satisfied"}
+                                        />
+                                    </Box>
                                     )}
+                                    
                                     {selectedTransaction.referenceDetails.residentFeedback.comments && (
-                                    <Typography variant="body2" sx={{ my: 0.5 }}>
-                                        <strong>Comments:</strong> {selectedTransaction.referenceDetails.residentFeedback.comments}
-                                    </Typography>
+                                    <Box>
+                                        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 0.5 }}>
+                                        Comments:
+                                        </Typography>
+                                        <Typography variant="body1" sx={{ pl: 2 }}>
+                                        {selectedTransaction.referenceDetails.residentFeedback.comments}
+                                        </Typography>
+                                    </Box>
                                     )}
                                 </CardContent>
                                 </Card>
@@ -3492,32 +5272,37 @@ const ResidentTransaction = () => {
                             {selectedTransaction.referenceDetails.mediaUrls && 
                             selectedTransaction.referenceDetails.mediaUrls.length > 0 && (
                             <Grid item xs={12}>
-                                <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
-                                Attached Media:
-                                </Typography>
+                                <Box sx={{ mt: 2, border: '1px dashed #ccc', borderRadius: '8px', p: 2 }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                                    <FileIcon fontSize="small" sx={{ color: 'primary.main', mr: 1 }} />
+                                    <Typography variant="subtitle2">
+                                    Attached Media ({selectedTransaction.referenceDetails.mediaUrls.length})
+                                    </Typography>
+                                </Box>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                {selectedTransaction.referenceDetails.mediaUrls.map((url, index) => (
-                                    <Box 
-                                    key={index}
-                                    component="a" 
-                                    href={`http://localhost:3002${url}`} 
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    sx={{ 
-                                        border: '1px solid #ddd',
-                                        padding: '5px',
-                                        borderRadius: '4px'
-                                    }}
+                                    {selectedTransaction.referenceDetails.mediaUrls.map((url, index) => (
+                                    <Button
+                                        key={index}
+                                        component="a" 
+                                        href={`http://localhost:3002${url}`} 
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        variant="outlined"
+                                        size="small"
+                                        startIcon={<FileIcon />}
                                     >
-                                    <Typography variant="body2">View Attachment {index + 1}</Typography>
-                                    </Box>
-                                ))}
+                                        Attachment {index + 1}
+                                    </Button>
+                                    ))}
+                                </Box>
                                 </Box>
                             </Grid>
                             )}
-                        </>
-                        )}
-                  </>
+                        </Grid>
+                        </CardContent>
+                    </Card>
+                    )}
+                </>
                 )}
                 
                 {/* Admin Comments Section */}
