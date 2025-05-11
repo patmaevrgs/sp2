@@ -3558,12 +3558,12 @@ const ResidentTransaction = () => {
         <Table>
           <TableHead>
             <TableRow sx={{ backgroundColor: 'primary.main' }}>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Service</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Service ID</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Date</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Details</TableCell>
-              <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '15%' }}>Service</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '11%' }}>Service ID</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '13%' }}>Date</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '15%' }}>Status</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '26%' }}>Details</TableCell>
+              <TableCell sx={{ color: 'white', fontWeight: 'bold', width: '20%' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -3571,8 +3571,8 @@ const ResidentTransaction = () => {
               <TableRow 
                 key={transaction._id}
                 sx={{ 
-                  backgroundColor: index % 2 === 0 ? 'background.paper' : '#f9f9ff',
-                  '&:hover': { backgroundColor: '#f0f4ff' },
+                  backgroundColor: index % 2 === 0 ? 'background.paper' : 'background.lightgrey',
+                  '&:hover': { backgroundColor: 'background.yellow' },
                   transition: 'background-color 0.2s'
                 }}
               >
@@ -3592,7 +3592,7 @@ const ResidentTransaction = () => {
                       size="small" 
                       label="Action Required" 
                       color="secondary" 
-                      sx={{ ml: 1, mt: 1 }}
+                      sx={{ ml: 0, mt: 1 }}
                       variant="outlined"
                     />
                   )}
@@ -3688,36 +3688,39 @@ const ResidentTransaction = () => {
                   )}
                 </TableCell>
 
-                <TableCell>
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    onClick={() => handleViewDetails(transaction._id)}
-                    sx={{ mr: 1 }}
-                  >
-                    View
-                  </Button>
-                  {needsDieselResponse(transaction) && (
+                <TableCell sx={{ minWidth: '180px' }}>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                     <Button
                       size="small"
                       variant="outlined"
-                      color="secondary"
-                      onClick={() => handleRespondToDiesel(transaction)}
-                      sx={{ mr: 1 }}
+                      onClick={() => handleViewDetails(transaction._id)}
+                      sx={{ minWidth: '75px', width: '75px' }} // Fixed width for all buttons
                     >
-                      Respond
+                      View
                     </Button>
-                  )}
-                  {canCancel(transaction) && (
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleCancelRequest(transaction)}
-                    >
-                      Cancel
-                    </Button>
-                  )}
+                    {needsDieselResponse(transaction) && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="secondary"
+                        onClick={() => handleRespondToDiesel(transaction)}
+                        sx={{ minWidth: '75px', width: '75px' }} // Fixed width for all buttons
+                      >
+                        Respond
+                      </Button>
+                    )}
+                    {canCancel(transaction) && (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="error"
+                        onClick={() => handleCancelRequest(transaction)}
+                        sx={{ minWidth: '75px', width: '75px' }} // Fixed width for all buttons
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}

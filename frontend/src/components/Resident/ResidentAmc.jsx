@@ -426,7 +426,7 @@ const ResidentAmbulance = () => {
       <Typography variant="h4" gutterBottom>
         Ambulance Service
       </Typography>
-      <Box sx={{ mb: 4 }} />
+      
       <Paper 
         elevation={3} 
         sx={{ 
@@ -677,10 +677,6 @@ const ResidentAmbulance = () => {
                   required 
                   error={!!errors.duration}
                   size="small"
-                  sx={{ 
-                  '& .MuiInputBase-root': {
-                    minWidth: '180px' // Adjust this value as needed
-                  }}}
                 >
                   <InputLabel>Estimated Duration</InputLabel>
                   <Select
@@ -732,7 +728,7 @@ const ResidentAmbulance = () => {
                   required
                   error={!!errors.destination}
                   helperText={errors.destination || "Hospital name or complete address"}
-                  placeholder="e.g., Healthserv Hospital, etc."
+                  placeholder="e.g., Los Baños Doctors Hospital, UP Health Service, etc."
                   InputLabelProps={{ shrink: true }}
                   InputProps={{
                     startAdornment: (
@@ -742,10 +738,6 @@ const ResidentAmbulance = () => {
                     ),
                   }}
                   size="small"
-                  sx={{ 
-                  '& .MuiInputBase-root': {
-                    minWidth: '270px' // Adjust this value as needed
-                  }}}
                 />
               </Grid>
             </Grid>
@@ -817,10 +809,6 @@ const ResidentAmbulance = () => {
                     ),
                   }}
                   size="small"
-                  sx={{ 
-                  '& .MuiInputBase-root': {
-                    minWidth: '250px' // Adjust this value as needed
-                  }}}
                 />
               </Grid>
             </Grid>
