@@ -567,6 +567,10 @@ const ResidentAmbulance = () => {
                   InputLabelProps={{ shrink: true }}
                   placeholder="Enter patient's complete name"
                   size="small"
+                  sx={{ 
+                  '& .MuiInputBase-root': {
+                    minWidth: '250px' // Adjust this value as needed
+                  }}}
                 />
               </Grid>
               
@@ -580,9 +584,13 @@ const ResidentAmbulance = () => {
                   required
                   error={!!errors.submitterRelation}
                   helperText={errors.submitterRelation}
-                  placeholder="e.g., Self, Parent, Spouse, Child, etc."
+                  placeholder="e.g., Self, Parent, etc."
                   InputLabelProps={{ shrink: true }}
                   size="small"
+                  sx={{ 
+                  '& .MuiInputBase-root': {
+                    minWidth: '210px' // Adjust this value as needed
+                  }}}
                 />
               </Grid>
               

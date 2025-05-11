@@ -40,9 +40,6 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import InputAdornment from '@mui/material/InputAdornment';
-import InfoIcon from '@mui/icons-material/Info';
-import PhoneIcon from '@mui/icons-material/Phone';
 import { format, parseISO, isAfter, addHours, isBefore, startOfDay } from 'date-fns';
 
 function ResidentCourt() {
@@ -404,8 +401,8 @@ function ResidentCourt() {
       <Typography variant="h4" gutterBottom>
         Court Reservation
       </Typography>
-      <Box sx={{ mb: 4 }} />
-      {/* <Grid container spacing={3}> */}
+      
+      <Grid container spacing={3}>
         {/* Booking Form */}
         <Grid item xs={12} md={6}>
           <Paper
@@ -453,7 +450,7 @@ function ResidentCourt() {
                 size="small"
               />
               
-              <Grid container spacing={2} sx={{ mt: 1 }}>
+              <Grid container spacing={2} sx={{ mt: 0.5 }}>
                 <Grid item xs={12} sm={6}>
                   <DatePicker
                     label="Reservation Date *"
@@ -473,7 +470,7 @@ function ResidentCourt() {
                   />
                 </Grid>
               </Grid>
-              <Grid container spacing={2} sx={{ mt: 2.5 }}>
+              <Grid container spacing={2} sx={{ mt: 0.5 }}>
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth required size="small">
                     <InputLabel id="duration-label">Duration</InputLabel>
@@ -514,7 +511,7 @@ function ResidentCourt() {
                   />
                 </Grid>
               </Grid>
-              <Box sx={{ mb: 0.5 }} />
+              
               <FormControl fullWidth margin="dense" required size="small">
                 <InputLabel id="purpose-label">Purpose of Reservation</InputLabel>
                 <Select
@@ -672,12 +669,11 @@ function ResidentCourt() {
             startIcon={<CalendarMonthIcon />}
             onClick={toggleCalendar}
             size="small"
-            sx={{ mt: 3 }}
+            sx={{ mt: 2 }}
           >
             {showCalendar ? 'Hide Availability Calendar' : 'View Availability Calendar'}
           </Button>
         </Grid>
-        <Box sx={{ mb: 3 }} />
         {/* Calendar Section */}
         <Grid item xs={12} md={6}>
           {showCalendar ? (
@@ -806,6 +802,7 @@ function ResidentCourt() {
                       </Typography>
                       <Typography variant="body2">
                         • Basketball court with standard markings<br />
+                        • Volleyball court setup (upon request)<br />
                         • Basic seating for spectators<br />
                         • Lighting system for night games<br />
                         • Public restrooms nearby
@@ -817,7 +814,7 @@ function ResidentCourt() {
             </Paper>
           )}
         </Grid>
-      {/* </Grid> */}
+      </Grid>
       {/* Dialogs */}
       {/* Confirmation Dialog */}
       <Dialog
@@ -917,6 +914,7 @@ function ResidentCourt() {
             <Typography variant="body2" component="ul" sx={{ pl: 2 }}>
               <li>Switch between Month, Week, and Day views using the buttons in the top-right</li>
               <li>Navigate between dates using the prev/next buttons</li>
+              <li>Click on an event to see more details</li>
               <li>Look for open time slots when planning your reservation</li>
             </Typography>
           </Box>
