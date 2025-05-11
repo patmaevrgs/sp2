@@ -87,7 +87,6 @@ function ResidentProposal() {
   const [description, setDescription] = useState('');
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   
   // My Proposals state
   const [proposals, setProposals] = useState([]);
@@ -206,12 +205,6 @@ function ResidentProposal() {
       return;
     }
     
-    // If validation passes, open confirmation dialog
-    setOpenConfirmDialog(true);
-  };
-  
-  // Handle confirmed submission
-  const confirmSubmit = async () => {
     setLoading(true);
     
     try {
@@ -262,9 +255,8 @@ function ResidentProposal() {
         severity: 'success'
       });
       
-      // Close the confirmation dialog
-      setOpenConfirmDialog(false);
-      
+      // Switch to My Proposals tab
+      setTabValue(1);
     } catch (error) {
       console.error('Error submitting proposal:', error);
       setSnackbar({
@@ -276,7 +268,7 @@ function ResidentProposal() {
       setLoading(false);
     }
   };
-
+  
   // View proposal details
   const handleViewProposal = (proposal) => {
     setSelectedProposal(proposal);
@@ -439,7 +431,6 @@ function ResidentProposal() {
               Proposer Information
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <Box sx={{ mb: 3 }} />
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
                 <TextField
@@ -460,10 +451,6 @@ function ResidentProposal() {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ 
-                  '& .MuiInputBase-root': {
-                    minWidth: '250px' // Adjust this value as needed
-                  }}}
                 />
               </Grid>
               <Grid item xs={12} md={6}>
@@ -501,7 +488,7 @@ function ResidentProposal() {
                   size="small"
                   error={!!formErrors.email}
                   helperText={formErrors.email}
-                  placeholder="e.g., email@example.com"
+                  placeholder="e.g., yourname@example.com"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -509,10 +496,6 @@ function ResidentProposal() {
                       </InputAdornment>
                     ),
                   }}
-                  sx={{ 
-                  '& .MuiInputBase-root': {
-                    minWidth: '240px' // Adjust this value as needed
-                  }}}
                 />
               </Grid>
             </Grid>
@@ -523,7 +506,6 @@ function ResidentProposal() {
               Project Details
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <Box sx={{ mb: 3 }} />
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <TextField
@@ -580,7 +562,6 @@ function ResidentProposal() {
               Project Plan Document
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <Box sx={{ mb: 2 }} />
             <Box sx={{ mb: 1 }}>
               <Button
                 variant="outlined"
@@ -739,11 +720,11 @@ function ResidentProposal() {
           </Typography>
         </Box>
         
-        <Typography variant="body2" paragraph sx={{ mb: 3, textAlign: 'center' }}>
+        <Typography variant="body2" paragraph sx={{ mb: 3 }}>
           A well-crafted project proposal significantly increases your chances of receiving approval and funding. Please follow these guidelines to create an effective proposal:
         </Typography>
         
-        <Grid container spacing={3} sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
             <Box 
               sx={{ 
@@ -846,6 +827,56 @@ function ResidentProposal() {
             </Box>
           </Grid>
           
+          <Grid item xs={12} md={4}>
+            <Box 
+              sx={{ 
+                p: 2.5,
+                border: '1px solid',
+                borderColor: 'divider',
+                borderRadius: 1,
+                height: '100%',
+                backgroundColor: 'background.paper'
+              }}
+            >
+              <Typography variant="subtitle2" color="primary.main" gutterBottom sx={{ pb: 1, borderBottom: '1px dashed', borderColor: 'divider' }}>
+                Impact Statement
+              </Typography>
+              <List dense disablePadding>
+                <ListItem sx={{ py: 1, px: 0 }}>
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    <CheckCircleIcon color="primary" fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Explain how the project addresses a specific community need"
+                  />
+                </ListItem>
+                <ListItem sx={{ py: 1, px: 0 }}>
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    <CheckCircleIcon color="primary" fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Describe the immediate and long-term benefits to residents"
+                  />
+                </ListItem>
+                <ListItem sx={{ py: 1, px: 0 }}>
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    <CheckCircleIcon color="primary" fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Consider potential environmental or social impacts"
+                  />
+                </ListItem>
+                <ListItem sx={{ py: 1, px: 0 }}>
+                  <ListItemIcon sx={{ minWidth: 32 }}>
+                    <CheckCircleIcon color="primary" fontSize="small" />
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Address sustainability and maintenance after implementation"
+                  />
+                </ListItem>
+              </List>
+            </Box>
+          </Grid>
         </Grid>
       </Paper>
 
@@ -870,13 +901,13 @@ function ResidentProposal() {
           </Typography>
         </Box>
         
-        <Typography variant="body2" paragraph sx={{ mb: 3, textAlign: 'center' }}>
+        <Typography variant="body2" paragraph sx={{ mb: 3 }}>
           Looking for inspiration? Here are some project categories and example ideas that could benefit our barangay:
         </Typography>
         
-        <Grid container spacing={3} sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Grid container spacing={3}>
           {/* Health & Wellness */}
-          <Grid item xs={12} sm={6} md={4} sx={{ width: '45%' }}>
+          <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ 
               height: '100%',
               display: 'flex',
@@ -884,13 +915,13 @@ function ResidentProposal() {
               border: '1px solid',
               borderColor: 'divider',
               borderRadius: 1,
-              overflow: 'hidden',
+              overflow: 'hidden'
             }}>
               <Box sx={{ 
                 p: 1.5, 
                 bgcolor: 'error.lighter', 
                 display: 'flex', 
-                alignItems: 'center',
+                alignItems: 'center'
               }}>
                 <LocalHospitalIcon sx={{ color: 'error.main', mr: 1, fontSize: 20 }} />
                 <Typography variant="subtitle2">Health & Wellness</Typography>
@@ -933,7 +964,7 @@ function ResidentProposal() {
           </Grid>
           
           {/* Environment & Sustainability */}
-          <Grid item xs={12} sm={6} md={4} sx={{ width: '45%' }}>
+          <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ 
               height: '100%',
               display: 'flex',
@@ -990,7 +1021,7 @@ function ResidentProposal() {
           </Grid>
           
           {/* Education & Skills */}
-          <Grid item xs={12} sm={6} md={4} sx={{ width: '45%' }}>
+          <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ 
               height: '100%',
               display: 'flex',
@@ -1047,7 +1078,7 @@ function ResidentProposal() {
           </Grid>
           
           {/* Infrastructure & Facilities */}
-          <Grid item xs={12} sm={6} md={4} sx={{ width: '45%' }}>
+          <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ 
               height: '100%',
               display: 'flex',
@@ -1104,7 +1135,7 @@ function ResidentProposal() {
           </Grid>
           
           {/* Community & Culture */}
-          <Grid item xs={12} sm={6} md={4} sx={{ width: '45%' }}>
+          <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ 
               height: '100%',
               display: 'flex',
@@ -1161,7 +1192,7 @@ function ResidentProposal() {
           </Grid>
           
           {/* Safety & Emergency */}
-          <Grid item xs={12} sm={6} md={4} sx={{ width: '45%' }}>
+          <Grid item xs={12} sm={6} md={4}>
             <Box sx={{ 
               height: '100%',
               display: 'flex',
@@ -1280,9 +1311,9 @@ function ResidentProposal() {
                 </Typography>
               </AccordionDetails>
             </Accordion>
-          {/* </Grid> */}
+          </Grid>
           
-          {/* <Grid item xs={12} md={6}> */}
+          <Grid item xs={12} md={6}>
             <Accordion disableGutters elevation={0} sx={{ mb: 1, border: '1px solid', borderColor: 'divider', '&:before': { display: 'none' } }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="body2" sx={{ fontWeight: 500 }}>Can I submit multiple proposals?</Typography>
@@ -1325,6 +1356,337 @@ function ResidentProposal() {
         </Grid>
       </Paper>
       
+      {/* Process Timeline Section */}
+      {/* Process Timeline Section - Cleaner Organization */}
+      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            mb: 3,
+            pb: 1,
+            borderBottom: '1px solid',
+            borderColor: 'divider'
+          }}
+        >
+          <TimelineIcon sx={{ mr: 1.5, color: 'primary.main', fontSize: 20 }} />
+          <Typography 
+            variant="subtitle1" 
+            sx={{ fontWeight: 600 }}
+          >
+            Proposal Review Process
+          </Typography>
+        </Box>
+        
+        <Typography variant="body2" paragraph sx={{ mb: 3 }}>
+          Understanding the review process can help you better prepare your proposal and set appropriate expectations:
+        </Typography>
+        
+        <Grid container spacing={3} alignItems="stretch">
+          <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{ 
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              border: '1px solid',
+              borderColor: 'primary.light',
+              borderRadius: 1,
+              overflow: 'hidden'
+            }}>
+              <Box sx={{ 
+                p: 1.5, 
+                bgcolor: 'primary.main', 
+                color: 'white',
+                display: 'flex', 
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Typography variant="subtitle2" align="center">Step 1: Submission</Typography>
+              </Box>
+              <Box sx={{ 
+                p: 2, 
+                flexGrow: 1, 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                bgcolor: 'primary.lighter'
+              }}>
+                <Box sx={{ 
+                  width: 50, 
+                  height: 50, 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2,
+                  bgcolor: 'background.paper'
+                }}>
+                  <CloudUploadIcon color="primary" />
+                </Box>
+                <Typography variant="body2" align="center">
+                  Submit your completed proposal form with all supporting documents
+                </Typography>
+                <Box sx={{ mt: 'auto', pt: 2, width: '100%' }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    bgcolor: 'background.paper', 
+                    border: '1px solid', 
+                    borderColor: 'primary.light',
+                    borderRadius: 1
+                  }}>
+                    <Typography variant="caption" display="block" align="center">
+                      <strong>Duration:</strong> Immediate
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{ 
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              border: '1px solid',
+              borderColor: 'info.light',
+              borderRadius: 1,
+              overflow: 'hidden'
+            }}>
+              <Box sx={{ 
+                p: 1.5, 
+                bgcolor: 'info.main', 
+                color: 'white',
+                display: 'flex', 
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Typography variant="subtitle2" align="center">Step 2: Initial Review</Typography>
+              </Box>
+              <Box sx={{ 
+                p: 2, 
+                flexGrow: 1, 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                bgcolor: 'info.lighter'
+              }}>
+                <Box sx={{ 
+                  width: 50, 
+                  height: 50, 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2,
+                  bgcolor: 'background.paper'
+                }}>
+                  <VisibilityIcon color="info" />
+                </Box>
+                <Typography variant="body2" align="center">
+                  Staff assess completeness and alignment with barangay priorities
+                </Typography>
+                <Box sx={{ mt: 'auto', pt: 2, width: '100%' }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    bgcolor: 'background.paper', 
+                    border: '1px solid', 
+                    borderColor: 'info.light',
+                    borderRadius: 1
+                  }}>
+                    <Typography variant="caption" display="block" align="center">
+                      <strong>Duration:</strong> 3-5 days
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{ 
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              border: '1px solid',
+              borderColor: 'warning.light',
+              borderRadius: 1,
+              overflow: 'hidden'
+            }}>
+              <Box sx={{ 
+                p: 1.5, 
+                bgcolor: 'warning.main', 
+                color: 'white',
+                display: 'flex', 
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Typography variant="subtitle2" align="center">Step 3: Committee Evaluation</Typography>
+              </Box>
+              <Box sx={{ 
+                p: 2, 
+                flexGrow: 1, 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                bgcolor: 'warning.lighter'
+              }}>
+                <Box sx={{ 
+                  width: 50, 
+                  height: 50, 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2,
+                  bgcolor: 'background.paper'
+                }}>
+                  <GroupsIcon color="warning" />
+                </Box>
+                <Typography variant="body2" align="center">
+                  Relevant committee members assess feasibility and impact
+                </Typography>
+                <Box sx={{ mt: 'auto', pt: 2, width: '100%' }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    bgcolor: 'background.paper', 
+                    border: '1px solid', 
+                    borderColor: 'warning.light',
+                    borderRadius: 1
+                  }}>
+                    <Typography variant="caption" display="block" align="center">
+                      <strong>Duration:</strong> 7-14 days
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={3}>
+            <Box sx={{ 
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              border: '1px solid',
+              borderColor: 'success.light',
+              borderRadius: 1,
+              overflow: 'hidden'
+            }}>
+              <Box sx={{ 
+                p: 1.5, 
+                bgcolor: 'success.main', 
+                color: 'white',
+                display: 'flex', 
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Typography variant="subtitle2" align="center">Step 4: Final Decision</Typography>
+              </Box>
+              <Box sx={{ 
+                p: 2, 
+                flexGrow: 1, 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                bgcolor: 'success.lighter'
+              }}>
+                <Box sx={{ 
+                  width: 50, 
+                  height: 50, 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mb: 2,
+                  bgcolor: 'background.paper'
+                }}>
+                  <CheckCircleIcon color="success" />
+                </Box>
+                <Typography variant="body2" align="center">
+                  Approval, consideration for future, or rejection with feedback
+                </Typography>
+                <Box sx={{ mt: 'auto', pt: 2, width: '100%' }}>
+                  <Box sx={{ 
+                    p: 1, 
+                    bgcolor: 'background.paper', 
+                    border: '1px solid', 
+                    borderColor: 'success.light',
+                    borderRadius: 1
+                  }}>
+                    <Typography variant="caption" display="block" align="center">
+                      <strong>Duration:</strong> 1-7 days
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          </Grid>
+        </Grid>
+        
+        <Box sx={{ mt: 3, p: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            What happens after approval?
+          </Typography>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ 
+                  bgcolor: 'primary.main', 
+                  color: 'white', 
+                  width: 24, 
+                  height: 24, 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mr: 1,
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold'
+                }}>1</Box>
+                <Typography variant="body2">Planning meeting with staff</Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ 
+                  bgcolor: 'primary.main', 
+                  color: 'white', 
+                  width: 24, 
+                  height: 24, 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mr: 1,
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold'
+                }}>2</Box>
+                <Typography variant="body2">Resource allocation and scheduling</Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ 
+                  bgcolor: 'primary.main', 
+                  color: 'white', 
+                  width: 24, 
+                  height: 24, 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  mr: 1,
+                  fontSize: '0.75rem',
+                  fontWeight: 'bold'
+                }}>3</Box>
+                <Typography variant="body2">Implementation and project tracking</Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </Box>
+      </Paper>
+      
       {/* Snackbar for notifications */}
       <Snackbar 
         open={snackbar.open} 
@@ -1336,72 +1698,6 @@ function ResidentProposal() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-
-      {/* Confirmation Dialog */}
-      <Dialog
-        open={openConfirmDialog}
-        onClose={() => setOpenConfirmDialog(false)}
-      >
-        <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <DescriptionIcon sx={{ mr: 1, color: 'primary.main' }} />
-            <Typography variant="h6">Confirm Project Proposal</Typography>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ mb: 2 }}>
-            Please confirm you want to submit this project proposal:
-          </DialogContentText>
-          
-          <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" color="primary.main">Project Title</Typography>
-                <Typography variant="body2">{projectTitle || 'N/A'}</Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" color="primary.main">Proposer</Typography>
-                <Typography variant="body2">{fullName || 'N/A'}</Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" color="primary.main">Category</Typography>
-                <Typography variant="body2">Project Proposal</Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" color="primary.main">Document</Typography>
-                <Typography variant="body2">{fileName || 'No file attached'}</Typography>
-              </Grid>
-            </Grid>
-          </Paper>
-          
-          <Alert severity="info" variant="outlined">
-            <Typography variant="body2">
-              Your proposal will be reviewed by the barangay officials. You can track its status in the Transactions page once submitted.
-            </Typography>
-          </Alert>
-        </DialogContent>
-        <DialogActions>
-          <Button 
-            onClick={() => setOpenConfirmDialog(false)} 
-            variant="outlined"
-            size="small"
-            startIcon={<CancelIcon />}
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={confirmSubmit} 
-            color="primary" 
-            variant="contained"
-            size="small"
-            disabled={loading}
-            startIcon={loading ? <CircularProgress size={16} /> : <SendIcon />}
-          >
-            Submit Proposal
-          </Button>
-        </DialogActions>
-      </Dialog>
-
     </Box>
   </Container>
 );
