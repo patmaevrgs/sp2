@@ -21,22 +21,11 @@ import SendIcon from '@mui/icons-material/Send';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
-import AlertTitle from '@mui/material/AlertTitle';
-import VideoLibraryIcon from '@mui/icons-material/VideoLibrary';
-// Add these imports near your other imports
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import CancelIcon from '@mui/icons-material/Cancel';
 
 function ResidentReport() {
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState({ open: false, message: '', severity: 'success' });
   const [userReports, setUserReports] = useState([]);
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
-  const [errors, setErrors] = useState({});
   const [formData, setFormData] = useState({
     fullName: '',
     contactNumber: '',
@@ -88,15 +77,6 @@ function ResidentReport() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-
-    // Clear error for this field when user edits it
-    if (errors[name]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
   };
 
   // Handle file uploads with react-dropzone
@@ -136,69 +116,6 @@ function ResidentReport() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Form validation
-    const validationErrors = {};
-    let firstErrorField = null;
-    
-    // Required fields validation - add all fields that need validation
-    const requiredFields = [
-      { name: 'fullName', label: 'Full Name' },
-      { name: 'contactNumber', label: 'Contact Number' },
-      { name: 'location', label: 'Location' },
-      { name: 'nearestLandmark', label: 'Nearest Landmark' },
-      { name: 'issueType', label: 'Issue Type' },
-      { name: 'dateObserved', label: 'Date Observed' },
-      { name: 'description', label: 'Description' }
-    ];
-    
-    // Check for empty required fields
-    for (const field of requiredFields) {
-      if (!formData[field.name] || formData[field.name].trim() === '') {
-        validationErrors[field.name] = `${field.label} is required`;
-        if (!firstErrorField) firstErrorField = field.name;
-      }
-    }
-    
-    // Phone number validation (basic)
-    if (formData.contactNumber && !/^\d{10,11}$/.test(formData.contactNumber.replace(/[^0-9]/g, ''))) {
-      validationErrors.contactNumber = 'Please enter a valid phone number (10-11 digits)';
-      if (!firstErrorField) firstErrorField = 'contactNumber';
-    }
-    
-    // Check if the date is not in the future
-    if (formData.dateObserved) {
-      const selectedDate = new Date(formData.dateObserved);
-      const currentDate = new Date();
-      if (selectedDate > currentDate) {
-        validationErrors.dateObserved = 'Date cannot be in the future';
-        if (!firstErrorField) firstErrorField = 'dateObserved';
-      }
-    }
-    
-    // If there are validation errors, display only the first one and mark all invalid fields
-    if (Object.keys(validationErrors).length > 0) {
-      // Show alert with just the first error
-      handleAlert(validationErrors[firstErrorField], 'error');
-      
-      // Mark all fields with errors
-      setErrors(validationErrors);
-      
-      // Focus the first field with an error (this requires refs which might be complex to add)
-      // We'll skip this for now but it's a good UX enhancement
-      
-      return; // Stop form submission
-    }
-    
-    // Reset any previous errors
-    setErrors({});
-    
-    // If validation passes, open confirmation dialog
-    setOpenConfirmDialog(true);
-  };
-
-  // Create a new function for actual submission after confirmation
-  const confirmSubmit = async () => {
     setLoading(true);
 
     try {
@@ -231,7 +148,6 @@ function ResidentReport() {
         handleAlert(data.message || 'Report submitted successfully!', 'success');
         resetForm();
         fetchUserReports();
-        setOpenConfirmDialog(false); // Close the dialog
       } else {
         handleAlert(data.message || 'Failed to submit report', 'error');
       }
@@ -294,83 +210,35 @@ function ResidentReport() {
   };
 
   // Render file previews
-  const thumbs = files.map(file => {
-  const isVideo = file.type.startsWith('video/');
-  
-  return (
+  const thumbs = files.map(file => (
     <Box
       key={file.name}
       sx={{
         display: 'inline-flex',
-        borderRadius: 1,
+        borderRadius: 2,
         border: '1px solid #eaeaea',
         marginBottom: 1,
         marginRight: 1,
         width: 100,
         height: 100,
         padding: 0.5,
-        boxSizing: 'border-box',
-        position: 'relative',
-        overflow: 'hidden'
+        boxSizing: 'border-box'
       }}
     >
-      {isVideo ? (
-        // Video thumbnail with icon
-        <Box 
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            color: 'white'
+      <Box sx={{ display: 'flex', minWidth: 0, overflow: 'hidden' }}>
+        <img
+          src={file.preview}
+          style={{
+            display: 'block',
+            width: 'auto',
+            height: '100%'
           }}
-        >
-          <Box sx={{ textAlign: 'center' }}>
-            <VideoLibraryIcon sx={{ fontSize: 32 }} />
-            <Typography variant="caption" display="block" sx={{ color: 'white', mt: 0.5 }}>
-              Video
-            </Typography>
-          </Box>
-        </Box>
-      ) : (
-        // Image thumbnail
-        <Box sx={{ display: 'flex', minWidth: 0, overflow: 'hidden' }}>
-          <img
-            src={file.preview}
-            style={{
-              display: 'block',
-              width: 'auto',
-              height: '100%'
-            }}
-            onLoad={() => { URL.revokeObjectURL(file.preview) }}
-            alt="preview"
-          />
-        </Box>
-      )}
-      
-      {/* Filename label at the bottom */}
-      <Box 
-        sx={{ 
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: 'rgba(0,0,0,0.6)',
-          padding: '2px 4px',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap'
-        }}
-      >
-        <Typography variant="caption" sx={{ color: 'white', fontSize: '0.6rem' }}>
-          {file.name.length > 14 ? file.name.substring(0, 12) + '...' : file.name}
-        </Typography>
+          onLoad={() => { URL.revokeObjectURL(file.preview) }}
+          alt="preview"
+        />
       </Box>
     </Box>
-  );
-});
+  ));
 
   // Format date for display
   const formatDate = (dateString) => {
@@ -449,12 +317,11 @@ function ResidentReport() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 3, mb: 4 }}>
   <Box sx={{ width: '100%' }}>
     <Typography variant="h4" gutterBottom>
       Report Infrastructure Issue
     </Typography>
-    <Box sx={{ mb: 4 }} />
+    
     <Paper elevation={3} sx={{ p: { xs: 2, sm: 3 }, mb: 4, borderRadius: 1 }}>
       {/* Form Header */}
       <Box sx={{ 
@@ -487,7 +354,6 @@ function ResidentReport() {
           <Typography variant="subtitle2" gutterBottom sx={{ color: 'text.secondary', fontWeight: 500 }}>
             Reporter Information
           </Typography>
-          <Box sx={{ mb: 3 }} />
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -499,8 +365,6 @@ function ResidentReport() {
                 required
                 variant="outlined"
                 size="small"
-                error={!!errors.fullName}
-                helperText={errors.fullName}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -520,8 +384,6 @@ function ResidentReport() {
                 required
                 variant="outlined"
                 size="small"
-                error={!!errors.contactNumber}
-                helperText={errors.contactNumber}
                 placeholder="e.g., 09XX-XXX-XXXX"
                 InputProps={{
                   startAdornment: (
@@ -538,7 +400,6 @@ function ResidentReport() {
           <Typography variant="subtitle2" gutterBottom sx={{ color: 'text.secondary', fontWeight: 500 }}>
             Issue Location Details
           </Typography>
-          <Box sx={{ mb: 3 }} />
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
@@ -550,8 +411,6 @@ function ResidentReport() {
                 required
                 variant="outlined"
                 size="small"
-                error={!!errors.location}
-                helperText={errors.location}
                 placeholder="e.g., Jade Street corner Ruby Street"
                 InputProps={{
                   startAdornment: (
@@ -560,10 +419,6 @@ function ResidentReport() {
                     </InputAdornment>
                   ),
                 }}
-                sx={{ 
-                  '& .MuiInputBase-root': {
-                    minWidth: '290px' // Adjust this value as needed
-                  }}}
               />
             </Grid>
             <Grid item xs={12}>
@@ -576,9 +431,7 @@ function ResidentReport() {
                 required
                 variant="outlined"
                 size="small"
-                error={!!errors.nearestLandmark}
-                helperText={errors.nearestLandmark}
-                placeholder="e.g., In front of Maahas 7/11"
+                placeholder="e.g., In front of Maahas Elementary School"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -586,10 +439,6 @@ function ResidentReport() {
                     </InputAdornment>
                   ),
                 }}
-                sx={{ 
-                  '& .MuiInputBase-root': {
-                    minWidth: '250px' // Adjust this value as needed
-                  }}}
               />
             </Grid>
           </Grid>
@@ -599,7 +448,6 @@ function ResidentReport() {
           <Typography variant="subtitle2" gutterBottom sx={{ color: 'text.secondary', fontWeight: 500 }}>
             Issue Information
           </Typography>
-          <Box sx={{ mb: 3 }} />
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -612,8 +460,6 @@ function ResidentReport() {
                 required
                 variant="outlined"
                 size="small"
-                error={!!errors.issueType}
-                helperText={errors.issueType}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -621,10 +467,6 @@ function ResidentReport() {
                     </InputAdornment>
                   ),
                 }}
-                sx={{ 
-                  '& .MuiInputBase-root': {
-                    minWidth: '180px' // Adjust this value as needed
-                  }}}
               >
                 {issueTypes.map((option) => (
                   <MenuItem key={option} value={option}>
@@ -644,8 +486,6 @@ function ResidentReport() {
                 required
                 variant="outlined"
                 size="small"
-                error={!!errors.dateObserved}
-                helperText={errors.dateObserved}
                 InputLabelProps={{
                   shrink: true,
                 }}
@@ -670,8 +510,6 @@ function ResidentReport() {
                 rows={3}
                 variant="outlined"
                 size="small"
-                error={!!errors.description}
-                helperText={errors.description}
                 placeholder="Provide a detailed description of the issue including its severity and impact..."
                 InputProps={{
                   startAdornment: (
@@ -680,16 +518,12 @@ function ResidentReport() {
                     </InputAdornment>
                   ),
                 }}
-                sx={{ 
-                  '& .MuiInputBase-root': {
-                    minWidth: '300px' // Adjust this value as needed
-                  }}}
               />
             </Grid>
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Additional Comments/Suggestions"
+                label="Additional Comments/Suggestions (Optional)"
                 name="additionalComments"
                 value={formData.additionalComments}
                 onChange={handleChange}
@@ -697,7 +531,7 @@ function ResidentReport() {
                 rows={2}
                 variant="outlined"
                 size="small"
-                placeholder="Any additional information that might help..."
+                placeholder="Any additional information that might help our maintenance team..."
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start" sx={{ mt: '-24px' }}>
@@ -705,10 +539,6 @@ function ResidentReport() {
                     </InputAdornment>
                   ),
                 }}
-                sx={{ 
-                  '& .MuiInputBase-root': {
-                    minWidth: '250px' // Adjust this value as needed
-                  }}}
               />
             </Grid>
           </Grid>
@@ -718,7 +548,6 @@ function ResidentReport() {
           <Typography variant="subtitle2" gutterBottom sx={{ color: 'text.secondary', fontWeight: 500 }}>
             Upload Evidence
           </Typography>
-          <Box sx={{ mb: 3 }} />
           <Box 
             {...getRootProps()} 
             sx={{
@@ -772,30 +601,27 @@ function ResidentReport() {
           )}
         </Box>
         
-        <Alert 
-  severity="warning" 
-  variant="outlined" 
-  sx={{ mb: 3 }}
->
-          <AlertTitle>Important</AlertTitle>
-          <Typography variant="body2">
-            By submitting this form, you confirm that:
-          </Typography>
-          <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0.5, fontSize: '0.8rem' }}>
-            <Typography component="li" variant="body2">
-              All information provided is accurate to the best of your knowledge
-            </Typography>
-            <Typography component="li" variant="body2">
-              You have included the exact location details for proper identification
-            </Typography>
-            <Typography component="li" variant="body2">
-              You understand your report will be reviewed by our maintenance team before action
-            </Typography>
-            <Typography component="li" variant="body2">
-              The more details and clearer photos you provide, the faster we can address the issue.
-            </Typography>
+        {/* Important Information */}
+        <Paper 
+          variant="outlined" 
+          sx={{ p: 2, bgcolor: 'background.default', mb: 3, borderRadius: 1 }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+            <InfoIcon color="primary" sx={{ mr: 1.5, mt: 0.2, fontSize: 20 }} />
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 0.5, color: 'primary.main' }}>
+                Important Information
+              </Typography>
+              <Typography variant="body2" sx={{ fontSize: '0.875rem', mb: 1 }}>
+                Your report will be reviewed by the Barangay Maahas maintenance team. You can track the 
+                status of your report in the Transactions page.
+              </Typography>
+              <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
+                The more details and clearer photos you provide, the faster we can address the issue.
+              </Typography>
+            </Box>
           </Box>
-        </Alert>
+        </Paper>
         
         {/* Alert messages */}
         {alert.open && (
@@ -846,86 +672,7 @@ function ResidentReport() {
         {alert.message}
       </Alert>
     </Snackbar>
-    {/* Confirmation Dialog */}
-    <Dialog
-      open={openConfirmDialog}
-      onClose={() => setOpenConfirmDialog(false)}
-    >
-      <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <ReportProblemOutlinedIcon sx={{ mr: 1, color: 'primary.main' }} />
-          <Typography variant="h6">Confirm Infrastructure Issue Report</Typography>
-        </Box>
-      </DialogTitle>
-      <DialogContent>
-        <DialogContentText sx={{ mb: 2 }}>
-          Please confirm you want to submit this infrastructure issue report:
-        </DialogContentText>
-        
-        <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" color="primary.main">Issue Type</Typography>
-              <Typography variant="body2">{formData.issueType || 'N/A'}</Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" color="primary.main">Location</Typography>
-              <Typography variant="body2">{formData.location || 'N/A'}</Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" color="primary.main">Nearest Landmark</Typography>
-              <Typography variant="body2">{formData.nearestLandmark || 'N/A'}</Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" color="primary.main">Description</Typography>
-              <Typography variant="body2" 
-                sx={{ 
-                  display: '-webkit-box', 
-                  WebkitLineClamp: 2, 
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}
-              >
-                {formData.description || 'N/A'}
-              </Typography>
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" color="primary.main">Media Files</Typography>
-              <Typography variant="body2">{files.length} file(s) attached</Typography>
-            </Grid>
-          </Grid>
-        </Paper>
-        
-        <Alert severity="info" variant="outlined">
-          <Typography variant="body2">
-            Your report will be reviewed by our maintenance team. We may contact you for additional information if needed.
-          </Typography>
-        </Alert>
-      </DialogContent>
-      <DialogActions>
-        <Button 
-          onClick={() => setOpenConfirmDialog(false)} 
-          variant="outlined"
-          size="small"
-          startIcon={<CancelIcon />}
-        >
-          Cancel
-        </Button>
-        <Button 
-          onClick={confirmSubmit} 
-          color="primary" 
-          variant="contained"
-          size="small"
-          disabled={loading}
-          startIcon={loading ? <CircularProgress size={16} /> : <SendIcon />}
-        >
-          Submit Report
-        </Button>
-      </DialogActions>
-    </Dialog>
   </Box>
-  </Container>
 );
 }
 export default ResidentReport;
