@@ -16,13 +16,18 @@ import {
   Alert,
   AlertTitle,
   Divider,
-  InputAdornment,
   Card,
   CardContent,
+  InputAdornment,
   FormHelperText,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import HomeIcon from '@mui/icons-material/Home';
@@ -31,33 +36,39 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import HelpIcon from '@mui/icons-material/Help';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import EngineeringIcon from '@mui/icons-material/Engineering';
-import BusinessIcon from '@mui/icons-material/Business';
-import StraightenIcon from '@mui/icons-material/Straighten';
-import AssignmentIcon from '@mui/icons-material/Assignment';
+import FenceIcon from '@mui/icons-material/Fence';
+import LocationOnIcon from '@mui/icons-material/LocationOn';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import BadgeIcon from '@mui/icons-material/Badge';
+import SquareFootIcon from '@mui/icons-material/SquareFoot';
+import SquareIcon from '@mui/icons-material/Square';
 import SendIcon from '@mui/icons-material/Send';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { useNavigate } from 'react-router-dom';
 
-function RequestDigging() {
+function RequestFencing() {
   const navigate = useNavigate();
   const userId = localStorage.getItem('user');
 
   // Form state
   const [formData, setFormData] = useState({
-    // Personal details
+    // Requester details
     fullName: '',
-    address: '',
+    residentAddress: '',
     
-    // Digging details
-    diggingPurpose: 'water_supply',
-    companyName: '',
-    applicationDetails: '',
+    // Property details
+    propertyLocation: '',
+    taxDeclarationNumber: '',
+    propertyIdentificationNumber: '',
+    propertyArea: '',
+    areaUnit: 'square_meters',
   });
 
   // UI state
   const [loading, setLoading] = useState(false);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -76,25 +87,26 @@ function RequestDigging() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    // Create purpose string based on selection
-    let purposeText = '';
-    let applicationText = '';
     
-    if (formData.diggingPurpose === 'water_supply') {
-      purposeText = `to dig across the road for their water supply as required by the ${formData.companyName}`;
-      applicationText = `in connection with ${formData.applicationDetails}`;
-    } else if (formData.diggingPurpose === 'electrical') {
-      purposeText = `to dig across the road for electrical connections as required by the ${formData.companyName}`;
-      applicationText = `in connection with ${formData.applicationDetails}`;
-    } else if (formData.diggingPurpose === 'drainage') {
-      purposeText = `to dig for drainage system installation as required by the ${formData.companyName}`;
-      applicationText = `in connection with ${formData.applicationDetails}`;
-    } else {
-      purposeText = formData.diggingPurpose;
-      applicationText = `in connection with ${formData.applicationDetails}`;
+    // Add validation if needed
+    if (!formData.fullName || !formData.residentAddress || !formData.propertyLocation || 
+        !formData.taxDeclarationNumber || !formData.propertyIdentificationNumber || 
+        !formData.propertyArea) {
+      setSnackbar({
+        open: true,
+        message: 'Please fill in all required fields',
+        severity: 'error'
+      });
+      return;
     }
+    
+    // Open confirmation dialog
+    setOpenConfirmDialog(true);
+  };
+
+  // Add confirmation submit function
+  const confirmSubmit = async () => {
+    setLoading(true);
 
     try {
       const response = await fetch('http://localhost:3002/documents', {
@@ -104,40 +116,45 @@ function RequestDigging() {
         },
         body: JSON.stringify({
           userId,
-          documentType: 'digging_permit',
+          documentType: 'fencing_permit',
           formData: {
             fullName: formData.fullName,
-            address: formData.address,
-            diggingPurpose: formData.diggingPurpose,
-            companyName: formData.companyName,
-            applicationDetails: formData.applicationDetails,
-            purposeText: purposeText,
-            applicationText: applicationText
+            residentAddress: formData.residentAddress,
+            propertyLocation: formData.propertyLocation,
+            taxDeclarationNumber: formData.taxDeclarationNumber,
+            propertyIdentificationNumber: formData.propertyIdentificationNumber,
+            propertyArea: formData.propertyArea,
+            areaUnit: formData.areaUnit
           },
-          purpose: purposeText
+          purpose: 'installation of Fence'
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to submit digging permit request');
+        throw new Error(data.message || 'Failed to submit fencing permit request');
       }
 
+      // Close dialog
+      setOpenConfirmDialog(false);
+      
       // Show success message
       setSnackbar({
         open: true,
-        message: 'Your digging permit request has been submitted successfully',
+        message: 'Your fencing permit request has been submitted successfully',
         severity: 'success'
       });
 
       // Reset form after successful submission
       setFormData({
         fullName: '',
-        address: '',
-        diggingPurpose: 'water_supply',
-        companyName: '',
-        applicationDetails: '',
+        residentAddress: '',
+        propertyLocation: '',
+        taxDeclarationNumber: '',
+        propertyIdentificationNumber: '',
+        propertyArea: '',
+        areaUnit: 'square_meters',
       });
 
       // Navigate to transactions page after 2 seconds
@@ -146,7 +163,7 @@ function RequestDigging() {
       }, 2000);
 
     } catch (error) {
-      console.error('Error submitting digging permit request:', error);
+      console.error('Error submitting fencing permit request:', error);
       setSnackbar({
         open: true,
         message: `Failed to submit request: ${error.message}`,
@@ -166,7 +183,7 @@ function RequestDigging() {
   <Container maxWidth="lg" sx={{ mt: 3, mb: 4 }}>
     <Box sx={{ width: '100%' }}>
       <Typography variant="h4" gutterBottom>
-        Digging Permit Request
+        Fencing Permit Request
       </Typography>
       <Box sx={{ mb: 4 }} />
       
@@ -181,21 +198,21 @@ function RequestDigging() {
           borderBottom: '1px solid',
           borderColor: 'divider'
         }}>
-          <StraightenIcon sx={{ mr: 1.5, color: 'primary.main', fontSize: 20 }} />
+          <FenceIcon sx={{ mr: 1.5, color: 'primary.main', fontSize: 20 }} />
           <Typography 
             variant="subtitle1" 
             sx={{ fontWeight: 600 }}
           >
-            Digging Permit Application Form
+            Fencing Permit Application Form
           </Typography>
         </Box>
         
         {/* Form Introduction */}
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="body2">
-            This form is for requesting a Barangay Digging Permit, which authorizes you to dig across roads or public areas within 
-            the barangay for utility connections, drainage systems, or other approved purposes. This permit helps ensure that 
-            digging activities are properly documented and monitored for public safety.
+            This form is for requesting a Barangay Fencing Permit, which authorizes you to install a fence on your property within 
+            the barangay jurisdiction. This permit helps ensure that fence installations comply with local regulations and 
+            boundary guidelines.
           </Typography>
         </Alert>
         
@@ -218,7 +235,7 @@ function RequestDigging() {
                   required
                   variant="outlined"
                   size="small"
-                  placeholder="e.g., JUAN M. DELA CRUZ"
+                  placeholder="e.g., MYLEN S. BILLENA"
                   helperText="Your complete name with middle initial if applicable (preferably in UPPERCASE)"
                   InputProps={{
                     startAdornment: (
@@ -233,15 +250,15 @@ function RequestDigging() {
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Complete Address"
-                  name="address"
-                  value={formData.address}
+                  label="Residential Address"
+                  name="residentAddress"
+                  value={formData.residentAddress}
                   onChange={handleChange}
                   required
                   variant="outlined"
                   size="small"
-                  placeholder="e.g., Purok 2, Sampalukan"
-                  helperText="Your specific location within Barangay Maahas, Los Baños, Laguna"
+                  placeholder="e.g., 1848 Hillside Village, Tuntungin, Los Baños, Laguna"
+                  helperText="Your current residential address"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -253,91 +270,130 @@ function RequestDigging() {
               </Grid>
             </Grid>
           </Box>
-          
-          {/* Digging Details Section */}
+          {/* Property Details Section */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="subtitle2" gutterBottom sx={{ color: 'text.secondary', fontWeight: 500 }}>
-              Digging Details
+              Property Details
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Box sx={{ mb: 3 }} />
             <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Property Location in Barangay Maahas"
+                  name="propertyLocation"
+                  value={formData.propertyLocation}
+                  onChange={handleChange}
+                  required
+                  variant="outlined"
+                  size="small"
+                  placeholder="e.g., Anestville, Purok 4"
+                  helperText="Specific location within Barangay Maahas, Los Baños, Laguna"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <LocationOnIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Tax Declaration Number"
+                  name="taxDeclarationNumber"
+                  value={formData.taxDeclarationNumber}
+                  onChange={handleChange}
+                  required
+                  variant="outlined"
+                  size="small"
+                  placeholder="e.g., 11-0008-05359"
+                  helperText="Tax Declaration Number issued by Assessor's Office"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <ReceiptIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Property Identification Number"
+                  name="propertyIdentificationNumber"
+                  value={formData.propertyIdentificationNumber}
+                  onChange={handleChange}
+                  required
+                  variant="outlined"
+                  size="small"
+                  placeholder="e.g., 923-11-0008-016-20"
+                  helperText="PIN of the property"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <BadgeIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Property Area"
+                  name="propertyArea"
+                  type="number"
+                  value={formData.propertyArea}
+                  onChange={handleChange}
+                  required
+                  variant="outlined"
+                  size="small"
+                  placeholder="e.g., 170"
+                  helperText="Size of the property"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SquareFootIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              
               <Grid item xs={12} sm={6}>
                 <FormControl 
                   fullWidth 
                   required
                   size="small"
                 >
-                  <InputLabel id="digging-purpose-label">Digging Purpose</InputLabel>
+                  <InputLabel id="area-unit-label">Area Unit</InputLabel>
                   <Select
-                    labelId="digging-purpose-label"
-                    name="diggingPurpose"
-                    value={formData.diggingPurpose}
+                    labelId="area-unit-label"
+                    name="areaUnit"
+                    value={formData.areaUnit}
                     onChange={handleChange}
-                    label="Digging Purpose"
+                    label="Area Unit"
                     startAdornment={
                       <InputAdornment position="start">
-                        <EngineeringIcon fontSize="small" />
+                        <SquareIcon fontSize="small" />
                       </InputAdornment>
                     }
                   >
-                    <MenuItem value="water_supply">Water Supply Connection</MenuItem>
-                    <MenuItem value="electrical">Electrical Connection</MenuItem>
-                    <MenuItem value="drainage">Drainage System</MenuItem>
-                    <MenuItem value="other">Other (Please specify)</MenuItem>
+                    <MenuItem value="square_meters">Square Meters</MenuItem>
+                    <MenuItem value="square_feet">Square Feet</MenuItem>
+                    <MenuItem value="hectares">Hectares</MenuItem>
                   </Select>
                   <FormHelperText>
-                    Primary purpose for the digging activity
+                    Unit of measurement for the property area
                   </FormHelperText>
                 </FormControl>
-              </Grid>
-              
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Company Name"
-                  name="companyName"
-                  value={formData.companyName}
-                  onChange={handleChange}
-                  required
-                  variant="outlined"
-                  size="small"
-                  placeholder="e.g., Laguna Aquatech Resources Corporation (LARC)"
-                  helperText="Name of the company requiring or overseeing the work"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <BusinessIcon fontSize="small" />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{ 
-                  '& .MuiInputBase-root': {
-                    minWidth: '400px' // Adjust this value as needed
-                  }}}
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Connection/Application Details"
-                  name="applicationDetails"
-                  value={formData.applicationDetails}
-                  onChange={handleChange}
-                  required
-                  variant="outlined"
-                  size="small"
-                  placeholder="e.g., LARC Water Connection Application"
-                  helperText="Specific details about this application (application number, project name, etc.)"
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <DescriptionIcon fontSize="small" />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
               </Grid>
             </Grid>
           </Box>
@@ -358,10 +414,13 @@ function RequestDigging() {
                   Valid ID (original and photocopy)
                 </Typography>
                 <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
-                  Approval letter or application form from the utility company (LARC, Meralco, etc.)
+                  Original or certified true copy of Tax Declaration
                 </Typography>
                 <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
-                  Simple sketch or diagram of the proposed digging location
+                  Simple sketch or plan of the proposed fence
+                </Typography>
+                <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
+                  Proof of property ownership (land title, deed of sale, etc.)
                 </Typography>
                 <Typography component="li" variant="body2">
                   Authorization letter (if the requestor is not the property owner)
@@ -369,7 +428,6 @@ function RequestDigging() {
               </Box>
             </Box>
           </Box>
-          
           {/* Terms & Conditions */}
           <Alert 
             severity="warning" 
@@ -378,20 +436,20 @@ function RequestDigging() {
           >
             <AlertTitle>Important</AlertTitle>
             <Typography variant="body2">
-              By submitting this form, you agree to:
+              By submitting this form, you confirm that:
             </Typography>
             <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0.5, fontSize: '0.8rem' }}>
               <Typography component="li" variant="body2">
-                Ensure all information provided is accurate and complete
+                All information provided is accurate and complete to the best of your knowledge
               </Typography>
               <Typography component="li" variant="body2">
-                Install proper safety barriers and signage around the digging area
+                The fence will be constructed within your property boundaries
               </Typography>
               <Typography component="li" variant="body2">
-                Restore the road or public area to its original condition after work completion
+                You will comply with all local regulations regarding fence height and materials
               </Typography>
               <Typography component="li" variant="body2">
-                Complete the work within the timeframe specified in this application
+                You understand that false information may lead to rejection of your application
               </Typography>
             </Box>
           </Alert>
@@ -406,10 +464,12 @@ function RequestDigging() {
               onClick={() => {
                 setFormData({
                   fullName: '',
-                  address: '',
-                  diggingPurpose: 'water_supply',
-                  companyName: '',
-                  applicationDetails: '',
+                  residentAddress: '',
+                  propertyLocation: '',
+                  taxDeclarationNumber: '',
+                  propertyIdentificationNumber: '',
+                  propertyArea: '',
+                  areaUnit: 'square_meters',
                 });
               }}
               disabled={loading}
@@ -431,7 +491,7 @@ function RequestDigging() {
         </Box>
       </Paper>
       
-      {/* About Digging Permit */}
+      {/* About Fencing Permit */}
       <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
         <Box 
           sx={{ 
@@ -448,7 +508,7 @@ function RequestDigging() {
             variant="subtitle1" 
             sx={{ fontWeight: 600 }}
           >
-            About Digging Permit
+            About Fencing Permit
           </Typography>
         </Box>
         
@@ -461,17 +521,19 @@ function RequestDigging() {
                   Purpose and Benefits
                 </Typography>
                 <Typography variant="body2" paragraph>
-                  A Barangay Digging Permit is an official document that authorizes individuals or companies to perform digging activities on public roads or areas within the barangay jurisdiction.
+                  A Barangay Fencing Permit is an official document that authorizes property owners to install a fence 
+                  around their property within the barangay. This ensures that fencing activities comply with local 
+                  regulations and respect property boundaries.
                 </Typography>
                 <Typography variant="body2">
                   This permit is necessary for:
                 </Typography>
                 <Box component="ul" sx={{ pl: 2, mb: 2, mt: 0 }}>
-                  <Typography component="li" variant="body2">Water supply connections</Typography>
-                  <Typography component="li" variant="body2">Electrical line installations</Typography>
-                  <Typography component="li" variant="body2">Drainage system construction</Typography>
-                  <Typography component="li" variant="body2">Telecommunication cable laying</Typography>
-                  <Typography component="li" variant="body2">Other utility connection works</Typography>
+                  <Typography component="li" variant="body2">Marking clear property boundaries</Typography>
+                  <Typography component="li" variant="body2">Ensuring compliance with local fence regulations</Typography>
+                  <Typography component="li" variant="body2">Preventing boundary disputes with neighbors</Typography>
+                  <Typography component="li" variant="body2">Maintaining community aesthetic standards</Typography>
+                  <Typography component="li" variant="body2">Legal protection in case of disputes</Typography>
                 </Box>
               </Box>
             </Box>
@@ -491,7 +553,7 @@ function RequestDigging() {
                   Processing Time
                 </Typography>
                 <Typography variant="body2">
-                  Standard processing takes 1-2 working days. You will be notified once your Digging Permit is ready for pickup.
+                  Standard processing takes 2-3 working days. You will be notified once your Fencing Permit is ready for pickup.
                   Please bring the essential documents when claiming your permit at the Barangay Hall and be prepared to pay the required fees.
                 </Typography>
               </Box>
@@ -499,7 +561,6 @@ function RequestDigging() {
           </Grid>
         </Grid>
       </Paper>
-      
       {/* Frequently Asked Questions */}
       <Paper elevation={3} sx={{ p: 3 }}>
         <Box 
@@ -525,57 +586,138 @@ function RequestDigging() {
           <Grid item xs={12} md={6}>
             <Accordion disableGutters elevation={0} sx={{ mb: 1, border: '1px solid', borderColor: 'divider', '&:before': { display: 'none' } }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>How long is the Digging Permit valid?</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>Are there height restrictions for fences?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  The Digging Permit is typically valid for 30 days from the date of issuance. If your project 
-                  exceeds this timeframe, you will need to apply for an extension at the Barangay Hall.
+                  Yes, there are height restrictions for fences in residential areas. Generally, front yard fences should not exceed 
+                  4 feet (1.2 meters) in height, while side and rear fences may be up to 6 feet (1.8 meters). However, specific 
+                  regulations may vary, so it's best to inquire at the Barangay Hall for details pertaining to your location.
                 </Typography>
               </AccordionDetails>
             </Accordion>
             
             <Accordion disableGutters elevation={0} sx={{ mb: 1, border: '1px solid', borderColor: 'divider', '&:before': { display: 'none' } }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>Is there a fee for obtaining a Digging Permit?</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>How long is the Fencing Permit valid?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  Yes, there is a processing fee for the Digging Permit. The exact amount varies depending on the scope 
-                  and duration of your digging project. You will be informed of the specific fee when you submit your 
-                  application at the Barangay Hall.
+                  The Fencing Permit is typically valid for 6 months from the date of issuance. If you haven't completed your 
+                  fencing project within this timeframe, you may need to apply for an extension or a new permit depending on 
+                  the circumstances.
                 </Typography>
               </AccordionDetails>
             </Accordion>
             
             <Accordion disableGutters elevation={0} sx={{ mb: 1, border: '1px solid', borderColor: 'divider', '&:before': { display: 'none' } }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>Can someone else apply for the permit on my behalf?</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>What materials are allowed for fencing?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  Yes, someone else can apply for the permit on your behalf, but they must present an authorization letter 
-                  signed by you along with a photocopy of your valid ID and their own valid ID. The authorization letter 
-                  should clearly state that they are authorized to apply for and receive the Digging Permit.
+                  Most common fencing materials are allowed, including concrete, wood, metal, bamboo, and PVC. However, materials that 
+                  may pose safety hazards (like barbed wire or broken glass) in residential areas may be restricted or require special 
+                  permission. The barangay may also have guidelines regarding the aesthetic appearance of fences, especially in certain 
+                  neighborhoods.
                 </Typography>
               </AccordionDetails>
             </Accordion>
             
             <Accordion disableGutters elevation={0} sx={{ border: '1px solid', borderColor: 'divider', '&:before': { display: 'none' } }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>What happens if I dig without a permit?</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>Do I need my neighbor's consent to build a fence?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  Digging without a permit is a violation of barangay regulations and may result in fines or penalties. 
-                  Additionally, you may be held liable for any damage to public property or utility lines. It's always 
-                  best to secure the proper permit before conducting any digging activities.
+                  If the fence is entirely within your property boundaries, you generally do not need your neighbor's consent. 
+                  However, if there is any question about the exact property line or if the fence will be built on a shared boundary, 
+                  it's advisable to discuss your plans with your neighbor to avoid disputes. In some cases, a survey may be needed to 
+                  establish the exact property line.
                 </Typography>
               </AccordionDetails>
             </Accordion>
           </Grid>
         </Grid>
       </Paper>
+      
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={openConfirmDialog}
+        onClose={() => setOpenConfirmDialog(false)}
+      >
+        <DialogTitle>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <FenceIcon sx={{ mr: 1, color: 'primary.main' }} />
+            <Typography variant="h6">Confirm Fencing Permit Request</Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText sx={{ mb: 2 }}>
+            Please confirm the following details for your Fencing Permit request:
+          </DialogContentText>
+          
+          <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" color="primary.main">Personal Information</Typography>
+                <Typography variant="body2">Name: {formData.fullName}</Typography>
+                <Typography variant="body2">Address: {formData.residentAddress}</Typography>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" color="primary.main">Property Details</Typography>
+                <Typography variant="body2">Location: {formData.propertyLocation}</Typography>
+                <Typography variant="body2">Tax Declaration: {formData.taxDeclarationNumber}</Typography>
+                <Typography variant="body2">Property ID: {formData.propertyIdentificationNumber}</Typography>
+                <Typography variant="body2">
+                  Area: {formData.propertyArea} {formData.areaUnit === 'square_meters' ? 'Square Meters' : 
+                         formData.areaUnit === 'square_feet' ? 'Square Feet' : 'Hectares'}
+                </Typography>
+              </Grid>
+            </Grid>
+          </Paper>
+          
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            <Typography variant="body2" fontWeight="bold">
+              Important Reminders:
+            </Typography>
+            <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0.5 }}>
+              <Typography component="li" variant="body2">
+                Bring all required documents when claiming your permit
+              </Typography>
+              <Typography component="li" variant="body2">
+                There's a processing fee payable at the Barangay Hall
+              </Typography>
+              <Typography component="li" variant="body2">
+                Processing typically takes 2-3 working days
+              </Typography>
+              <Typography component="li" variant="body2">
+                The fence must comply with local height and material regulations
+              </Typography>
+            </Box>
+          </Alert>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => setOpenConfirmDialog(false)} 
+            variant="outlined"
+            size="small"
+            startIcon={<CancelIcon />}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={confirmSubmit} 
+            color="primary" 
+            variant="contained"
+            size="small"
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={16} /> : <CheckCircleIcon />}
+          >
+            Confirm & Submit
+          </Button>
+        </DialogActions>
+      </Dialog>
       
       {/* Snackbar for notifications */}
       <Snackbar
@@ -597,4 +739,4 @@ function RequestDigging() {
 );
 }
 
-export default RequestDigging;
+export default RequestFencing;
