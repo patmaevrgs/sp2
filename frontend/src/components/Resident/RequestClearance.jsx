@@ -250,7 +250,7 @@ function RequestClearance() {
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="body2">
             Fill out this form to request your Barangay Clearance. This document certifies that you have no derogatory record in the barangay and are of good moral character.
-            There is a processing fee payable at the Barangay Hall when claiming your clearance.
+            There is a processing fee of ₱70.00 payable at the Barangay Hall when claiming your clearance.
           </Typography>
         </Alert>
         
@@ -434,7 +434,7 @@ function RequestClearance() {
                 You are a resident of Barangay Maahas, Los Baños, Laguna
               </Typography>
               <Typography component="li" variant="body2">
-                You agree to pay the processing fee when claiming your clearance
+                You agree to pay the ₱70.00 processing fee when claiming your clearance
               </Typography>
             </Box>
           </Alert>
@@ -536,7 +536,7 @@ function RequestClearance() {
                 </Typography>
                 <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0 }}>
                   <Typography component="li" variant="body2">Valid ID or proof of residency</Typography>
-                  <Typography component="li" variant="body2">Payment of the processing fee</Typography>
+                  <Typography component="li" variant="body2">Payment of the ₱70.00 processing fee</Typography>
                 </Box>
               </Box>
             </Box>
@@ -558,7 +558,7 @@ function RequestClearance() {
                 </Typography>
                 <Typography variant="body2">
                   Standard processing only takes a day. You will be notified once your Barangay Clearance is ready for pickup.
-                  Please bring a valid ID and the processing fee when claiming your clearance at the Barangay Hall.
+                  Please bring a valid ID and ₱70.00 for the processing fee when claiming your clearance at the Barangay Hall.
                 </Typography>
               </Box>
             </Box>
@@ -688,7 +688,7 @@ function RequestClearance() {
             </Typography>
             <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0.5 }}>
               <Typography component="li" variant="body2">
-                There is a processing fee payable at the Barangay Hall
+                There is a ₱70.00 processing fee payable at the Barangay Hall
               </Typography>
               <Typography component="li" variant="body2">
                 Please bring a valid ID when claiming your clearance
