@@ -18,6 +18,7 @@ import {
   Divider
 } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
+import FormHelperText from '@mui/material/FormHelperText';
 import AlertTitle from '@mui/material/AlertTitle';
 import PersonIcon from '@mui/icons-material/Person';
 import HomeIcon from '@mui/icons-material/Home';
@@ -67,7 +68,6 @@ function RequestResidency() {
   const [errors, setErrors] = useState({});
   
   // Submission state
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -381,7 +381,7 @@ function RequestResidency() {
                   required
                   label="House No., Street, Block/Lot/Phase"
                   name="address"
-                  placeholder="e.g., 123 Sample St., Purok 2"
+                  placeholder="e.g., 123 Sample St., Phase 1"
                   value={formData.address}
                   onChange={handleChange}
                   error={!!errors.address}
@@ -440,7 +440,7 @@ function RequestResidency() {
                   value={formData.yearsOfStay}
                   onChange={handleChange}
                   error={!!errors.yearsOfStay}
-                  helperText={errors.yearsOfStay}
+                  helperText={errors.yearsOfStay || "How long you have lived in Barangay Maahas"}
                   variant="outlined"
                   size="small"
                   InputProps={{
@@ -525,7 +525,6 @@ function RequestResidency() {
                   value={formData.purpose}
                   onChange={handleChange}
                   error={!!errors.purpose}
-                  placeholder="e.g., Job Application, Legal Proceedings, etc."
                   helperText={errors.purpose || "Specify why you need this Certificate of Residency"}
                   multiline
                   rows={3}
@@ -703,7 +702,7 @@ function RequestResidency() {
                 <Typography variant="body2">
                   Standard processing time for the Certificate of Residency is 1-2 working days from submission. 
                   You will be notified when your certificate is ready for pickup at the Barangay Hall. The 
-                  certificate is valid for 1 year from the date of issuance.
+                  certificate is valid for 6 months from the date of issuance.
                 </Typography>
               </Box>
             </Box>
@@ -740,7 +739,7 @@ function RequestResidency() {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  The Certificate of Residency is valid for 1 year from the date of issuance. Some institutions 
+                  The Certificate of Residency is valid for 6 months from the date of issuance. Some institutions 
                   may require a more recent certificate, so it's best to check their specific requirements. If your 
                   certificate expires, you can request a new one by submitting another form.
                 </Typography>
@@ -766,7 +765,7 @@ function RequestResidency() {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  If you notice an error after submission, you can cancel your application in your transactions page. If it is already in progress, please visit the Barangay Hall immediately to inform 
+                  If you notice an error after submission, please visit the Barangay Hall immediately to inform 
                   the staff. Minor corrections can usually be made during the processing period. For significant 
                   changes, you may need to submit a new application.
                 </Typography>
@@ -779,7 +778,8 @@ function RequestResidency() {
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  Basic barangay certificates usually have ₱50.00-₱100.00 processing fee. Please check with the Barangay Hall for 
+                  Basic barangay certificates are usually free of charge for residents. However, there may be 
+                  nominal fees for document processing or printing. Please check with the Barangay Hall for 
                   current fee schedules and payment methods.
                 </Typography>
               </AccordionDetails>
@@ -859,7 +859,7 @@ function RequestResidency() {
                 Bring the required documents when claiming your certificate
               </Typography>
               <Typography component="li" variant="body2">
-                The certificate is valid for 1 year from the date of issuance
+                The certificate is valid for 6 months from the date of issuance
               </Typography>
               <Typography component="li" variant="body2">
                 Processing time is typically 1-2 working days
