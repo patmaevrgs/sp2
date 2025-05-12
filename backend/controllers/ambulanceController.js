@@ -287,21 +287,27 @@ export const residentResponse = async (req, res) => {
 // Get all bookings for a calendar view (simplified data)
 export const getBookingsCalendar = async (req, res) => {
   try {
-    const { month, year, startDate, endDate, view } = req.query;
+    const { month, year, startDate, endDate, view, start, end, userType } = req.query;
     
     let dateFilter = {};
     
     // For specific date range (used in week and day views)
-    if (startDate && endDate) {
+    if (start && end) {
+      dateFilter = {
+        pickupDate: {
+          $gte: new Date(start),
+          $lte: new Date(end)
+        }
+      };
+    } else if (startDate && endDate) {
       dateFilter = {
         pickupDate: {
           $gte: new Date(startDate),
           $lte: new Date(endDate)
         }
       };
-    }
-    // If month and year are provided, filter by that month (used in month view)
-    else if (month && year) {
+    } else if (month && year) {
+      // If month and year are provided, filter by that month (used in month view)
       const startOfMonth = new Date(year, month - 1, 1);
       const endOfMonth = new Date(year, month, 0);
       dateFilter = {
@@ -312,14 +318,30 @@ export const getBookingsCalendar = async (req, res) => {
       };
     }
     
-    // Fetch only booked and completed appointments
+    // Determine which statuses to include based on userType
+    let statusFilter;
+    let fieldsToSelect;
+    
+    if (userType === 'resident') {
+      // For residents, show booked and pending (to help avoid conflicts)
+      statusFilter = { $in: ['booked', 'pending'] };
+      // Residents don't need to see patient details
+      fieldsToSelect = 'pickupDate pickupTime duration status _id';
+    } else {
+      // For admin and superadmin, show booked and completed (same behavior)
+      statusFilter = { $in: ['booked', 'completed'] };
+      // Admins can see all details
+      fieldsToSelect = 'pickupDate pickupTime duration status patientName destination';
+    }
+    
+    // Fetch bookings with applied filters
     const bookings = await AmbulanceBooking.find({
       ...dateFilter,
-      status: { $in: ['booked', 'completed'] }
-    }).select('pickupDate pickupTime duration status patientName destination');
+      status: statusFilter
+    }).select(fieldsToSelect);
     
     // For debugging
-    console.log(`Calendar view: ${view}, Found ${bookings.length} bookings within date range`);
+    console.log(`Calendar view: ${view || 'not specified'}, Found ${bookings.length} bookings within date range, User type: ${userType || 'admin'}`);
     
     res.status(200).json(bookings);
   } catch (error) {
@@ -328,7 +350,7 @@ export const getBookingsCalendar = async (req, res) => {
   }
 };
 
-// Check for booking conflicts (same date/time)
+// Check for booking conflicts (same date/time with duration overlap)
 export const checkBookingConflict = async (req, res) => {
   try {
     const { pickupDate, pickupTime, duration, excludeBookingId } = req.query;
@@ -340,7 +362,7 @@ export const checkBookingConflict = async (req, res) => {
     // Convert pickupDate to Date object
     const bookingDate = new Date(pickupDate);
     
-    // Build filter to find overlapping bookings
+    // Build filter to find potentially conflicting bookings on the same day
     const filter = {
       pickupDate: bookingDate,
       status: { $in: ['booked', 'pending', 'needs_approval'] }
@@ -353,10 +375,55 @@ export const checkBookingConflict = async (req, res) => {
     
     const existingBookings = await AmbulanceBooking.find(filter);
     
-    // Simple time conflict check (would need more sophisticated logic for real-world use)
-    const hasConflict = existingBookings.some(booking => booking.pickupTime === pickupTime);
+    // Convert new booking time to minutes for easier comparison
+    const [newHours, newMinutes] = pickupTime.split(':').map(Number);
+    const newStartTimeMinutes = newHours * 60 + newMinutes;
     
-    res.status(200).json({ hasConflict, conflictingBookings: hasConflict ? existingBookings : [] });
+    // Calculate end time in minutes based on duration
+    let newEndTimeMinutes = newStartTimeMinutes;
+    if (duration === '1-2 hours') {
+      newEndTimeMinutes += 120; // 2 hours in minutes
+    } else if (duration === '2-4 hours') {
+      newEndTimeMinutes += 240; // 4 hours in minutes
+    } else if (duration === '4-6 hours') {
+      newEndTimeMinutes += 360; // 6 hours in minutes
+    } else if (duration === '6+ hours') {
+      newEndTimeMinutes += 480; // 8 hours as a reasonable estimate for 6+ hours
+    }
+    
+    // Check for overlaps with each existing booking
+    const conflicts = existingBookings.filter(booking => {
+      // Convert existing booking time to minutes
+      const [existingHours, existingMinutes] = booking.pickupTime.split(':').map(Number);
+      const existingStartTimeMinutes = existingHours * 60 + existingMinutes;
+      
+      // Calculate end time for existing booking based on its duration
+      let existingEndTimeMinutes = existingStartTimeMinutes;
+      if (booking.duration === '1-2 hours') {
+        existingEndTimeMinutes += 120;
+      } else if (booking.duration === '2-4 hours') {
+        existingEndTimeMinutes += 240;
+      } else if (booking.duration === '4-6 hours') {
+        existingEndTimeMinutes += 360;
+      } else if (booking.duration === '6+ hours') {
+        existingEndTimeMinutes += 480;
+      }
+      
+      // Check if time ranges overlap
+      // Two time ranges overlap if one range's start is before the other's end
+      // AND one range's end is after the other's start
+      return (
+        (newStartTimeMinutes < existingEndTimeMinutes) && 
+        (newEndTimeMinutes > existingStartTimeMinutes)
+      );
+    });
+    
+    const hasConflict = conflicts.length > 0;
+    
+    res.status(200).json({ 
+      hasConflict, 
+      conflictingBookings: hasConflict ? conflicts : [] 
+    });
   } catch (error) {
     console.error('Error checking booking conflict:', error);
     res.status(500).json({ message: 'Error checking booking conflict', error: error.message });

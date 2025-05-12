@@ -284,7 +284,7 @@ const AdminAmbulance = () => {
   // Format booking for calendar
   const getCalendarEvents = () => {
     return bookings
-      .filter(booking => booking.status === 'booked' || booking.status === 'completed')
+      .filter(booking => booking.status === 'booked')
       .map(booking => {
         const startDateTime = new Date(`${format(new Date(booking.pickupDate), 'yyyy-MM-dd')}T${booking.pickupTime}:00`);
         const endDateTime = new Date(startDateTime.getTime() + (2 * 60 * 60 * 1000)); // 2-hour duration
@@ -294,7 +294,7 @@ const AdminAmbulance = () => {
           title: `${booking.patientName} - ${booking.destination}`,
           start: startDateTime.toISOString(),
           end: endDateTime.toISOString(),
-          color: booking.status === 'completed' ? theme.palette.success.main : theme.palette.primary.main,
+          color: theme.palette.primary.main,
           extendedProps: { booking }
         };
       });

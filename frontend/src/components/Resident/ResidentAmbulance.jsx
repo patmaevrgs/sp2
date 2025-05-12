@@ -51,6 +51,10 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import PersonIcon from '@mui/icons-material/Person';
 import NoteIcon from '@mui/icons-material/Note';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import FullCalendar from '@fullcalendar/react';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
 
 const ResidentAmbulance = () => {
   const theme = useTheme();
@@ -90,8 +94,13 @@ const ResidentAmbulance = () => {
   const [openCancelDialog, setOpenCancelDialog] = useState(false);
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const [currentBooking, setCurrentBooking] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [calendarEvents, setCalendarEvents] = useState([]);
   const [cancellationReason, setCancellationReason] = useState('');
 
+  const toggleCalendar = () => {
+    setShowCalendar(!showCalendar);
+  };
   // Get user ID and load data on component mount
   useEffect(() => {
     // Get user ID from localStorage
@@ -102,6 +111,70 @@ const ResidentAmbulance = () => {
     }
     fetchCalendarData();
   }, []);
+
+  useEffect(() => {
+    const fetchCalendarData = async () => {
+      try {
+        // Get current date and calculate 2 months later
+        const currentDate = new Date();
+        const month = currentDate.getMonth() + 1;
+        const year = currentDate.getFullYear();
+        
+        // Use your existing ambulance-calendar endpoint
+        const response = await fetch(`http://localhost:3002/ambulance-calendar?month=${month}&year=${year}&userType=resident`);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch calendar data');
+        }
+        
+        const data = await response.json();
+        
+        // Convert the bookings to calendar events
+        const events = data.map(booking => {
+          // Parse the date and time
+          const bookingDate = new Date(booking.pickupDate);
+          const [hours, minutes] = booking.pickupTime.split(':').map(Number);
+          
+          // Set the correct time on the date
+          bookingDate.setHours(hours, minutes, 0, 0);
+          
+          // Calculate end time based on duration
+          const endDate = new Date(bookingDate);
+          let durationHours = 1; // Default 1 hour
+          
+          if (booking.duration === '1-2 hours') {
+            durationHours = 2;
+          } else if (booking.duration === '2-4 hours') {
+            durationHours = 4;
+          } else if (booking.duration === '4-6 hours') {
+            durationHours = 6;
+          } else if (booking.duration === '6+ hours') {
+            durationHours = 8;
+          }
+          
+          endDate.setHours(endDate.getHours() + durationHours);
+          
+          return {
+            id: booking._id,
+            title: 'Reserved', // No personal info shown
+            start: bookingDate,
+            end: endDate,
+            backgroundColor: booking.status === 'booked' ? '#4caf50' : '#ff9800', // Green for booked, Orange for pending
+            borderColor: booking.status === 'booked' ? '#2e7d32' : '#f57c00',
+            textColor: '#ffffff'
+          };
+        });
+        
+        setCalendarEvents(events);
+      } catch (error) {
+        console.error('Error fetching calendar data:', error);
+      }
+    };
+    
+    if (showCalendar) {
+      fetchCalendarData();
+    }
+  }, [showCalendar]);
 
   // Fetch calendar data to show booked dates
   const fetchCalendarData = async () => {
@@ -215,6 +288,14 @@ const ResidentAmbulance = () => {
       newErrors.pickupDate = 'Pickup date cannot be in the past';
     }
     
+    // Validate time is within operating hours (6am to 9pm)
+    if (formData.pickupTime) {
+      const hours = formData.pickupTime.getHours();
+      if (hours < 6 || hours >= 21) {
+        newErrors.pickupTime = 'Pickup time must be between 6am and 9pm';
+      }
+    }
+
     // Validate contact number format (simple check)
     if (formData.contactNumber && !/^\d{10,11}$/.test(formData.contactNumber.replace(/[^0-9]/g, ''))) {
       newErrors.contactNumber = 'Please enter a valid contact number (10-11 digits)';
@@ -498,7 +579,7 @@ const ResidentAmbulance = () => {
           >
             <AlertTitle>Booking Conflict</AlertTitle>
             <Typography variant="body2">
-              This time slot is already booked. Please select a different date or time.
+              This time slot conflicts with an existing booking. The ambulance is already scheduled during this time window based on the requested duration. Please select a different date or time.
             </Typography>
           </Alert>
         )}
@@ -672,10 +753,12 @@ const ResidentAmbulance = () => {
                       fullWidth
                       required
                       error={!!errors.pickupTime}
-                      helperText={errors.pickupTime}
+                      helperText={errors.pickupTime || "Available from 6am to 9pm only"}
                       size="small"
                     />
                   )}
+                  minTime={new Date(0, 0, 0, 6)} // 6:00 AM
+                  maxTime={new Date(0, 0, 0, 21)} // 9:00 PM
                 />
               </Grid>
               
@@ -900,6 +983,74 @@ const ResidentAmbulance = () => {
         </Box>
       </Paper>
       
+      <Button
+        variant="outlined"
+        startIcon={<CalendarMonthIcon />}
+        onClick={toggleCalendar}
+        size="small"
+        sx={{ mt: 3, mb: 2 }}
+      >
+        {showCalendar ? 'Hide Availability Calendar' : 'View Availability Calendar'}
+      </Button>
+
+      {showCalendar && (
+        <Paper sx={{ p: 3, borderRadius: 1, mb: 4 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            mb: 2,
+            pb: 0.5,
+            borderBottom: '1px solid',
+            borderColor: 'divider'
+          }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <CalendarMonthIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
+              <Typography 
+                variant="subtitle1" 
+                sx={{ fontWeight: 600 }}
+              >
+                Ambulance Availability Calendar
+              </Typography>
+            </Box>
+          </Box>
+          
+          <Alert severity="info" sx={{ mb: 2 }}>
+            <Typography variant="body2">
+              This calendar shows all existing ambulance reservations. Reserved time slots may not be available.
+              No personal information is displayed to protect privacy.
+            </Typography>
+          </Alert>
+          
+          {/* Legend Section */}
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#4caf50', mr: 0.5 }} />
+              <Typography variant="caption">Booked</Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#ff9800', mr: 0.5 }} />
+              <Typography variant="caption">Pending</Typography>
+            </Box>
+          </Box>
+          
+          <Box sx={{ height: '450px' }}>
+            <FullCalendar
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+              initialView={isMobile ? "timeGridDay" : "timeGridWeek"}
+              headerToolbar={{
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+              }}
+              events={calendarEvents}
+              height="100%"
+              slotMinTime="06:00:00"
+              slotMaxTime="21:00:00"
+            />
+          </Box>
+        </Paper>
+      )}
       {/* Confirmation Dialog */}
       <Dialog
         open={openConfirmDialog}
