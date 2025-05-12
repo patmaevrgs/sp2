@@ -569,8 +569,8 @@ function RequestID() {
           
           <Grid item xs={12}>
             <Box sx={{ 
-              mt: 0, 
-              p: 2, 
+              mt: 2, 
+              p: 0, 
               bgcolor: 'info.lighter', 
               borderRadius: 1, 
               display: 'flex', 
