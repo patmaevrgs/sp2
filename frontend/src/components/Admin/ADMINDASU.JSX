@@ -1380,7 +1380,7 @@ const fetchData = async (days = 30) => {
           {tabValue === 0 && (
       <Grid container spacing={3}>
         {/* Service Request Trends */}
-        <Grid item xs={12} md={8} sx={{ minWidth: { md: '250px' } }}>
+        <Grid item xs={12} md={8}>
           <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
             <TimelineIcon sx={{ color: 'primary.main', mr: 1 }} />
             <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
@@ -1450,7 +1450,7 @@ const fetchData = async (days = 30) => {
         
         {/* Service Distribution */}
         <Grid item xs={12} md={4}>
-          <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', minWidth: { md: '470px' } }}>
+          <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
             <PieChartIcon sx={{ color: 'primary.main', mr: 1 }} />
             <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
               Service Distribution
@@ -1607,7 +1607,7 @@ const fetchData = async (days = 30) => {
           {/* Ambulance Tab */}
           {tabValue === 1 && (
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6} sx={{ minWidth: { md: '550px' } }}>
+              <Grid item xs={12} md={6}>
                 <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                   <DonutLargeIcon sx={{ color: 'primary.main', mr: 1 }} />
                   <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
@@ -1659,7 +1659,7 @@ const fetchData = async (days = 30) => {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12} md={6} sx={{ minWidth: { md: '500px' } }}>
+              <Grid item xs={12} md={6}>
                 <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                   <TimelineIcon sx={{ color: 'primary.main', mr: 1 }} />
                   <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
@@ -1670,7 +1670,7 @@ const fetchData = async (days = 30) => {
                   sx={{ 
                     p: 2, 
                     height: 450, 
-                    width: '94%', 
+                    width: '93%', 
                     borderRadius: 2,
                     boxShadow: '0 2px 10px 0 rgba(0,0,0,0.04)'
                   }}
@@ -1955,7 +1955,7 @@ const fetchData = async (days = 30) => {
           {/* Court Tab */}
           {tabValue === 2 && (
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6} sx={{ minWidth: { md: '470px' } }}>
+              <Grid item xs={12} md={6}>
                 <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                   <DonutLargeIcon sx={{ color: 'primary.main', mr: 1 }} />
                   <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
@@ -2006,7 +2006,7 @@ const fetchData = async (days = 30) => {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12} md={6} sx={{ minWidth: { md: '470px' } }}>
+              <Grid item xs={12} md={6}>
                 <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                   <TimelineIcon sx={{ color: 'primary.main', mr: 1 }} />
                   <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
@@ -2305,7 +2305,7 @@ const fetchData = async (days = 30) => {
           {/* Documents Tab */}
           {tabValue === 3 && (
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6} sx={{ minWidth: { md: '500px' } }}>
+              <Grid item xs={12} md={6}>
                 <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                   <DonutLargeIcon sx={{ color: 'primary.main', mr: 1 }} />
                   <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
@@ -2316,6 +2316,7 @@ const fetchData = async (days = 30) => {
                   sx={{ 
                     p: 2, 
                     height: 450, 
+                    width: "94%", 
                     borderRadius: 2,
                     boxShadow: '0 2px 10px 0 rgba(0,0,0,0.04)'
                   }}
@@ -2356,7 +2357,7 @@ const fetchData = async (days = 30) => {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12} md={6} sx={{ minWidth: { md: '500px' } }}>
+              <Grid item xs={12} md={6}>
                 <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                   <TimelineIcon sx={{ color: 'primary.main', mr: 1 }} />
                   <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
@@ -2418,7 +2419,7 @@ const fetchData = async (days = 30) => {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12} sx={{ minWidth: { md: '500px' } }}>
+              <Grid item xs={12}>
                 <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                   <BarChartIcon sx={{ color: 'primary.main', mr: 1 }} />
                   <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
@@ -2428,7 +2429,7 @@ const fetchData = async (days = 30) => {
                 <Paper 
                   sx={{ 
                     p: 2, 
-                    height: 450, 
+                    height: 400, 
                     borderRadius: 2,
                     boxShadow: '0 2px 10px 0 rgba(0,0,0,0.04)'
                   }}
@@ -2503,7 +2504,7 @@ const fetchData = async (days = 30) => {
         {/* Reports Tab with Real Data */}
         {tabValue === 4 && (
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6} sx={{ minWidth: { md: '450px' } }}>
+            <Grid item xs={12} md={6}>
               <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                 <DonutLargeIcon sx={{ color: 'primary.main', mr: 1 }} />
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
@@ -2554,7 +2555,7 @@ const fetchData = async (days = 30) => {
               </Paper>
             </Grid>
             
-            <Grid item xs={12} md={6} sx={{ minWidth: { md: '450px' } }}>
+            <Grid item xs={12} md={6}>
               <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                 <BarChartIcon sx={{ color: 'primary.main', mr: 1 }} />
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
@@ -2837,7 +2838,7 @@ const fetchData = async (days = 30) => {
           {/* Proposals Tab */}
           {tabValue === 5 && (
             <Grid container spacing={3}>
-              <Grid item xs={12} md={6} sx={{ minWidth: { md: '500px' } }}>
+              <Grid item xs={12} md={6}>
                 <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                   <DonutLargeIcon sx={{ color: 'primary.main', mr: 1 }} />
                   <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
@@ -2890,7 +2891,7 @@ const fetchData = async (days = 30) => {
                 </Paper>
               </Grid>
               
-              <Grid item xs={12} md={6} sx={{ minWidth: { md: '500px' } }}>
+              <Grid item xs={12} md={6}>
                 <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                   <TimelineIcon sx={{ color: 'primary.main', mr: 1 }} />
                   <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
@@ -3190,7 +3191,7 @@ const fetchData = async (days = 30) => {
         {/* Residents Tab - Now with real data */}
         {tabValue === 6 && (
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6} sx={{ minWidth: { md: '500px' } }}>
+            <Grid item xs={12} md={6}>
               <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                 <TimelineIcon sx={{ color: 'primary.main', mr: 1 }} />
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
@@ -3246,7 +3247,7 @@ const fetchData = async (days = 30) => {
               </Paper>
             </Grid>
             
-            <Grid item xs={12} md={6} sx={{ minWidth: { md: '500px' } }}>
+            <Grid item xs={12} md={6}>
               <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                 <DonutLargeIcon sx={{ color: 'primary.main', mr: 1 }} />
                 <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
