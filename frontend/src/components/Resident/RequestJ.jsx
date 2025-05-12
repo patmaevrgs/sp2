@@ -304,7 +304,7 @@ function RequestIndigency() {
                   value={formData.fullName}
                   onChange={handleChange}
                   error={!!errors.fullName}
-                  helperText={errors.fullName || "Enter your full name"}
+                  helperText={errors.fullName || "Enter your full name (will be converted to uppercase)"}
                   variant="outlined"
                   size="small"
                   InputProps={{
@@ -733,7 +733,8 @@ function RequestIndigency() {
                 </Typography>
                 <Typography variant="body2">
                   Standard processing takes 1-2 working days. You will be notified once your Certificate of Indigency is ready for pickup.
-                  Please bring the essential documents when claiming your certificate at the Barangay Hall.
+                  Please bring the essential documents when claiming your certificate at the Barangay Hall. There may be a minimal processing 
+                  fee for the certificate.
                 </Typography>
               </Box>
             </Box>
@@ -867,6 +868,9 @@ function RequestIndigency() {
               </Typography>
               <Typography component="li" variant="body2">
                 The certificate is typically valid for 3-6 months
+              </Typography>
+              <Typography component="li" variant="body2">
+                There may be a minimal processing fee payable at the Barangay Hall
               </Typography>
               <Typography component="li" variant="body2">
                 The certificate does not guarantee assistance from other agencies
