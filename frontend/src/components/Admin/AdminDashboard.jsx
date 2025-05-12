@@ -970,8 +970,11 @@ const fetchData = async (days = 30) => {
   };
   
   return (
-    <ThemeProvider theme={theme}>
-    <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>
+    <Box sx={{ 
+      flexGrow: 1, 
+      width: '100%',
+      p: 0 
+    }}>
     {/* Header Section */}
     <Box 
       sx={{ 
@@ -3560,42 +3563,20 @@ const fetchData = async (days = 30) => {
           )}
         </Box>
       </Paper>
-      
-        {/* Footer Section */}
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              mt: 3,
-              pt: 2,
-              borderTop: '1px solid',
-              borderColor: 'divider',
-              opacity: 0.8
-            }}
-          >
-            <Typography 
-              variant="caption" 
-              color="textSecondary"
-              sx={{ fontSize: '0.7rem' }}
-            >
-              © 2025 Barangay Maahas Admin Panel
-            </Typography>
             <Typography 
               variant="caption" 
               color="textSecondary"
               sx={{ 
                 fontSize: '0.7rem',
                 display: 'flex',
-                alignItems: 'center'
+                alignItems: 'center',
               }}
             >
               <AccessTimeIcon sx={{ fontSize: '0.875rem', mr: 0.5 }} />
               Last updated: {new Date().toLocaleString()}
             </Typography>
           </Box>
-        </Box>
-    </ThemeProvider>
+    // </ThemeProvider>
   );
 };
 

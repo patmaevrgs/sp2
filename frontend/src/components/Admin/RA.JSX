@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { 
   Grid, 
   Paper, 
@@ -29,8 +28,6 @@ import {
   TrendingUp,
   ArrowForward
 } from '@mui/icons-material';
-import { ThemeProvider } from '@mui/material/styles';
-import { useTheme } from '@mui/material/styles';
 
 // Date formatter
 const formatDate = (date) => {
@@ -55,13 +52,6 @@ const QuickStats = () => {
     recentActivity: []
   });
   
-  const theme = useTheme();
-  const navigate = useNavigate();
-
-  const handleViewAllActivity = () => {
-    navigate('/admin/logs'); // Adjust this path to match your actual logs page route
-  };
-
   const fetchStats = async () => {
     try {
       setLoading(true);
@@ -99,7 +89,7 @@ const QuickStats = () => {
       const reportData = await reportRes.json();
       const proposalData = await proposalRes.json();
       const logsData = logsRes.ok ? await logsRes.json() : { logs: [] };
-
+      
       console.log('Fetched data:', {
         ambulance: ambulanceData,
         court: courtData,
@@ -391,7 +381,6 @@ const QuickStats = () => {
   ];
   
   return (
-    <ThemeProvider theme={theme}>
   <Box sx={{ mb: 4 }}>
     {/* Header Section */}
     <Box 
@@ -743,7 +732,6 @@ const QuickStats = () => {
                     color="primary" 
                     size="small"
                     endIcon={<ArrowForward />}
-                    onClick={handleViewAllActivity}
                     sx={{ 
                       fontSize: '0.75rem',
                       fontWeight: 600,
@@ -760,7 +748,6 @@ const QuickStats = () => {
       </Grid>
     </Grid>
   </Box>
-  </ThemeProvider>
 );
 }
 
