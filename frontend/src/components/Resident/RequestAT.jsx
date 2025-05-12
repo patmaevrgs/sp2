@@ -11,6 +11,7 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  FormHelperText,
   Divider,
   Alert,
   Snackbar,
@@ -304,9 +305,9 @@ function RequestAssistance() {
         {/* Form Introduction */}
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="body2">
-            This form is for requesting a Barangay Certification for Assistance, which you can use when applying for support from 
-            Local Government Units (LGUs), Non-Government Organizations (NGOs), and other assistance-providing agencies. This certificate 
-            verifies your identity, residency status, and need for assistance, making it easier to access various support programs.
+            This form is for requesting assistance from the Barangay and Municipal Government of Los Baños. Depending on your 
+            situation and eligibility, you may qualify for financial, medical, burial, educational, or other forms of assistance.
+            All requests are subject to verification and approval by the appropriate authorities.
           </Typography>
         </Alert>
         
@@ -583,50 +584,58 @@ function RequestAssistance() {
             <Box sx={{ p: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
               <Typography variant="body2" paragraph sx={{ display: 'flex', alignItems: 'flex-start', fontWeight: 500 }}>
                 <CheckCircleIcon sx={{ mr: 1, color: 'success.main', fontSize: 20, mt: 0.3 }} />
-                Please bring the following documents when claiming your certification:
+                Please bring the following documents when following up on your request:
               </Typography>
               <Box component="ul" sx={{ pl: 4, mb: 0, mt: 0 }}>
                 <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
                   Valid ID (original and photocopy)
                 </Typography>
                 <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
-                  Proof of residence (utility bill, rental contract, etc.)
+                  Barangay Residency Certificate
                 </Typography>
                 
-                {formData.marginGroupType === 'senior_citizen' && (
-                  <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
-                    Senior Citizen ID
-                  </Typography>
-                )}
-                
-                {formData.marginGroupType === 'pwd' && (
-                  <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
-                    PWD ID or medical certificate
-                  </Typography>
-                )}
-                
                 {formData.assistanceType === 'financial' && (
-                  <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
-                    Documents showing financial need (if available)
-                  </Typography>
+                  <>
+                    <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
+                      Certificate of Indigency
+                    </Typography>
+                    <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
+                      Supporting documents showing financial need
+                    </Typography>
+                  </>
                 )}
                 
                 {formData.assistanceType === 'medical' && (
-                  <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
-                    Medical abstract or prescription (if available)
-                  </Typography>
+                  <>
+                    <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
+                      Medical certificate or prescription (dated within the last 3 months)
+                    </Typography>
+                    <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
+                      Hospital bills or quotation for medical procedures
+                    </Typography>
+                  </>
                 )}
                 
                 {formData.assistanceType === 'burial' && (
-                  <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
-                    Death certificate of deceased family member (if available)
-                  </Typography>
+                  <>
+                    <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
+                      Death certificate
+                    </Typography>
+                    <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
+                      Funeral home bill or quotation
+                    </Typography>
+                  </>
                 )}
                 
                 {formData.assistanceType === 'educational' && (
-                  <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
-                    School ID or enrollment certificate (if available)
-                  </Typography>
+                  <>
+                    <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
+                      Proof of enrollment or admission
+                    </Typography>
+                    <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
+                      School assessment or tuition fee structure
+                    </Typography>
+                  </>
                 )}
                 
                 <Typography component="li" variant="body2">
@@ -635,7 +644,6 @@ function RequestAssistance() {
               </Box>
             </Box>
           </Box>
-
           {/* Terms & Conditions */}
           <Alert 
             severity="warning" 
@@ -702,7 +710,7 @@ function RequestAssistance() {
         </Box>
       </Paper>
       
-      {/* About Assistance Certification */}
+      {/* About Assistance Programs */}
       <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
         <Box 
           sx={{ 
@@ -719,7 +727,7 @@ function RequestAssistance() {
             variant="subtitle1" 
             sx={{ fontWeight: 600 }}
           >
-            About Assistance Certification
+            About Assistance Programs
           </Typography>
         </Box>
         
@@ -729,22 +737,21 @@ function RequestAssistance() {
               <DescriptionIcon color="primary" sx={{ mr: 1.5, fontSize: 20, mt: 0.3 }} />
               <Box>
                 <Typography variant="subtitle2" gutterBottom>
-                  Purpose and Uses
+                  Available Assistance Programs
                 </Typography>
                 <Typography variant="body2" paragraph>
-                  A Barangay Certification for Assistance is an official document that can be presented to various organizations 
-                  when seeking assistance. This certificate validates your identity, residency, and your eligibility for assistance programs.
+                  The Barangay and Municipal Government offer various forms of assistance to qualified residents who are in need.
                 </Typography>
                 <Typography variant="body2">
-                  This certificate can be used when applying for:
+                  Assistance programs include:
                 </Typography>
                 <Box component="ul" sx={{ pl: 2, mb: 2, mt: 0 }}>
-                  <Typography component="li" variant="body2">Financial aid from government agencies</Typography>
-                  <Typography component="li" variant="body2">Medical assistance from hospitals and health institutions</Typography>
-                  <Typography component="li" variant="body2">Educational support from scholarship programs</Typography>
-                  <Typography component="li" variant="body2">Social welfare programs and services</Typography>
-                  <Typography component="li" variant="body2">Relief goods and donations from NGOs</Typography>
-                  <Typography component="li" variant="body2">Other community-based support programs</Typography>
+                  <Typography component="li" variant="body2">Financial Assistance - Emergency cash assistance for valid urgent needs</Typography>
+                  <Typography component="li" variant="body2">Medical Assistance - Help with medical bills, medicines, and treatments</Typography>
+                  <Typography component="li" variant="body2">Burial Assistance - Financial support for funeral expenses</Typography>
+                  <Typography component="li" variant="body2">Educational Assistance - Help with tuition fees and school supplies</Typography>
+                  <Typography component="li" variant="body2">Food Assistance - Food packs during emergencies or for indigent families</Typography>
+                  <Typography component="li" variant="body2">Housing Assistance - Help with repairs or temporary shelter</Typography>
                 </Box>
               </Box>
             </Box>
@@ -764,9 +771,9 @@ function RequestAssistance() {
                   Processing Time
                 </Typography>
                 <Typography variant="body2">
-                  Standard processing time for the Assistance Certification is 1-2 working days. You will be notified 
-                  when your certificate is ready for pickup at the Barangay Hall. The certificate is valid for 6 months 
-                  from the date of issuance and can be used for multiple assistance applications during this period.
+                  The processing time for assistance requests varies depending on the type of assistance and available resources. 
+                  Generally, urgent requests are processed within 3-5 working days, while non-urgent requests may take up to 2 weeks.
+                  You will be notified of the status of your request through the contact information you provided.
                 </Typography>
               </Box>
             </Box>
@@ -798,55 +805,53 @@ function RequestAssistance() {
           <Grid item xs={12} md={6}>
             <Accordion disableGutters elevation={0} sx={{ mb: 1, border: '1px solid', borderColor: 'divider', '&:before': { display: 'none' } }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>Where can I use this certification?</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>Who is eligible for assistance?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  This certification can be used when applying for assistance from various government agencies such as the 
-                  Department of Social Welfare and Development (DSWD), Philippine Charity Sweepstakes Office (PCSO), 
-                  Department of Health (DOH), as well as NGOs, foundations, hospitals, and other organizations that provide 
-                  aid to those in need. It serves as proof of your identity, residency, and status as a person in need of assistance.
+                  Eligibility depends on the type of assistance being requested. Generally, priority is given to residents who belong 
+                  to marginalized sectors such as senior citizens, persons with disabilities, single parents, and low-income families. 
+                  Residency in Barangay Maahas is a basic requirement, and you may be asked to provide proof of residency.
                 </Typography>
               </AccordionDetails>
             </Accordion>
             
             <Accordion disableGutters elevation={0} sx={{ mb: 1, border: '1px solid', borderColor: 'divider', '&:before': { display: 'none' } }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>How long is the certification valid?</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>How much financial assistance can I receive?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  The Assistance Certification is typically valid for 6 months from the date of issuance. However, some agencies 
-                  may require a more recent certification, so it's advisable to check with the specific agency about their requirements. 
-                  If your certification expires, you can request a new one from the Barangay.
+                  The amount of financial assistance varies depending on the nature of your need, your financial situation, and the 
+                  available budget of the Barangay and Municipal Government. The social welfare officer will assess your case and 
+                  determine the appropriate amount based on established guidelines.
                 </Typography>
               </AccordionDetails>
             </Accordion>
             
             <Accordion disableGutters elevation={0} sx={{ mb: 1, border: '1px solid', borderColor: 'divider', '&:before': { display: 'none' } }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>Can I request a certification for someone else?</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>Can I apply for multiple types of assistance?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  Yes, you can request a certification on behalf of a family member or dependent who needs assistance. However, 
-                  you will need to provide information about your relationship to the beneficiary and may need to present an 
-                  authorization letter and relevant documentation. The certification will be issued in the name of the actual 
-                  beneficiary who will receive the assistance.
+                  Yes, you can apply for different types of assistance if you have multiple needs. However, each request will be 
+                  evaluated separately, and approval will depend on your eligibility for each type of assistance and the available 
+                  resources. There may also be limitations on how frequently you can receive certain types of assistance.
                 </Typography>
               </AccordionDetails>
             </Accordion>
             
             <Accordion disableGutters elevation={0} sx={{ border: '1px solid', borderColor: 'divider', '&:before': { display: 'none' } }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>Does this guarantee I will receive assistance?</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>What happens after I submit my request?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  The Barangay Certification for Assistance does not guarantee that you will receive assistance from the agencies 
-                  or organizations you apply to. It serves as a supporting document that verifies your identity, residency, and 
-                  need for assistance. The final decision to provide assistance rests with the agency or organization where you 
-                  apply, based on their own criteria, policies, and available resources.
+                  After submitting your request, it will be reviewed by the Barangay staff and forwarded to the appropriate 
+                  department or agency. You may be contacted for additional information or documents. A social welfare officer 
+                  may conduct a home visit to verify your situation. Once your request is approved, you will be notified about 
+                  when and where to claim the assistance.
                 </Typography>
               </AccordionDetails>
             </Accordion>
@@ -862,12 +867,12 @@ function RequestAssistance() {
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <VolunteerActivismIcon sx={{ mr: 1, color: 'primary.main' }} />
-            <Typography variant="h6">Confirm Assistance Certification Request</Typography>
+            <Typography variant="h6">Confirm Assistance Request</Typography>
           </Box>
         </DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 2 }}>
-            Please confirm the following details for your Barangay Certification for Assistance request:
+            Please confirm the following details for your Request for Assistance:
           </DialogContentText>
           
           <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
@@ -884,9 +889,9 @@ function RequestAssistance() {
                 </Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="subtitle2" color="primary.main">Certification Details</Typography>
+                <Typography variant="subtitle2" color="primary.main">Assistance Details</Typography>
                 <Typography variant="body2">
-                  Certificate for: {formData.isSelf ? 'Myself' : `${formData.beneficiaryName} (${formData.beneficiaryRelation})`}
+                  Requesting for: {formData.isSelf ? 'Myself' : `${formData.beneficiaryName} (${formData.beneficiaryRelation})`}
                 </Typography>
                 <Typography variant="body2">
                   Assistance Type: {
@@ -908,13 +913,10 @@ function RequestAssistance() {
                 All information provided must be accurate and truthful
               </Typography>
               <Typography component="li" variant="body2">
-                Bring the required documents when claiming your certification
+                You will need to bring supporting documents when following up on your request
               </Typography>
               <Typography component="li" variant="body2">
-                This certification does not guarantee assistance from other agencies
-              </Typography>
-              <Typography component="li" variant="body2">
-                The certification is valid for 6 months from the date of issuance
+                The approval of your request is subject to verification and availability of resources
               </Typography>
             </Box>
           </Alert>
