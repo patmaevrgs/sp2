@@ -35,8 +35,7 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import CircleIcon from '@mui/icons-material/Circle';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import Cookies from 'universal-cookie';
+import { Link, useLocation } from 'react-router-dom';
 
 const drawerWidth = 250;
 
@@ -47,8 +46,6 @@ export default function AdminSidebar() {
   const [userType, setUserType] = useState('admin');
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Get user type from localStorage
@@ -151,14 +148,8 @@ export default function AdminSidebar() {
           py: 2, 
           display: 'flex', 
           alignItems: 'center',
-          mb: 1.5,
-          cursor: 'pointer',
-          borderRadius: 2,
-          '&:hover': {
-            backgroundColor: alpha(theme.palette.primary.main, 0.04),
-          },
+          mb: 1.5
         }}
-        onClick={() => navigate('/admin/profile')}
       >
         <Avatar 
           sx={{ 
@@ -178,7 +169,7 @@ export default function AdminSidebar() {
             fontWeight={600} 
             sx={{ color: 'text.primary', lineHeight: 1.2 }}
           >
-            {localStorage.getItem('firstName')} {localStorage.getItem('lastName')}
+            {userType === 'superadmin' ? 'Super Admin' : 'Administrator'}
           </Typography>
           <Typography 
             variant="caption" 
@@ -432,15 +423,8 @@ export default function AdminSidebar() {
           {/* Logout Button */}
           <ListItemButton
             onClick={() => {
-              // Use the same logout logic as in AdminRoot
-              const cookies = new Cookies();
-              cookies.remove('authToken', { path: '/' });
               localStorage.removeItem('userType');
-              localStorage.removeItem('firstName');
-              localStorage.removeItem('lastName');
-              localStorage.removeItem('email');
-              localStorage.removeItem('user');
-              window.location.href = '/'; // Redirect to login page
+              window.location.href = '/login';
             }}
             sx={{
               mx: 0.5,
@@ -491,7 +475,7 @@ export default function AdminSidebar() {
             fontSize: '0.7rem'
           }}
         >
-          B-Hub Admin Panel
+          B-Hub Admin Panel • v2.0
         </Typography>
         <Typography 
           variant="caption" 

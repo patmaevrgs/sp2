@@ -191,8 +191,8 @@ function AdminManageHomepage() {
         title: 'BARANGAY MAAHAS',
         description: 'Your one-stop hub for essential barangay services and information. Stay updated with announcements, request forms, and connect with your local community.',
         address: 'Los Baños, Laguna, Philippines',
-        phone: '+63 (049) 536-XXXX',
-        email: 'contact@barangaymaahas.gov.ph'
+        phone: '0926-935-6540',
+        email: 'barangaymaahas2@gmail.com'
       });
     } catch (error) {
       console.error('Error fetching homepage content:', error);

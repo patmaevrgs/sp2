@@ -123,11 +123,11 @@ const homepageContentSchema = new mongoose.Schema({
     },
     phone: {
       type: String,
-      default: '+63 (049) 536-XXXX'
+      default: '0926-935-6540'
     },
     email: {
       type: String,
-      default: 'contact@barangaymaahas.gov.ph'
+      default: 'barangaymaahas2@gmail.com'
     }
   },
   
