@@ -21,11 +21,15 @@ import {
 import InputAdornment from '@mui/material/InputAdornment';
 import FormHelperText from '@mui/material/FormHelperText';
 import AlertTitle from '@mui/material/AlertTitle';
-import StorefrontIcon from '@mui/icons-material/Storefront';
-import BusinessIcon from '@mui/icons-material/Business';
+import LandscapeIcon from '@mui/icons-material/Landscape';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import StraightenIcon from '@mui/icons-material/Straighten';
+import SquareFootIcon from '@mui/icons-material/SquareFoot';
+import SquareIcon from '@mui/icons-material/Square';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import CategoryIcon from '@mui/icons-material/Category';
-import NewReleasesIcon from '@mui/icons-material/NewReleases';
+import PersonIcon from '@mui/icons-material/Person';
+import HomeIcon from '@mui/icons-material/Home';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import InfoIcon from '@mui/icons-material/Info';
@@ -36,7 +40,6 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SendIcon from '@mui/icons-material/Send';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CancelIcon from '@mui/icons-material/Cancel';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -47,17 +50,25 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import { useNavigate } from 'react-router-dom';
 
-function RequestBusiness() {
+function RequestLot() {
   const navigate = useNavigate();
   const userId = localStorage.getItem('user');
 
   // Form state
   const [formData, setFormData] = useState({
-    // Business details
-    businessName: '',
-    businessAddress: '',
-    lineOfBusiness: '',
-    businessStatus: 'NEW' // Default to NEW, admin can change to RENEW if needed
+    // Property details
+    tdNumber: '',
+    surveyNumber: '',
+    lotArea: '',
+    areaUnit: 'square_meters',
+    lotLocation: '',
+
+    // Owner details
+    fullName: '',
+    ownerAddress: '',
+    
+    // Additional details
+    purpose: '',
   });
 
   // UI state
@@ -83,7 +94,9 @@ function RequestBusiness() {
     e.preventDefault();
     
     // Add validation if needed
-    if (!formData.businessName || !formData.businessAddress || !formData.lineOfBusiness) {
+    if (!formData.tdNumber || !formData.surveyNumber || !formData.lotArea || 
+        !formData.lotLocation || !formData.fullName || !formData.ownerAddress || 
+        !formData.purpose) {
       setSnackbar({
         open: true,
         message: 'Please fill in all required fields',
@@ -96,6 +109,7 @@ function RequestBusiness() {
     setOpenConfirmDialog(true);
   };
 
+  // Add new function to handle submission after confirmation
   const confirmSubmit = async () => {
     setLoading(true);
 
@@ -107,23 +121,24 @@ function RequestBusiness() {
         },
         body: JSON.stringify({
           userId,
-          documentType: 'business_clearance',
+          documentType: 'lot_ownership',
           formData: {
-            businessName: formData.businessName.toUpperCase(),
-            businessAddress: formData.businessAddress.toUpperCase(),
-            lineOfBusiness: formData.lineOfBusiness.toUpperCase(),
-            businessStatus: formData.businessStatus,
-            // Default amount that admin can change later
-            amount: '00.00'
+            tdNumber: formData.tdNumber,
+            surveyNumber: formData.surveyNumber,
+            lotArea: formData.lotArea,
+            areaUnit: formData.areaUnit,
+            lotLocation: formData.lotLocation,
+            fullName: formData.fullName,
+            ownerAddress: formData.ownerAddress
           },
-          purpose: 'Business Permit Application'
+          purpose: formData.purpose
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || 'Failed to submit business clearance request');
+        throw new Error(data.message || 'Failed to submit lot ownership request');
       }
 
       // Close dialog
@@ -132,16 +147,20 @@ function RequestBusiness() {
       // Show success message
       setSnackbar({
         open: true,
-        message: 'Your business clearance request has been submitted successfully',
+        message: 'Your lot ownership certification request has been submitted successfully',
         severity: 'success'
       });
 
       // Reset form after successful submission
       setFormData({
-        businessName: '',
-        businessAddress: '',
-        lineOfBusiness: '',
-        businessStatus: 'NEW'
+        tdNumber: '',
+        surveyNumber: '',
+        lotArea: '',
+        areaUnit: 'square_meters',
+        lotLocation: '',
+        fullName: '',
+        ownerAddress: '',
+        purpose: ''
       });
 
       // Navigate to transactions page after 2 seconds
@@ -150,7 +169,7 @@ function RequestBusiness() {
       }, 2000);
 
     } catch (error) {
-      console.error('Error submitting business clearance request:', error);
+      console.error('Error submitting lot ownership request:', error);
       setSnackbar({
         open: true,
         message: `Failed to submit request: ${error.message}`,
@@ -170,7 +189,7 @@ function RequestBusiness() {
   <Container maxWidth="lg" sx={{ mt: 3, mb: 4 }}>
     <Box sx={{ width: '100%' }}>
       <Typography variant="h4" gutterBottom>
-        Business Clearance Request
+        Lot Ownership Certification Request
       </Typography>
       <Box sx={{ mb: 4 }} />
       
@@ -185,66 +204,138 @@ function RequestBusiness() {
           borderBottom: '1px solid',
           borderColor: 'divider'
         }}>
-          <StorefrontIcon sx={{ mr: 1.5, color: 'primary.main', fontSize: 20 }} />
+          <LandscapeIcon sx={{ mr: 1.5, color: 'primary.main', fontSize: 20 }} />
           <Typography 
             variant="subtitle1" 
             sx={{ fontWeight: 600 }}
           >
-            Business Clearance Application Form
+            Lot Ownership Certification Form
           </Typography>
         </Box>
         
         {/* Form Introduction */}
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="body2">
-            This form is for requesting a Barangay Business Clearance, which certifies that your business establishment 
-            conforms to the requirements for operating within Barangay Maahas. This document is required for business 
-            permit applications and renewals with the Municipal Business Permits and Licensing Office.
+            This form is for requesting a Barangay Certification of Lot Ownership, which verifies property ownership details based on records presented to the Barangay.
+            This document certifies that the specified lot is registered in the name provided and is free from legal impediments or tenancy issues as far as barangay records show.
           </Typography>
         </Alert>
         
         <Box component="form" onSubmit={handleSubmit}>
-          {/* Business Information Section */}
+          {/* Property Details Section */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="subtitle2" gutterBottom sx={{ color: 'text.secondary', fontWeight: 500 }}>
-              Business Information
+              Property Details
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Grid container spacing={3}>
-              <Grid item xs={12}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Business Name"
-                  name="businessName"
-                  value={formData.businessName}
+                  label="TD Number"
+                  name="tdNumber"
+                  value={formData.tdNumber}
                   onChange={handleChange}
                   required
                   variant="outlined"
                   size="small"
-                  placeholder="e.g., ALPEREY ICE CREAM DISTRIBUTION"
-                  helperText="Enter the complete registered name of your business (will be converted to uppercase)"
+                  placeholder="e.g., 11 0008 0454"
+                  helperText="Tax Declaration Number issued by Assessor's Office"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <BusinessIcon fontSize="small" />
+                        <ReceiptIcon fontSize="small" />
                       </InputAdornment>
                     ),
                   }}
                 />
               </Grid>
               
-              <Grid item xs={12}>
+              <Grid item xs={12} sm={6}>
                 <TextField
                   fullWidth
-                  label="Business Address"
-                  name="businessAddress"
-                  value={formData.businessAddress}
+                  label="Survey Number"
+                  name="surveyNumber"
+                  value={formData.surveyNumber}
                   onChange={handleChange}
                   required
                   variant="outlined"
                   size="small"
-                  placeholder="e.g., PUROK 1, EMERALD STREET"
-                  helperText="Specific location within Barangay Maahas (will be converted to uppercase)"
+                  placeholder="e.g., 4975(CAD-450)"
+                  helperText="Cadastral/Property Survey Number"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <StraightenIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  label="Lot Area"
+                  name="lotArea"
+                  type="number"
+                  value={formData.lotArea}
+                  onChange={handleChange}
+                  required
+                  variant="outlined"
+                  size="small"
+                  placeholder="e.g., 79"
+                  helperText="Size of the property"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SquareFootIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <FormControl 
+                  fullWidth 
+                  required
+                  size="small"
+                >
+                  <InputLabel id="area-unit-label">Area Unit</InputLabel>
+                  <Select
+                    labelId="area-unit-label"
+                    name="areaUnit"
+                    value={formData.areaUnit}
+                    onChange={handleChange}
+                    label="Area Unit"
+                    startAdornment={
+                      <InputAdornment position="start">
+                        <SquareIcon fontSize="small" />
+                      </InputAdornment>
+                    }
+                  >
+                    <MenuItem value="square_meters">Square Meters</MenuItem>
+                    <MenuItem value="square_feet">Square Feet</MenuItem>
+                    <MenuItem value="hectares">Hectares</MenuItem>
+                  </Select>
+                  <FormHelperText>
+                    Unit of measurement for the lot area
+                  </FormHelperText>
+                </FormControl>
+              </Grid>
+              
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Property Location"
+                  name="lotLocation"
+                  value={formData.lotLocation}
+                  onChange={handleChange}
+                  required
+                  variant="outlined"
+                  size="small"
+                  placeholder="e.g., Purok 4, near Elementary School"
+                  helperText="Specific location within Barangay Maahas, Los Baños, Laguna"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -254,22 +345,31 @@ function RequestBusiness() {
                   }}
                 />
               </Grid>
+            </Grid>
+          </Box>
+          {/* Owner Information Section */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="subtitle2" gutterBottom sx={{ color: 'text.secondary', fontWeight: 500 }}>
+              Owner Information
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Grid container spacing={3}>
               <Grid item xs={12}>
                 <TextField
                   fullWidth
-                  label="Line of Business"
-                  name="lineOfBusiness"
-                  value={formData.lineOfBusiness}
+                  label="Owner Full Name"
+                  name="fullName"
+                  value={formData.fullName}
                   onChange={handleChange}
                   required
                   variant="outlined"
                   size="small"
-                  placeholder="e.g., FOOD RETAIL, COMPUTER REPAIR, TUTORIAL SERVICES"
-                  helperText="Type of business or primary products/services (will be converted to uppercase)"
+                  placeholder="e.g., JUAN M. DELA CRUZ"
+                  helperText="Full name of the registered owner (preferably in UPPERCASE)"
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
-                        <CategoryIcon fontSize="small" />
+                        <PersonIcon fontSize="small" />
                       </InputAdornment>
                     ),
                   }}
@@ -277,119 +377,105 @@ function RequestBusiness() {
               </Grid>
               
               <Grid item xs={12}>
-                <FormControl 
+                <TextField
                   fullWidth
+                  label="Owner Address"
+                  name="ownerAddress"
+                  value={formData.ownerAddress}
+                  onChange={handleChange}
                   required
+                  variant="outlined"
                   size="small"
-                >
-                  <InputLabel id="business-status-label">Business Status</InputLabel>
-                  <Select
-                    labelId="business-status-label"
-                    name="businessStatus"
-                    value={formData.businessStatus}
-                    onChange={handleChange}
-                    label="Business Status"
-                    startAdornment={
+                  placeholder="e.g., Brgy. Anos, Los Baños, Laguna"
+                  helperText="Complete address of the registered owner"
+                  InputProps={{
+                    startAdornment: (
                       <InputAdornment position="start">
-                        <NewReleasesIcon fontSize="small" />
+                        <HomeIcon fontSize="small" />
                       </InputAdornment>
-                    }
-                  >
-                    <MenuItem value="NEW">NEW</MenuItem>
-                    <MenuItem value="RENEW">RENEW</MenuItem>
-                  </Select>
-                  <FormHelperText>
-                    Select NEW for first-time application or RENEW for existing business
-                  </FormHelperText>
-                </FormControl>
+                    ),
+                  }}
+                />
               </Grid>
             </Grid>
           </Box>
           
-          {/* Fee Information Section */}
+          {/* Purpose Section */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="subtitle2" gutterBottom sx={{ color: 'text.secondary', fontWeight: 500 }}>
+              Purpose of Request
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TextField
+                  fullWidth
+                  label="Purpose"
+                  name="purpose"
+                  value={formData.purpose}
+                  onChange={handleChange}
+                  required
+                  variant="outlined"
+                  size="small"
+                  multiline
+                  rows={3}
+                  placeholder="e.g., For bank loan application, for property sale transaction"
+                  helperText="Please specify the purpose for requesting this certification"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start" sx={{ mt: '-36px' }}>
+                        <AssignmentIcon fontSize="small" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </Box>
+          {/* Fee Information */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="subtitle2" gutterBottom sx={{ color: 'text.secondary', fontWeight: 500 }}>
               Fee Information
             </Typography>
             <Divider sx={{ mb: 2 }} />
             <Box sx={{ p: 2, bgcolor: 'info.lighter', borderRadius: 1 }}>
-              <Typography variant="body2" paragraph sx={{ display: 'flex', alignItems: 'flex-start' }}>
+              <Typography variant="body2" sx={{ display: 'flex', alignItems: 'flex-start' }}>
                 <PaymentsIcon sx={{ mr: 1, color: 'info.main', fontSize: 20, mt: 0.3 }} />
-                The fee for Business Clearance varies based on business type and size:
-              </Typography>
-              <Grid container spacing={2} sx={{ ml: 0.5 }}>
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ border: '1px solid', borderColor: 'divider', p: 1.5, borderRadius: 1, bgcolor: 'background.paper' }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Typical fee ranges:
-                    </Typography>
-                    <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0 }}>
-                      <Typography component="li" variant="body2">Small/Micro businesses: ₱150.00 - ₱500.00</Typography>
-                      <Typography component="li" variant="body2">Medium businesses: ₱500.00 - ₱1,000.00</Typography>
-                      <Typography component="li" variant="body2">Large businesses: ₱1,000.00 - ₱2,000.00</Typography>
-                    </Box>
-                  </Box>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ border: '1px solid', borderColor: 'divider', p: 1.5, borderRadius: 1, bgcolor: 'background.paper' }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Fee factors:
-                    </Typography>
-                    <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0 }}>
-                      <Typography component="li" variant="body2">Business size and type</Typography>
-                      <Typography component="li" variant="body2">NEW vs RENEWAL application</Typography>
-                      <Typography component="li" variant="body2">Nature of business activities</Typography>
-                    </Box>
-                  </Box>
-                </Grid>
-              </Grid>
-              <Typography variant="body2" sx={{ mt: 2, fontStyle: 'italic' }}>
-                Note: The exact fee will be determined by the Barangay based on their assessment of your business. The final amount will be confirmed upon approval.
+                The processing fee for Lot Ownership Certification is ₱50.00, payable at the Barangay Hall upon approval of your request.
+                This fee covers the cost of document verification, processing, and certification issuance.
               </Typography>
             </Box>
           </Box>
-          {/* Requirements Section */}
+          
+          {/* Required Documents */}
           <Box sx={{ mb: 4 }}>
             <Typography variant="subtitle2" gutterBottom sx={{ color: 'text.secondary', fontWeight: 500 }}>
               Required Documents
             </Typography>
             <Divider sx={{ mb: 2 }} />
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
-                <Box sx={{ display: 'flex', mb: 1 }}>
-                  <CheckCircleIcon color="success" sx={{ mr: 1, fontSize: 20, mt: 0.3 }} />
-                  <Typography variant="body2">
-                    For NEW applications:
-                  </Typography>
-                </Box>
-                <Box component="ul" sx={{ pl: 4, mb: 2, mt: 0 }}>
-                  <Typography component="li" variant="body2">Barangay Business Application Form</Typography>
-                  <Typography component="li" variant="body2">Valid ID of business owner</Typography>
-                  <Typography component="li" variant="body2">DTI Business Name Registration</Typography>
-                  <Typography component="li" variant="body2">Proof of business location (contract/title)</Typography>
-                  <Typography component="li" variant="body2">Sketch of business location</Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Box sx={{ display: 'flex', mb: 1 }}>
-                  <CheckCircleIcon color="success" sx={{ mr: 1, fontSize: 20, mt: 0.3 }} />
-                  <Typography variant="body2">
-                    For RENEWAL applications:
-                  </Typography>
-                </Box>
-                <Box component="ul" sx={{ pl: 4, mb: 2, mt: 0 }}>
-                  <Typography component="li" variant="body2">Previous Barangay Business Clearance</Typography>
-                  <Typography component="li" variant="body2">Barangay Business Application Form</Typography>
-                  <Typography component="li" variant="body2">Valid ID of business owner</Typography>
-                  <Typography component="li" variant="body2">Business Permit from previous year</Typography>
-                </Box>
-              </Grid>
-            </Grid>
-            <Alert severity="warning" variant="outlined" sx={{ mt: 1 }}>
-              <Typography variant="body2">
-                Please bring these documents when claiming your Barangay Business Clearance at the Barangay Hall.
+            <Box sx={{ p: 2, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+              <Typography variant="body2" paragraph sx={{ display: 'flex', alignItems: 'flex-start', fontWeight: 500 }}>
+                <CheckCircleIcon sx={{ mr: 1, color: 'success.main', fontSize: 20, mt: 0.3 }} />
+                Please bring the following documents when claiming your certification:
               </Typography>
-            </Alert>
+              <Box component="ul" sx={{ pl: 4, mb: 0, mt: 0 }}>
+                <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
+                  Valid ID of the property owner
+                </Typography>
+                <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
+                  Original or certified true copy of Tax Declaration
+                </Typography>
+                <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
+                  Original or certified true copy of the property survey plan
+                </Typography>
+                <Typography component="li" variant="body2" sx={{ mb: 0.5 }}>
+                  Title of the property (if available)
+                </Typography>
+                <Typography component="li" variant="body2">
+                  Authorization letter (if the requestor is not the owner)
+                </Typography>
+              </Box>
+            </Box>
           </Box>
           
           {/* Terms & Conditions */}
@@ -407,17 +493,19 @@ function RequestBusiness() {
                 All information provided is accurate and complete to the best of your knowledge
               </Typography>
               <Typography component="li" variant="body2">
-                Your business complies with all barangay ordinances and regulations
+                You have legitimate interest in or ownership of the specified property
               </Typography>
               <Typography component="li" variant="body2">
-                You will present all required documents when claiming your Business Clearance
+                You will present all required documents when claiming your certification
               </Typography>
               <Typography component="li" variant="body2">
-                You agree to pay the applicable processing fee based on your business type
+                You understand that false information may lead to rejection of your application
+              </Typography>
+              <Typography component="li" variant="body2">
+                You agree to pay the applicable processing fee
               </Typography>
             </Box>
           </Alert>
-          
           {/* Form Actions */}
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
             <Button
@@ -427,10 +515,14 @@ function RequestBusiness() {
               sx={{ mr: 1 }}
               onClick={() => {
                 setFormData({
-                  businessName: '',
-                  businessAddress: '',
-                  lineOfBusiness: '',
-                  businessStatus: 'NEW'
+                  tdNumber: '',
+                  surveyNumber: '',
+                  lotArea: '',
+                  areaUnit: 'square_meters',
+                  lotLocation: '',
+                  fullName: '',
+                  ownerAddress: '',
+                  purpose: ''
                 });
               }}
               disabled={loading}
@@ -451,7 +543,8 @@ function RequestBusiness() {
           </Box>
         </Box>
       </Paper>
-      {/* About Barangay Business Clearance */}
+      
+      {/* About Lot Ownership Certification */}
       <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
         <Box 
           sx={{ 
@@ -468,7 +561,7 @@ function RequestBusiness() {
             variant="subtitle1" 
             sx={{ fontWeight: 600 }}
           >
-            About Barangay Business Clearance
+            About Lot Ownership Certification
           </Typography>
         </Box>
         
@@ -481,22 +574,22 @@ function RequestBusiness() {
                   Purpose and Benefits
                 </Typography>
                 <Typography variant="body2" paragraph>
-                  A Barangay Business Clearance is an official document that certifies your business complies with 
-                  local barangay regulations and has no pending violations or issues within the barangay.
+                  A Barangay Certification of Lot Ownership is an official document that verifies ownership details of a property
+                  based on records presented to and verified by the Barangay.
                 </Typography>
                 <Typography variant="body2">
-                  This document is essential for:
+                  This document is commonly used for:
                 </Typography>
                 <Box component="ul" sx={{ pl: 2, mb: 2, mt: 0 }}>
-                  <Typography component="li" variant="body2">Applying for a Municipal/City Business Permit</Typography>
-                  <Typography component="li" variant="body2">Annual renewal of Business Permits</Typography>
-                  <Typography component="li" variant="body2">Proving legitimate operation within the barangay</Typography>
-                  <Typography component="li" variant="body2">Accessing certain business services and benefits</Typography>
+                  <Typography component="li" variant="body2">Bank loan applications</Typography>
+                  <Typography component="li" variant="body2">Property sale transactions</Typography>
+                  <Typography component="li" variant="body2">Building permit applications</Typography>
+                  <Typography component="li" variant="body2">Verification of property ownership status</Typography>
+                  <Typography component="li" variant="body2">Supporting document for legal proceedings</Typography>
                 </Box>
               </Box>
             </Box>
           </Grid>
-          
           <Grid item xs={12} md={6}>
             <Box sx={{ display: 'flex', mb: 2 }}>
               <AccessTimeIcon color="primary" sx={{ mr: 1.5, fontSize: 20, mt: 0.3 }} />
@@ -505,7 +598,7 @@ function RequestBusiness() {
                   Process and Timeline
                 </Typography>
                 <Typography variant="body2" paragraph>
-                  After submitting this form, your application will be processed by the Barangay Maahas administration.
+                  After submitting this form, your application will go through the following process:
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
@@ -523,7 +616,7 @@ function RequestBusiness() {
                       fontWeight: 'bold'
                     }}>1</Box>
                     <Typography variant="body2">
-                      <strong>Application Review:</strong> Your application will be reviewed for completeness (1-2 days)
+                      <strong>Document Verification:</strong> Your submitted information will be verified against barangay records (1-2 days)
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
@@ -541,7 +634,7 @@ function RequestBusiness() {
                       fontWeight: 'bold'
                     }}>2</Box>
                     <Typography variant="body2">
-                      <strong>Verification:</strong> Barangay staff may conduct a site inspection of the business (2-3 days)
+                      <strong>Approval:</strong> The Barangay Captain will review and approve the certification (1-2 days)
                     </Typography>
                   </Box>
                   <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
@@ -559,7 +652,7 @@ function RequestBusiness() {
                       fontWeight: 'bold'
                     }}>3</Box>
                     <Typography variant="body2">
-                      <strong>Approval:</strong> Upon approval, you'll be notified to visit the Barangay Hall with required documents
+                      <strong>Notification:</strong> You will be notified when your certification is ready for pickup
                     </Typography>
                   </Box>
                 </Box>
@@ -568,6 +661,7 @@ function RequestBusiness() {
           </Grid>
         </Grid>
       </Paper>
+      
       {/* Frequently Asked Questions */}
       <Paper elevation={3} sx={{ p: 3 }}>
         <Box 
@@ -593,54 +687,54 @@ function RequestBusiness() {
           <Grid item xs={12} md={6}>
             <Accordion disableGutters elevation={0} sx={{ mb: 1, border: '1px solid', borderColor: 'divider', '&:before': { display: 'none' } }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>How long is the Barangay Business Clearance valid?</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>Is this certification equivalent to a land title?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  The Barangay Business Clearance is typically valid for one year from the date of issuance and needs to be
-                  renewed annually along with your business permit. For seasonal businesses, special validity periods may apply.
+                  No, this certification is not equivalent to a land title. It only verifies that based on the records presented 
+                  to the barangay, the specified person is the recognized owner of the property. For official land titling, 
+                  you should consult with the Register of Deeds or Land Registration Authority.
                 </Typography>
               </AccordionDetails>
             </Accordion>
             
             <Accordion disableGutters elevation={0} sx={{ mb: 1, border: '1px solid', borderColor: 'divider', '&:before': { display: 'none' } }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>What if my business operates in multiple locations?</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>How long is the Lot Ownership Certification valid?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  If your business has multiple branches or locations within Barangay Maahas, you need to apply for a separate
-                  Barangay Business Clearance for each location. If you have branches in different barangays, you'll need to
-                  apply for clearance from each respective barangay office.
+                  The certification is typically valid for 6 months from the date of issuance. However, some institutions 
+                  might require a more recent certification, so it's advisable to check with the requiring party about their 
+                  specific validity requirements.
                 </Typography>
               </AccordionDetails>
             </Accordion>
           </Grid>
-          
           <Grid item xs={12} md={6}>
             <Accordion disableGutters elevation={0} sx={{ mb: 1, border: '1px solid', borderColor: 'divider', '&:before': { display: 'none' } }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>Does my home-based online business need a clearance?</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>Can someone else request this certification on my behalf?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  Yes, even home-based and online businesses operating within Barangay Maahas require a Barangay Business Clearance.
-                  This ensures that all business activities within the barangay are properly registered and regulated. Home-based
-                  businesses may qualify for reduced fees depending on the nature and scale of the business.
+                  Yes, someone else can request and pick up the certification on your behalf, but they need to present an 
+                  authorization letter signed by you, along with a copy of your valid ID and their own valid ID. The authorization 
+                  letter should specifically state that they are authorized to request and receive the Lot Ownership Certification.
                 </Typography>
               </AccordionDetails>
             </Accordion>
             
             <Accordion disableGutters elevation={0} sx={{ border: '1px solid', borderColor: 'divider', '&:before': { display: 'none' } }}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography variant="body2" sx={{ fontWeight: 500 }}>What happens if I operate without a Business Clearance?</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500 }}>What if there is a discrepancy in my property details?</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <Typography variant="body2">
-                  Operating a business without a Barangay Business Clearance is a violation of local ordinances and may result in
-                  penalties, fines, or closure of your business. Additionally, you won't be able to obtain a Municipal Business
-                  Permit, which is required for legal business operations. It's always best to ensure your business is properly
-                  registered and compliant with all local regulations.
+                  If there are discrepancies in your property details (e.g., differences between the tax declaration and 
+                  survey plan), you may need to resolve these issues first with the Municipal Assessor's Office or the 
+                  appropriate government agency before the barangay can issue the certification. The barangay can only 
+                  certify based on consistent and verified information.
                 </Typography>
               </AccordionDetails>
             </Accordion>
@@ -655,32 +749,35 @@ function RequestBusiness() {
       >
         <DialogTitle>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <StorefrontIcon sx={{ mr: 1, color: 'primary.main' }} />
-            <Typography variant="h6">Confirm Business Clearance Request</Typography>
+            <LandscapeIcon sx={{ mr: 1, color: 'primary.main' }} />
+            <Typography variant="h6">Confirm Lot Ownership Certification Request</Typography>
           </Box>
         </DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 2 }}>
-            Please confirm the following details for your Business Clearance application:
+            Please confirm the following details for your Lot Ownership Certification request:
           </DialogContentText>
           
           <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <Typography variant="subtitle2" color="primary.main">Business Name</Typography>
-                <Typography variant="body2">{formData.businessName.toUpperCase() || 'N/A'}</Typography>
+                <Typography variant="subtitle2" color="primary.main">Property Details</Typography>
+                <Typography variant="body2">TD Number: {formData.tdNumber}</Typography>
+                <Typography variant="body2">Survey Number: {formData.surveyNumber}</Typography>
+                <Typography variant="body2">
+                  Lot Area: {formData.lotArea} {formData.areaUnit === 'square_meters' ? 'Square Meters' : 
+                             formData.areaUnit === 'square_feet' ? 'Square Feet' : 'Hectares'}
+                </Typography>
+                <Typography variant="body2">Location: {formData.lotLocation}</Typography>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="subtitle2" color="primary.main">Business Address</Typography>
-                <Typography variant="body2">{formData.businessAddress.toUpperCase() || 'N/A'}</Typography>
+                <Typography variant="subtitle2" color="primary.main">Owner Information</Typography>
+                <Typography variant="body2">Name: {formData.fullName}</Typography>
+                <Typography variant="body2">Address: {formData.ownerAddress}</Typography>
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" color="primary.main">Line of Business</Typography>
-                <Typography variant="body2">{formData.lineOfBusiness.toUpperCase() || 'N/A'}</Typography>
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <Typography variant="subtitle2" color="primary.main">Business Status</Typography>
-                <Typography variant="body2">{formData.businessStatus || 'N/A'}</Typography>
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" color="primary.main">Purpose</Typography>
+                <Typography variant="body2">{formData.purpose}</Typography>
               </Grid>
             </Grid>
           </Paper>
@@ -691,13 +788,13 @@ function RequestBusiness() {
             </Typography>
             <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0.5 }}>
               <Typography component="li" variant="body2">
-                Bring all required documents when claiming your clearance
+                Bring all required documents when claiming your certification
               </Typography>
               <Typography component="li" variant="body2">
-                Processing fee will vary based on business type and status
+                Processing fee is ₱50.00, payable at the Barangay Hall
               </Typography>
               <Typography component="li" variant="body2">
-                A site inspection may be required before approval
+                Processing typically takes 3-5 working days
               </Typography>
             </Box>
           </Alert>
@@ -744,4 +841,4 @@ function RequestBusiness() {
 );
 }
 
-export default RequestBusiness;
+export default RequestLot;
