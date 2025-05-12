@@ -552,7 +552,7 @@ function ResidentReport() {
                 size="small"
                 error={!!errors.location}
                 helperText={errors.location}
-                placeholder="e.g., Jade Street corner Ruby Street"
+                placeholder="e.g., Purok 2 Sampalukan"
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -562,7 +562,8 @@ function ResidentReport() {
                 }}
                 sx={{ 
                   '& .MuiInputBase-root': {
-                    minWidth: '290px' // Adjust this value as needed
+                    width: '100%',
+                    minWidth: { xs: '260px', sm: '260px', md: '280px' }
                   }}}
               />
             </Grid>
@@ -682,7 +683,8 @@ function ResidentReport() {
                 }}
                 sx={{ 
                   '& .MuiInputBase-root': {
-                    minWidth: '300px' // Adjust this value as needed
+                    width: '100%',
+                    minWidth: { xs: '270px', sm: '280px', md: '300px' }
                   }}}
               />
             </Grid>

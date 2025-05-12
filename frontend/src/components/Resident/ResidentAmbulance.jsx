@@ -687,7 +687,8 @@ const ResidentAmbulance = () => {
                   size="small"
                   sx={{ 
                   '& .MuiInputBase-root': {
-                    minWidth: '180px' // Adjust this value as needed
+                    width: '100%',
+                    minWidth: { xs: '180px', sm: '180px', md: '180px' }
                   }}}
                 >
                   <InputLabel>Estimated Duration</InputLabel>
@@ -752,7 +753,8 @@ const ResidentAmbulance = () => {
                   size="small"
                   sx={{ 
                   '& .MuiInputBase-root': {
-                    minWidth: '270px' // Adjust this value as needed
+                    width: '100%',
+                    minWidth: { xs: '250px', sm: '250px', md: '270px' }
                   }}}
                 />
               </Grid>

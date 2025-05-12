@@ -38,12 +38,6 @@ import AssignmentIcon from '@mui/icons-material/Assignment';
 import SendIcon from '@mui/icons-material/Send';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
-import CancelIcon from '@mui/icons-material/Cancel';
 import { useNavigate } from 'react-router-dom';
 
 function RequestDigging() {
@@ -64,7 +58,6 @@ function RequestDigging() {
 
   // UI state
   const [loading, setLoading] = useState(false);
-  const [openConfirmDialog, setOpenConfirmDialog] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -83,24 +76,6 @@ function RequestDigging() {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Add validation if needed
-    if (!formData.fullName || !formData.address || !formData.companyName || 
-        !formData.applicationDetails) {
-      setSnackbar({
-        open: true,
-        message: 'Please fill in all required fields',
-        severity: 'error'
-      });
-      return;
-    }
-    
-    // Open confirmation dialog
-    setOpenConfirmDialog(true);
-  };
-
-  // new function to handle submission after confirmation
-  const confirmSubmit = async () => {
     setLoading(true);
 
     // Create purpose string based on selection
@@ -149,9 +124,6 @@ function RequestDigging() {
         throw new Error(data.message || 'Failed to submit digging permit request');
       }
 
-      // Close dialog
-      setOpenConfirmDialog(false);
-      
       // Show success message
       setSnackbar({
         open: true,
@@ -312,7 +284,7 @@ function RequestDigging() {
                     <MenuItem value="water_supply">Water Supply Connection</MenuItem>
                     <MenuItem value="electrical">Electrical Connection</MenuItem>
                     <MenuItem value="drainage">Drainage System</MenuItem>
-                    <MenuItem value="other">Other (Please specify in Connection Details)</MenuItem>
+                    <MenuItem value="other">Other (Please specify)</MenuItem>
                   </Select>
                   <FormHelperText>
                     Primary purpose for the digging activity
@@ -341,8 +313,7 @@ function RequestDigging() {
                   }}
                   sx={{ 
                   '& .MuiInputBase-root': {
-                    width: '100%',
-                    minWidth: { xs: '100%', sm: '100%', md: '400px' }
+                    minWidth: '400px' // Adjust this value as needed
                   }}}
                 />
               </Grid>
@@ -621,80 +592,6 @@ function RequestDigging() {
           {snackbar.message}
         </Alert>
       </Snackbar>
-      {/* Confirmation Dialog */}
-      <Dialog
-        open={openConfirmDialog}
-        onClose={() => setOpenConfirmDialog(false)}
-      >
-        <DialogTitle>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <StraightenIcon sx={{ mr: 1, color: 'primary.main' }} />
-            <Typography variant="h6">Confirm Digging Permit Request</Typography>
-          </Box>
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ mb: 2 }}>
-            Please confirm the following details for your Digging Permit request:
-          </DialogContentText>
-          
-          <Paper variant="outlined" sx={{ p: 2, mb: 2 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" color="primary.main">Personal Information</Typography>
-                <Typography variant="body2">Name: {formData.fullName}</Typography>
-                <Typography variant="body2">Address: {formData.address}</Typography>
-              </Grid>
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" color="primary.main">Digging Details</Typography>
-                <Typography variant="body2">
-                  Purpose: {formData.diggingPurpose === 'water_supply' ? 'Water Supply Connection' : 
-                          formData.diggingPurpose === 'electrical' ? 'Electrical Connection' : 
-                          formData.diggingPurpose === 'drainage' ? 'Drainage System' : 'Other'}
-                </Typography>
-                <Typography variant="body2">Company: {formData.companyName}</Typography>
-                <Typography variant="body2">Connection Details: {formData.applicationDetails}</Typography>
-              </Grid>
-            </Grid>
-          </Paper>
-          
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            <Typography variant="body2" fontWeight="bold">
-              Important Reminders:
-            </Typography>
-            <Box component="ul" sx={{ pl: 2, mb: 0, mt: 0.5 }}>
-              <Typography component="li" variant="body2">
-                You must restore the digging area to its original condition after work completion
-              </Typography>
-              <Typography component="li" variant="body2">
-                There's a processing fee payable at the Barangay Hall
-              </Typography>
-              <Typography component="li" variant="body2">
-                Processing typically takes 1-2 working days
-              </Typography>
-            </Box>
-          </Alert>
-        </DialogContent>
-        <DialogActions>
-          <Button 
-            onClick={() => setOpenConfirmDialog(false)} 
-            variant="outlined"
-            size="small"
-            startIcon={<CancelIcon />}
-          >
-            Cancel
-          </Button>
-          <Button 
-            onClick={confirmSubmit} 
-            color="primary" 
-            variant="contained"
-            size="small"
-            disabled={loading}
-            startIcon={loading ? <CircularProgress size={16} /> : <CheckCircleIcon />}
-          >
-            Confirm & Submit
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   </Container>
 );
