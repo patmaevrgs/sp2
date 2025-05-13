@@ -748,7 +748,7 @@ function AdminRequestForms() {
               boxShadow: '0 2px 10px 0 rgba(0,0,0,0.04)'
             }}
           >
-            <TableContainer sx={{ maxHeight: 'calc(100vh - 280px)' }}>
+            <TableContainer sx={{ maxHeight: 'calc(100vh - 250px)' }}>
               <Table stickyHeader size="small">
                 <TableHead>
                   <TableRow>

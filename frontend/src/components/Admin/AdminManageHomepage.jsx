@@ -1020,7 +1020,7 @@ const saveFooterData = async () => {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} >
+              <Grid item xs={12} sx={{minWidth: '100%'}}>
                 <TextField
                   label="Welcome Text"
                   variant="outlined"
