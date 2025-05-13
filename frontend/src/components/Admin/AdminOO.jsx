@@ -52,7 +52,7 @@ import {
 import Slider from "react-slick";
 import { alpha } from '@mui/material/styles';
 import HomeIcon from '@mui/icons-material/Home';
-import WavingHandIcon from '@mui/icons-material/WavingHand';
+import WavingHandIcon from '@mui/icons-material/Waving';
 import InfoIcon from '@mui/icons-material/Info';
 import DataUsageIcon from '@mui/icons-material/DataUsage';
 import CollectionsIcon from '@mui/icons-material/Collections';
@@ -69,9 +69,6 @@ import ExploreIcon from '@mui/icons-material/Explore';
 import WorkIcon from '@mui/icons-material/Work';
 import EmailIcon from '@mui/icons-material/Email';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import Chip from '@mui/material/Chip';
-import PersonIcon from '@mui/icons-material/Person';
-import AlertTitle from '@mui/material/AlertTitle';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
@@ -163,17 +160,6 @@ function AdminManageHomepage() {
     fetchHomepageContent();
   }, []);
   
-  useEffect(() => {
-  // Add this in your component to force slider resize when tab changes
-    if (tabValue === 3 && carouselImages.length > 0) {
-      const timer = setTimeout(() => {
-        // Force resize event for slick to recalculate dimensions
-        window.dispatchEvent(new Event('resize'));
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [tabValue, carouselImages]);
-
   const fetchHomepageContent = async () => {
     try {
       setLoading(true);
@@ -902,8 +888,7 @@ const saveFooterData = async () => {
           mb: 4, 
           borderRadius: 2,
           boxShadow: '0 2px 10px 0 rgba(0,0,0,0.04)',
-          overflow: 'hidden',
-          p: 2
+          overflow: 'hidden'
         }}
       >
         <Tabs
@@ -916,13 +901,13 @@ const saveFooterData = async () => {
           sx={{
             borderBottom: '1px solid',
             borderColor: 'divider',
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.05),
+            bgcolor: theme => alpha(theme.palette.primary.main, 0.05),
             '& .MuiTab-root': {
               textTransform: 'none',
               fontSize: '0.85rem',
               fontWeight: 500,
               py: 1.5,
-              minHeight: 'auto',
+              minHeight: 'auto'
             }
           }}
         >
@@ -978,7 +963,7 @@ const saveFooterData = async () => {
               mb: 3,
               display: 'flex',
               alignItems: 'center',
-              backgroundColor: alpha('#f5f5f5', 0.5),
+              bgcolor: alpha('#f5f5f5', 0.5)
             }}
           >
             <WavingHandIcon sx={{ mr: 2, color: 'primary.main', fontSize: '2rem' }} />
@@ -1001,7 +986,7 @@ const saveFooterData = async () => {
             }}
           >
             <Grid container spacing={3}>
-              <Grid item xs={12} sx={{minWidth: '100%'}}>
+              <Grid item xs={12}>
                 <TextField
                   label="Welcome Title"
                   variant="outlined"
@@ -1020,7 +1005,7 @@ const saveFooterData = async () => {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} >
+              <Grid item xs={12}>
                 <TextField
                   label="Welcome Text"
                   variant="outlined"
@@ -1049,7 +1034,7 @@ const saveFooterData = async () => {
                     borderRadius: 2, 
                     p: 2, 
                     mt: 1, 
-                    backgroundColor: alpha('#e3f2fd', 0.5),
+                    bgcolor: alpha('#e3f2fd', 0.5),
                     border: '1px dashed',
                     borderColor: 'primary.light'
                   }}
@@ -1102,7 +1087,7 @@ const saveFooterData = async () => {
               mb: 3,
               display: 'flex',
               alignItems: 'center',
-              backgroundColor: alpha('#f5f5f5', 0.5)
+              bgcolor: alpha('#f5f5f5', 0.5)
             }}
           >
             <InfoIcon sx={{ mr: 2, color: 'primary.main', fontSize: '2rem' }} />
@@ -1125,7 +1110,7 @@ const saveFooterData = async () => {
             }}
           >
             <Grid container spacing={3}>
-              <Grid item xs={12} sx={{minWidth: '100%'}}>
+              <Grid item xs={12}>
                 <TextField
                   label="About Text"
                   variant="outlined"
@@ -1147,7 +1132,7 @@ const saveFooterData = async () => {
                     borderRadius: 2, 
                     p: 2, 
                     mt: 1, 
-                    backgroundColor: alpha('#e3f2fd', 0.5),
+                    bgcolor: alpha('#e3f2fd', 0.5),
                     border: '1px dashed',
                     borderColor: 'primary.light'
                   }}
@@ -1200,7 +1185,7 @@ const saveFooterData = async () => {
               mb: 3,
               display: 'flex',
               alignItems: 'center',
-              backgroundColor: alpha('#f5f5f5', 0.5)
+              bgcolor: alpha('#f5f5f5', 0.5)
             }}
           >
             <DataUsageIcon sx={{ mr: 2, color: 'primary.main', fontSize: '2rem' }} />
@@ -1394,7 +1379,7 @@ const saveFooterData = async () => {
               mb: 3,
               display: 'flex',
               alignItems: 'center',
-              backgroundColor: alpha('#f5f5f5', 0.5)
+              bgcolor: alpha('#f5f5f5', 0.5)
             }}
           >
             <CollectionsIcon sx={{ mr: 2, color: 'primary.main', fontSize: '2rem' }} />
@@ -1414,9 +1399,7 @@ const saveFooterData = async () => {
               p: 3, 
               mb: 3,
               borderRadius: 2,
-              boxShadow: '0 2px 10px 0 rgba(0,0,0,0.04)',
-              maxWidth: '100%', // Ensure it doesn't exceed container width
-              overflow: 'hidden'
+              boxShadow: '0 2px 10px 0 rgba(0,0,0,0.04)'
             }}
           >
             <Typography 
@@ -1435,154 +1418,110 @@ const saveFooterData = async () => {
             
             {carouselImages.length > 0 ? (
               <Box>
-                {/* Regular Image Gallery Instead of Slider */}
-                <Box sx={{ mb: 3 }}>
-                  <Grid container spacing={2}>
+                {/* Slider Preview */}
+                <Box 
+                  sx={{ 
+                    mb: 3, 
+                    borderRadius: 2, 
+                    overflow: 'hidden',
+                    border: '1px solid',
+                    borderColor: alpha('#000', 0.08) 
+                  }}
+                >
+                  <Slider
+                    dots={true}
+                    infinite={true}
+                    speed={500}
+                    slidesToShow={1}
+                    slidesToScroll={1}
+                    adaptiveHeight={true}
+                    autoplay={true}
+                    autoplaySpeed={5000}
+                  >
                     {carouselImages.map((image, index) => (
-                      <Grid item xs={12} md={6} lg={4} key={image._id || index}>
-                        <Paper 
-                          elevation={1}
-                          sx={{ 
-                            borderRadius: 2, 
-                            overflow: 'hidden',
-                            height: '100%',
-                            display: 'flex',
-                            flexDirection: 'column'
+                      <Box key={image._id || index} sx={{ position: 'relative' }}>
+                        <img
+                          src={`http://localhost:3002${image.path}`}
+                          alt={image.caption || `Carousel image ${index + 1}`}
+                          style={{ 
+                            width: '100%', 
+                            height: '350px', 
+                            objectFit: 'cover'
+                          }}
+                        />
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            bottom: 0,
+                            width: '100%',
+                            bgcolor: 'rgba(0, 0, 0, 0.6)',
+                            color: 'white',
+                            p: 2
                           }}
                         >
-                          <Box 
-                            sx={{ 
-                              position: 'relative',
-                              height: 240,
-                              width: '100%'
-                            }}
-                          >
-                            <img
-                              src={`http://localhost:3002${image.path}`}
-                              alt={image.caption || `Carousel image ${index + 1}`}
-                              style={{ 
-                                width: '300px', 
-                                height: '100%', 
-                                objectFit: 'cover',
-                                display: 'block'
-                              }}
-                            />
-                            <Box
-                              sx={{
-                                position: 'absolute',
-                                bottom: 0,
-                                width: '100%',
-                                backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                                color: 'white',
-                                p: 1.5
-                              }}
-                            >
-                              <Typography variant="body2">
-                                {image.caption || 'No caption'}
-                              </Typography>
-                            </Box>
-                          </Box>
-                          
-                          <Box sx={{ 
-                            p: 1, 
-                            display: 'flex', 
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            bgcolor: alpha('#f5f5f5', 0.5)
-                          }}>
-                            <Typography variant="caption" sx={{ fontWeight: 500 }}>
-                              Image {index + 1} of {carouselImages.length}
-                            </Typography>
-                            <Button 
-                              size="small" 
-                              color="error"
-                              startIcon={<DeleteIcon />}
-                              onClick={() => handleDeleteImageClick(image)}
-                              sx={{ 
-                                fontSize: '0.8rem',
-                                textTransform: 'none'
-                              }}
-                            >
-                              Delete
-                            </Button>
-                          </Box>
-                        </Paper>
-                      </Grid>
+                          <Typography variant="body1">
+                            {image.caption || 'No caption'}
+                          </Typography>
+                        </Box>
+                      </Box>
                     ))}
-                  </Grid>
+                  </Slider>
                 </Box>
                 
                 <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>
-                  Current Display Order:
+                  Manage Images:
                 </Typography>
                 
-                <TableContainer component={Paper} sx={{ mb: 3, borderRadius: 2, boxShadow: 'none', border: '1px solid', borderColor: 'divider' }}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow sx={(theme) => ({ backgroundColor: alpha(theme.palette.primary.main, 0.05) })}>
-                        <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem', width: 80 }}>Order</TableCell>
-                        <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>Image</TableCell>
-                        <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>Caption</TableCell>
-                        <TableCell align="right" sx={{ fontWeight: 600, fontSize: '0.85rem', width: 100 }}>Action</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {carouselImages.map((image, index) => (
-                        <TableRow key={image._id || index} hover>
-                          <TableCell sx={{ fontSize: '0.85rem' }}>
-                            <Chip 
-                              label={`#${index + 1}`} 
-                              size="small" 
-                              sx={{ 
-                                fontWeight: 600, 
-                                height: 24, 
-                                fontSize: '0.75rem'
-                              }} 
-                            />
-                          </TableCell>
-                          <TableCell sx={{ fontSize: '0.85rem' }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                              <Box 
-                                component="img" 
-                                src={`http://localhost:3002${image.path}`}
-                                alt={`Thumbnail ${index + 1}`}
-                                sx={{ 
-                                  width: 50, 
-                                  height: 50, 
-                                  borderRadius: 1, 
-                                  mr: 1,
-                                  objectFit: 'cover'
-                                }}
-                              />
-                              <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                                Image {index + 1}
-                              </Typography>
-                            </Box>
-                          </TableCell>
-                          <TableCell sx={{ fontSize: '0.85rem' }}>
-                            {image.caption || <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>No caption</Typography>}
-                          </TableCell>
-                          <TableCell align="right">
-                            <IconButton
-                              size="small"
-                              color="error"
-                              onClick={() => handleDeleteImageClick(image)}
-                              sx={(theme) => ({ 
-                                backgroundColor: alpha(theme.palette.error.main, 0.1),
-                                '&:hover': {
-                                  backgroundColor: alpha(theme.palette.error.main, 0.2),
-                                },
-                                p: 0.75
-                              })}
-                            >
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                <Grid container spacing={2}>
+                  {carouselImages.map((image, index) => (
+                    <Grid item xs={12} sm={6} md={4} key={image._id || index}>
+                      <Card 
+                        sx={{ 
+                          borderRadius: 2, 
+                          overflow: 'hidden',
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+                          transition: 'transform 0.2s ease-in-out',
+                          '&:hover': {
+                            transform: 'translateY(-4px)',
+                            boxShadow: '0 5px 15px rgba(0, 0, 0, 0.15)'
+                          }
+                        }}
+                      >
+                        <CardMedia
+                          component="img"
+                          height="160"
+                          image={`http://localhost:3002${image.path}`}
+                          alt={image.caption || `Carousel image ${index + 1}`}
+                        />
+                        <CardContent sx={{ pb: 1 }}>
+                          <Typography variant="body2" color="text.secondary">
+                            {image.caption || 'No caption'}
+                          </Typography>
+                        </CardContent>
+                        <CardActions 
+                          sx={{ 
+                            display: 'flex', 
+                            justifyContent: 'flex-end',
+                            bgcolor: alpha('#f5f5f5', 0.5)
+                          }}
+                        >
+                          <Button 
+                            size="small" 
+                            color="error"
+                            startIcon={<DeleteIcon />}
+                            onClick={() => handleDeleteImageClick(image)}
+                            sx={{ 
+                              fontSize: '0.8rem',
+                              textTransform: 'none'
+                            }}
+                          >
+                            Delete
+                          </Button>
+                        </CardActions>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
               </Box>
             ) : (
               <Box 
@@ -1625,7 +1564,7 @@ const saveFooterData = async () => {
               Upload New Images
             </Typography>
             
-            <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
+            <Box sx={{ mb: 2 }}>
               <Button
                 variant="outlined"
                 component="label"
@@ -1636,68 +1575,23 @@ const saveFooterData = async () => {
                   fontWeight: 500
                 }}
               >
-                {filePreviewUrls.length > 0 ? 'Add More Images' : 'Select Images'}
+                Select Images
                 <input
                   type="file"
                   multiple
                   accept="image/*"
                   hidden
-                  onChange={(e) => {
-                    if (e.target.files) {
-                      // Don't replace existing files, add to them
-                      const newFiles = Array.from(e.target.files);
-                      
-                      // Create new preview URLs
-                      const newFilePreviewUrls = newFiles.map(file => URL.createObjectURL(file));
-                      
-                      // Add to existing files and previews
-                      setSelectedFiles(prev => [...prev, ...newFiles]);
-                      setFilePreviewUrls(prev => [...prev, ...newFilePreviewUrls]);
-                      
-                      // Extend the captions array with empty strings for new images
-                      setCarouselCaptions(prev => [...prev, ...Array(newFiles.length).fill('')]);
-                      
-                      // Reset the file input value so the same file can be selected again if needed
-                      e.target.value = '';
-                    }
-                  }}
+                  onChange={handleFileChange}
                 />
               </Button>
-              
-              {filePreviewUrls.length > 0 && (
-                <Button
-                  variant="outlined"
-                  color="error"
-                  startIcon={<CloseIcon />}
-                  onClick={() => {
-                    setSelectedFiles([]);
-                    setFilePreviewUrls([]);
-                    setCarouselCaptions([]);
-                  }}
-                  sx={{ 
-                    borderRadius: 1.5,
-                    textTransform: 'none',
-                    fontWeight: 500
-                  }}
-                >
-                  Clear All
-                </Button>
-              )}
             </Box>
             
             {/* File Preview */}
             {filePreviewUrls.length > 0 && (
               <Box sx={{ mb: 3 }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  mb: 1.5 
-                }}>
-                  <Typography variant="subtitle2">
-                    Selected Images: ({filePreviewUrls.length})
-                  </Typography>
-                </Box>
+                <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                  Selected Images: ({filePreviewUrls.length})
+                </Typography>
                 <Grid container spacing={2}>
                   {filePreviewUrls.map((url, index) => (
                     <Grid item xs={12} sm={6} md={4} key={index}>
@@ -1705,41 +1599,9 @@ const saveFooterData = async () => {
                         sx={{ 
                           borderRadius: 2, 
                           overflow: 'hidden',
-                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-                          position: 'relative'
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
                         }}
                       >
-                        {/* X button to remove this specific image */}
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => {
-                            // Create new arrays without this image
-                            const newFiles = selectedFiles.filter((_, i) => i !== index);
-                            const newPreviewUrls = filePreviewUrls.filter((_, i) => i !== index);
-                            const newCaptions = carouselCaptions.filter((_, i) => i !== index);
-                            
-                            // Update state
-                            setSelectedFiles(newFiles);
-                            setFilePreviewUrls(newPreviewUrls);
-                            setCarouselCaptions(newCaptions);
-                          }}
-                          sx={{ 
-                            position: 'absolute', 
-                            top: 8, 
-                            right: 8, 
-                            zIndex: 2,
-                            backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                            '&:hover': {
-                              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                            },
-                            border: '1px solid',
-                            borderColor: 'error.light'
-                          }}
-                        >
-                          <CloseIcon fontSize="small" />
-                        </IconButton>
-                        
                         <CardMedia
                           component="img"
                           height="160"
@@ -1811,7 +1673,7 @@ const saveFooterData = async () => {
               mb: 3,
               display: 'flex',
               alignItems: 'center',
-              backgroundColor: alpha('#f5f5f5', 0.5)
+              bgcolor: alpha('#f5f5f5', 0.5)
             }}
           >
             <LocalPhoneIcon sx={{ mr: 2, color: 'primary.main', fontSize: '2rem' }} />
@@ -1852,7 +1714,7 @@ const saveFooterData = async () => {
               <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 'none', border: '1px solid', borderColor: 'divider' }}>
                 <Table size="small">
                   <TableHead>
-                    <TableRow sx={(theme) => ({ backgroundColor: alpha(theme.palette.primary.main, 0.05) })}>
+                    <TableRow sx={{ bgcolor: alpha(theme => theme.palette.primary.main, 0.05) }}>
                       <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>Name</TableCell>
                       <TableCell sx={{ fontWeight: 600, fontSize: '0.85rem' }}>Contact Numbers</TableCell>
                       <TableCell align="right" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>Actions</TableCell>
@@ -1884,14 +1746,14 @@ const saveFooterData = async () => {
                             <IconButton 
                               size="small" 
                               onClick={() => editHotline(index)}
-                              sx={(theme) => ({ 
-                                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                              sx={{ 
+                                bgcolor: theme => alpha(theme.palette.primary.main, 0.1),
                                 '&:hover': {
-                                  backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                                  bgcolor: theme => alpha(theme.palette.primary.main, 0.2),
                                 },
                                 p: 0.75,
                                 mr: 1
-                              })}
+                              }}
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
@@ -1901,13 +1763,13 @@ const saveFooterData = async () => {
                               size="small"
                               color="error"
                               onClick={() => removeHotline(index)}
-                              sx={(theme) => ({ 
-                                backgroundColor: alpha(theme.palette.error.main, 0.1),
+                              sx={{ 
+                                bgcolor: theme => alpha(theme.palette.error.main, 0.1),
                                 '&:hover': {
-                                  backgroundColor: alpha(theme.palette.error.main, 0.2),
+                                  bgcolor: theme => alpha(theme.palette.error.main, 0.2),
                                 },
                                 p: 0.75
-                              })}
+                              }}
                             >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
@@ -1964,30 +1826,30 @@ const saveFooterData = async () => {
               {editingHotlineIndex >= 0 ? 'Edit Hotline' : 'Add New Hotline'}
             </Typography>
             
-            <Box>
-              {/* Hotline Name Input */}
-              <TextField
-                label="Hotline Name"
-                variant="outlined"
-                fullWidth
-                name="name"
-                value={newHotline.name}
-                onChange={(e) => handleHotlineChange(e)}
-                margin="normal"
-                placeholder="E.g., LB Bureau of Fire Protection"
-                size="small"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <BusinessIcon fontSize="small" sx={{ color: 'action.active' }} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ mb: 2 }}
-              />
-               
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  label="Hotline Name"
+                  variant="outlined"
+                  fullWidth
+                  name="name"
+                  value={newHotline.name}
+                  onChange={(e) => handleHotlineChange(e)}
+                  margin="normal"
+                  placeholder="E.g., LB Bureau of Fire Protection"
+                  size="small"
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <BusinessIcon fontSize="small" sx={{ color: 'action.active' }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              
               {newHotline.numbers.map((number, index) => (
-                <Box key={index} sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Grid item xs={12} key={index} sx={{ display: 'flex', alignItems: 'center' }}>
                   <TextField
                     label={`Phone Number ${index + 1}`}
                     variant="outlined"
@@ -1995,6 +1857,7 @@ const saveFooterData = async () => {
                     name="numbers"
                     value={number}
                     onChange={(e) => handleHotlineChange(e, index)}
+                    margin="normal"
                     placeholder="E.g., 123-4567"
                     size="small"
                     InputProps={{
@@ -2009,28 +1872,27 @@ const saveFooterData = async () => {
                     <IconButton 
                       color="error" 
                       onClick={() => removeHotlineNumber(index)}
-                      sx={(theme) => ({ 
+                      sx={{ 
                         ml: 1,
-                        backgroundColor: alpha(theme.palette.error.main, 0.1),
+                        bgcolor: theme => alpha(theme.palette.error.main, 0.1),
                         '&:hover': {
-                          backgroundColor: alpha(theme.palette.error.main, 0.2),
+                          bgcolor: theme => alpha(theme.palette.error.main, 0.2),
                         },
-                      })}
+                      }}
                     >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   )}
-                </Box>
+                </Grid>
               ))}
               
-              {/* Add Another Number Button - On its own row */}
-              <Box sx={{ display: 'flex', gap: 2, mb: 3, mt: 3 }}>
+              <Grid item xs={12}>
                 <Button
                   variant="outlined"
                   onClick={addHotlineNumber}
                   startIcon={<AddIcon />}
                   size="small"
-                  sx={{
+                  sx={{ 
                     borderRadius: 1.5,
                     textTransform: 'none',
                     fontWeight: 500
@@ -2038,40 +1900,43 @@ const saveFooterData = async () => {
                 >
                   Add Another Number
                 </Button>
-
-                <Button
-                  variant="contained"
-                  color={editingHotlineIndex >= 0 ? 'warning' : 'primary'}
-                  onClick={addHotline}
-                  startIcon={editingHotlineIndex >= 0 ? <EditIcon /> : <AddIcon />}
-                  sx={{
-                    borderRadius: 1.5,
-                    textTransform: 'none',
-                    fontWeight: 500
-                  }}
-                >
-                  {editingHotlineIndex >= 0 ? 'Update Hotline' : 'Add Hotline'}
-                </Button>
-
-                {editingHotlineIndex >= 0 && (
+              </Grid>
+              
+              <Grid item xs={12}>
+                <Box sx={{ display: 'flex', gap: 2 }}>
                   <Button
-                    variant="outlined"
-                    onClick={() => {
-                      setNewHotline({ name: '', numbers: [''] });
-                      setEditingHotlineIndex(-1);
-                    }}
-                    startIcon={<CloseIcon />}
-                    sx={{
+                    variant="contained"
+                    color={editingHotlineIndex >= 0 ? "warning" : "primary"}
+                    onClick={addHotline}
+                    startIcon={editingHotlineIndex >= 0 ? <SaveIcon /> : <AddIcon />}
+                    sx={{ 
                       borderRadius: 1.5,
                       textTransform: 'none',
                       fontWeight: 500
                     }}
                   >
-                    Cancel Edit
+                    {editingHotlineIndex >= 0 ? 'Update Hotline' : 'Add Hotline'}
                   </Button>
-                )}
-              </Box>
-            </Box>
+                  {editingHotlineIndex >= 0 && (
+                    <Button
+                      variant="outlined"
+                      onClick={() => {
+                        setNewHotline({ name: '', numbers: [''] });
+                        setEditingHotlineIndex(-1);
+                      }}
+                      startIcon={<CloseIcon />}
+                      sx={{ 
+                        borderRadius: 1.5,
+                        textTransform: 'none',
+                        fontWeight: 500
+                      }}
+                    >
+                      Cancel Edit
+                    </Button>
+                  )}
+                </Box>
+              </Grid>
+            </Grid>
           </Paper>
           
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -2108,7 +1973,7 @@ const saveFooterData = async () => {
               mb: 3,
               display: 'flex',
               alignItems: 'center',
-              backgroundColor: alpha('#f5f5f5', 0.5)
+              bgcolor: alpha('#f5f5f5', 0.5)
             }}
           >
             <LocationOnIcon sx={{ mr: 2, color: 'primary.main', fontSize: '2rem' }} />
@@ -2176,7 +2041,7 @@ const saveFooterData = async () => {
                 />
               </Grid>
               
-              <Grid item xs={12} sx={{minWidth: '500px'}}>
+              <Grid item xs={12}>
                 <Box sx={{ 
                   border: '1px solid',
                   borderColor: 'divider',
@@ -2237,7 +2102,7 @@ const saveFooterData = async () => {
               mb: 3,
               display: 'flex',
               alignItems: 'center',
-              backgroundColor: alpha('#f5f5f5', 0.5)
+              bgcolor: alpha('#f5f5f5', 0.5)
             }}
           >
             <PeopleIcon sx={{ mr: 2, color: 'primary.main', fontSize: '2rem' }} />
@@ -2296,7 +2161,7 @@ const saveFooterData = async () => {
                         sx={{ 
                           height: 200, 
                           position: 'relative',
-                          backgroundColor: 'grey.100'
+                          bgcolor: 'grey.100'
                         }}
                       >
                         {official.imageUrl ? (
@@ -2304,7 +2169,7 @@ const saveFooterData = async () => {
                             src={`http://localhost:3002${official.imageUrl}`}
                             alt={official.name}
                             style={{ 
-                              width: '200px', 
+                              width: '100%', 
                               height: '100%', 
                               objectFit: 'cover'
                             }}
@@ -2346,7 +2211,7 @@ const saveFooterData = async () => {
                       </CardContent>
                       <CardActions 
                         sx={{ 
-                          backgroundColor: alpha('#f5f5f5', 0.5),
+                          bgcolor: alpha('#f5f5f5', 0.5),
                           borderTop: '1px solid',
                           borderColor: 'divider',
                           justifyContent: 'center'
@@ -2490,7 +2355,7 @@ const saveFooterData = async () => {
                       mr: 2,
                       overflow: 'hidden',
                       position: 'relative',
-                      backgroundColor: 'background.paper'
+                      bgcolor: 'background.paper'
                     }}
                   >
                     {officialImagePreview ? (
@@ -2562,8 +2427,8 @@ const saveFooterData = async () => {
                   </Box>
                 </Box>
               </Grid>
-            </Grid>
-            <Grid item xs={12}>
+              
+              <Grid item xs={12}>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <Button
                     variant="contained"
@@ -2599,6 +2464,7 @@ const saveFooterData = async () => {
                   )}
                 </Box>
               </Grid>
+            </Grid>
           </Paper>
           
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -2635,7 +2501,7 @@ const saveFooterData = async () => {
               mb: 3,
               display: 'flex',
               alignItems: 'center',
-              backgroundColor: alpha('#f5f5f5', 0.5)
+              bgcolor: alpha('#f5f5f5', 0.5)
             }}
           >
             <VerticalAlignBottomIcon sx={{ mr: 2, color: 'primary.main', fontSize: '2rem' }} />
@@ -2678,7 +2544,7 @@ const saveFooterData = async () => {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} sx={{minWidth: '500px'}}>
+              <Grid item xs={12}>
                 <TextField
                   name="description"
                   label="Footer Description"
@@ -2700,7 +2566,7 @@ const saveFooterData = async () => {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} sm={4} sx={{minWidth: '300px'}}>
+              <Grid item xs={12} sm={4}>
                 <TextField
                   name="address"
                   label="Address"
@@ -2738,7 +2604,7 @@ const saveFooterData = async () => {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} sm={4} sx={{minWidth: '320px'}}>
+              <Grid item xs={12} sm={4}>
                 <TextField
                   name="email"
                   label="Email Address"
@@ -2765,7 +2631,7 @@ const saveFooterData = async () => {
                     borderRadius: 2, 
                     p: 3, 
                     mt: 1, 
-                    backgroundColor: 'grey.900',
+                    bgcolor: 'grey.900',
                     color: 'white'
                   }}
                 >
@@ -2838,14 +2704,14 @@ const saveFooterData = async () => {
           sx: { borderRadius: 2 }
         }}
       >
-        <DialogTitle sx={(theme) => ({ 
-          backgroundColor: alpha(theme.palette.error.main, 0.05),
+        <DialogTitle sx={{ 
+          bgcolor: theme => alpha(theme.palette.error.main, 0.05),
           fontWeight: 600,
           display: 'flex',
           alignItems: 'center',
           color: 'error.main',
           fontSize: '1.1rem'
-        })}>
+        }}>
           <DeleteIcon sx={{ mr: 1 }} />
           Delete Carousel Image
         </DialogTitle>
