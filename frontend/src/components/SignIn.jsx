@@ -29,12 +29,26 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import CloseIcon from '@mui/icons-material/Close';
+import LockPersonOutlinedIcon from '@mui/icons-material/LockPersonOutlined';
+import { alpha } from '@mui/material/styles';
 
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // Add these state variables at the top with your other useState declarations
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [formError, setFormError] = useState('');
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
 
   const navigate = useNavigate();
   const userType = localStorage.getItem('userType');
@@ -51,8 +65,37 @@ export default function SignIn() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const success = await loginUser();
-    if (success) setIsLoggedIn(true);
+    
+    // Reset error states
+    setEmailError('');
+    setPasswordError('');
+    setFormError('');
+    
+    // Validate fields
+    let isValid = true;
+    
+    // Email validation
+    if (!email) {
+      setEmailError('Email address is required');
+      isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      setEmailError('Please enter a valid email address');
+      isValid = false;
+    }
+    
+    // Password validation
+    if (!password) {
+      setPasswordError('Password is required');
+      isValid = false;
+    }
+    
+    // If form is valid, attempt login
+    if (isValid) {
+      const success = await loginUser();
+      if (success) {
+        setIsLoggedIn(true);
+      }
+    }
   };
 
   const loginUser = async () => {
@@ -73,11 +116,15 @@ export default function SignIn() {
         localStorage.setItem('email', body.email);
         return true;
       } else {
-        alert('Invalid email or password');
+        // Set form error and show error dialog
+        setFormError(body.message || 'Invalid email or password');
+        setShowErrorDialog(true);
         return false;
       }
     } catch (error) {
       console.error('Error logging in:', error);
+      setFormError('Connection error. Please try again later.');
+      setShowErrorDialog(true);
       return false;
     }
   };
@@ -416,16 +463,21 @@ export default function SignIn() {
             label="Email Address"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (emailError) setEmailError('');
+            }}
+            error={!!emailError}
+            helperText={emailError}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <EmailIcon color="action" sx={{ color: 'rgba(0, 0, 0, 0.54)' }} />
+                  <EmailIcon color="action" sx={{ color: emailError ? 'error.main' : 'rgba(0, 0, 0, 0.54)' }} />
                 </InputAdornment>
               ),
             }}
             sx={{
-              mb: 3,
+              mb: emailError ? 1 : 3,
               '& .MuiInputBase-root': {
                 borderRadius: '12px',
                 backgroundColor: '#f5f7fa',
@@ -437,16 +489,26 @@ export default function SignIn() {
                 '&.Mui-focused': {
                   backgroundColor: 'white',
                   boxShadow: '0 0 0 2px rgba(10, 138, 13, 0.2)',
+                },
+                '&.Mui-error': {
+                  boxShadow: '0 0 0 2px rgba(211, 47, 47, 0.2)',
                 }
               },
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: 'transparent',
               },
               '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#0a8a0d',
+                borderColor: emailError ? 'error.main' : '#0a8a0d',
+              },
+              '& .Mui-error .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'error.main',
               },
               '& .MuiFormLabel-root.Mui-focused': {
-                color: '#0a8a0d',
+                color: emailError ? 'error.main' : '#0a8a0d',
+              },
+              '& .MuiFormHelperText-root': {
+                marginLeft: 1,
+                marginTop: 0.5,
               }
             }}
           />
@@ -458,16 +520,21 @@ export default function SignIn() {
             label="Password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (passwordError) setPasswordError('');
+            }}
+            error={!!passwordError}
+            helperText={passwordError}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <LockIcon color="action" sx={{ color: 'rgba(0, 0, 0, 0.54)' }} />
+                  <LockIcon color="action" sx={{ color: passwordError ? 'error.main' : 'rgba(0, 0, 0, 0.54)' }} />
                 </InputAdornment>
               ),
             }}
             sx={{
-              mb: 2,
+              mb: passwordError ? 1 : 2,
               '& .MuiInputBase-root': {
                 borderRadius: '12px',
                 backgroundColor: '#f5f7fa',
@@ -479,16 +546,26 @@ export default function SignIn() {
                 '&.Mui-focused': {
                   backgroundColor: 'white',
                   boxShadow: '0 0 0 2px rgba(10, 138, 13, 0.2)',
+                },
+                '&.Mui-error': {
+                  boxShadow: '0 0 0 2px rgba(211, 47, 47, 0.2)',
                 }
               },
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: 'transparent',
               },
               '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#0a8a0d',
+                borderColor: passwordError ? 'error.main' : '#0a8a0d',
+              },
+              '& .Mui-error .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'error.main',
               },
               '& .MuiFormLabel-root.Mui-focused': {
-                color: '#0a8a0d',
+                color: passwordError ? 'error.main' : '#0a8a0d',
+              },
+              '& .MuiFormHelperText-root': {
+                marginLeft: 1,
+                marginTop: 0.5,
               }
             }}
           />
@@ -499,37 +576,6 @@ export default function SignIn() {
             alignItems: 'center',
             mb: 3,
           }}>
-            <FormControlLabel
-              control={
-                <Checkbox 
-                  size="small" 
-                  sx={{ 
-                    color: '#0a8a0d',
-                    '&.Mui-checked': {
-                      color: '#0a8a0d',
-                    },
-                  }} 
-                />
-              }
-              label={
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                  Remember me
-                </Typography>
-              }
-            />
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: '#0a8a0d', 
-                cursor: 'pointer',
-                fontWeight: 500,
-                '&:hover': {
-                  textDecoration: 'underline',
-                }
-              }}
-            >
-              Forgot password?
-            </Typography>
           </Box>
 
           {/* Login button */}
@@ -565,7 +611,7 @@ export default function SignIn() {
           <Box sx={{ mt: 4, mb: 3 }}>
             <Divider>
               <Typography variant="body2" sx={{ color: 'text.secondary', px: 1 }}>
-                Or 
+                or 
               </Typography>
             </Divider>
             
@@ -609,6 +655,150 @@ export default function SignIn() {
         </Box>
       </Box>
     </Box>
+      {/* Error Dialog */}
+      {/* Enhanced Error Dialog */}
+<Dialog
+  open={showErrorDialog}
+  onClose={() => setShowErrorDialog(false)}
+  aria-labelledby="alert-dialog-title"
+  aria-describedby="alert-dialog-description"
+  PaperProps={{
+    elevation: 24,
+    sx: {
+      borderRadius: '16px',
+      maxWidth: '450px',
+      overflow: 'hidden',
+      boxShadow: '0 12px 28px rgba(0, 0, 0, 0.12)',
+      border: '1px solid rgba(0, 0, 0, 0.08)',
+    }
+  }}
+  TransitionProps={{
+    style: {
+      transition: 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)'
+    }
+  }}
+>
+  {/* Custom dialog header with gradient background */}
+  <Box sx={{ 
+    position: 'relative',
+    background: 'linear-gradient(to right, #f44336, #e53935)', 
+    pt: 2.5, 
+    pb: 2.5,
+    px: 3,
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  }}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <Box sx={{ 
+        borderRadius: '50%', 
+        bgcolor: 'rgba(255, 255, 255, 0.2)', 
+        width: 45, 
+        height: 45,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <LockPersonOutlinedIcon fontSize="medium" />
+      </Box>
+      <Typography variant="h6" sx={{ fontWeight: 600, letterSpacing: 0.3 }}>
+        Authentication Failed
+      </Typography>
+    </Box>
+    
+    <IconButton 
+      edge="end" 
+      onClick={() => setShowErrorDialog(false)}
+      sx={{ 
+        color: 'white',
+        p: 1,
+        '&:hover': {
+          bgcolor: 'rgba(255, 255, 255, 0.15)'
+        }
+      }}
+    >
+      <CloseIcon />
+    </IconButton>
+  </Box>
+      {/* Professional Error Dialog */}
+      <Dialog
+        open={showErrorDialog}
+        onClose={() => setShowErrorDialog(false)}
+        aria-labelledby="authentication-error-dialog"
+        PaperProps={{
+          sx: {
+            borderRadius: '8px',
+            maxWidth: '450px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+          }
+        }}
+      >
+        <DialogTitle 
+          id="authentication-error-dialog"
+          sx={{ 
+            borderBottom: '1px solid #e0e0e0',
+            py: 2,
+            px: 3,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            color: '#424242',
+            fontWeight: 600
+          }}
+        >
+          <ErrorOutlineIcon sx={{ color: '#d32f2f' }} />
+          Authentication Error
+        </DialogTitle>
+        <Box sx={{md:5}} />
+        <DialogContent sx={{ py: 3, px: 3 }}>
+          <DialogContentText 
+            sx={{ 
+              color: '#212121',
+              fontSize: '0.95rem'
+            }}
+          >
+            {formError || "Unable to authenticate. Please verify your login credentials and try again."}
+          </DialogContentText>
+          
+          <Box sx={{ 
+            mt: 2, 
+            p: 2, 
+            bgcolor: '#f5f5f5', 
+            borderRadius: '4px',
+            borderLeft: '3px solid #0a8a0d'
+          }}>
+            <Typography variant="body2" color="text.secondary">
+              If you continue to experience issues, please contact the Barangay Maahas administrative office for assistance.
+            </Typography>
+          </Box>
+        </DialogContent>
+        
+        <DialogActions sx={{ 
+          px: 3, 
+          py: 2,
+          borderTop: '1px solid #e0e0e0',
+        }}>
+          <Button 
+            onClick={() => setShowErrorDialog(false)} 
+            variant="contained"
+            disableElevation
+            sx={{
+              bgcolor: '#0a8a0d',
+              color: 'white',
+              textTransform: 'none',
+              borderRadius: '4px',
+              px: 3,
+              '&:hover': {
+                bgcolor: '#097a0c',
+              }
+            }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+      </Dialog>
   </Box>
 );
 }

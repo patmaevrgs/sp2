@@ -50,7 +50,7 @@ function SignUp() {
     });
     const data = await response.json();
     if (data.success) {
-      navigate('/'); // Redirect to sign-in page after successful sign-up
+      navigate('/signin'); // Redirect to sign-in page after successful sign-up
     } else {
       alert('Error: Unable to create account');
     }
@@ -59,94 +59,163 @@ function SignUp() {
   return (
   <Box
     sx={{
-      minHeight: '100vh',
+      // minHeight: '100vh',
+      height: '100vh',
       display: 'flex',
-      overflow: 'hidden',
+      flexDirection: 'column',
       position: 'relative',
+      bgcolor: '#f7f7f7',
     }}
   >
-    {/* Animated background pattern */}
+    {/* Top decorative wave - visible on all devices */}
     <Box
       sx={{
         position: 'absolute',
         top: 0,
         left: 0,
-        right: 0,
-        bottom: 0,
-        background: 'linear-gradient(135deg, #f9fbfd 0%, #e6eef7 100%)',
+        width: '100%',
+        height: { xs: '160px', md: '220px' },
         zIndex: 0,
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: '-50%',
-          left: '-50%',
-          width: '200%',
-          height: '200%',
-          backgroundImage: 'radial-gradient(circle, #1976d2 0%, transparent 4%)',
-          backgroundSize: '25px 25px',
-          opacity: 0.03,
-          animation: 'backgroundAnimation 40s linear infinite',
-        },
-        '@keyframes backgroundAnimation': {
-          '0%': {
-            transform: 'translate(0, 0)',
-          },
-          '100%': {
-            transform: 'translate(50px, 50px)',
-          },
-        },
+        background: 'linear-gradient(160deg, #0a8a0d 0%, #26a69a 100%)',
+        clipPath: 'polygon(0 0, 100% 0, 100% 65%, 0 100%)',
       }}
     />
-
-    {/* Left side - Form */}
+    
+    {/* Logo and nav bar - visible on all devices */}
     <Box
       sx={{
-        width: isMobile ? '100%' : '50%',
         display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        p: { xs: 3, sm: 5, md: 6 },
+        p: { xs: 2, sm: 3, md: 4 },
+        position: 'relative',
         zIndex: 1,
-        order: { xs: 2, md: 1 },
       }}
     >
-      <Box sx={{ 
-        maxWidth: '480px', 
-        width: '100%',
-        py: { xs: 3, md: 4 },
-        px: { xs: 3, md: 5 },
-        backgroundColor: 'white',
-        borderRadius: '20px',
-        boxShadow: isMobile ? '0 10px 30px rgba(0,0,0,0.1)' : 'none',
-      }}>
-        {/* Form header */}
-        <Box sx={{ mb: 4, textAlign: 'center' }}>
-          {isMobile && (
-            <img 
-              src="/src/assets/bhub-logo.png" 
-              alt="Barangay Hub Logo" 
-              style={{ height: '50px', marginBottom: '16px' }} 
-            />
-          )}
-          <Typography 
-            variant="h4" 
-            fontWeight="700" 
-            color="primary"
-            sx={{ mb: 1.5 }}
-          >
-            Create your account
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Join the Barangay Maahas community
-          </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box
+          sx={{
+            bgcolor: 'white',
+            p: 1,
+            borderRadius: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+          }}
+        >
+          <img 
+            src="/src/assets/bhub-logo.png" 
+            alt="B-Hub Logo" 
+            style={{ height: '30px' }}
+          />
         </Box>
-
-        {/* Signup form */}
-        <Box component="form" onSubmit={handleSubmit} noValidate>
-          <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
+        <Typography
+          variant="h6"
+          sx={{
+            color: 'white',
+            ml: 2,
+            fontWeight: 600,
+            fontSize: { xs: '1rem', sm: '1.25rem' },
+          }}
+        >
+          Barangay Maahas
+        </Typography>
+      </Box>
+      
+      <Button
+        onClick={() => navigate('/')}
+        variant="outlined"
+        size="small"
+        startIcon={<ArrowBackIcon />}
+        sx={{
+          color: 'white',
+          borderColor: 'rgba(255,255,255,0.5)',
+          textTransform: 'none',
+          '&:hover': {
+            borderColor: 'white',
+            bgcolor: 'rgba(255,255,255,0.1)',
+          },
+          fontSize: { xs: '0.75rem', sm: '0.875rem' },
+        }}
+      >
+        Back to Home
+      </Button>
+    </Box>
+    {/* Main Content */}
+    <Container
+      maxWidth="lg"
+      sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+        py: { xs: 3, sm: 5 },
+        px: { xs: 2, sm: 3, md: 4 },
+        position: 'relative',
+        zIndex: 1,
+        gap: 4,
+      }}
+    >
+        
+      {/* Signup form - SHOWN ON ALL DEVICES */}
+      <Paper
+        elevation={0}
+        sx={{
+          width: { xs: '100%', md: '60%' },
+          maxWidth: { xs: '100%', md: '600px' },  // Full width on mobile
+          borderRadius: '16px',
+          p: { xs: 3, sm: 4 },
+          boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
+          display: 'flex',
+          flexDirection: 'column',
+          bgcolor: 'white',
+          mx: 'auto', // Center on mobile
+        }}
+      >
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: 700,
+            mb: 1,
+            background: 'linear-gradient(90deg, #0a8a0d, #26a69a)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textAlign: 'center',
+            fontSize: { xs: '1.5rem', sm: '1.75rem' },
+          }}
+        >
+          Create Your Account
+        </Typography>
+        
+        <Typography
+          variant="body2"
+          sx={{
+            color: 'text.secondary',
+            mb: 4,
+            textAlign: 'center',
+          }}
+        >
+          Register as a resident of Barangay Maahas to access digital services
+        </Typography>
+        
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          noValidate
+          sx={{ mt: 1 }}
+        >
+          {/* Name fields row */}
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 2,
+              mb: 2,
+              flexDirection: { xs: 'column', sm: 'row' },
+            }}
+          >
             <TextField
-              margin="normal"
               required
               fullWidth
               label="First Name"
@@ -161,29 +230,29 @@ function SignUp() {
               }}
               sx={{
                 '& .MuiInputBase-root': {
-                  borderRadius: '12px',
+                  borderRadius: '10px',
                   backgroundColor: '#f5f7fa',
-                  transition: 'all 0.3s ease',
                   pl: 1,
                   '&:hover': {
                     backgroundColor: '#e9ecef',
                   },
                   '&.Mui-focused': {
                     backgroundColor: 'white',
-                    boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)',
-                  }
+                    boxShadow: '0 0 0 2px rgba(10, 138, 13, 0.2)',
+                  },
                 },
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: 'transparent',
                 },
                 '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'primary.main',
+                  borderColor: '#0a8a0d',
+                },
+                '& .MuiFormLabel-root.Mui-focused': {
+                  color: '#0a8a0d',
                 },
               }}
             />
-            
             <TextField
-              margin="normal"
               fullWidth
               label="Middle Name (Optional)"
               value={middleName}
@@ -197,30 +266,31 @@ function SignUp() {
               }}
               sx={{
                 '& .MuiInputBase-root': {
-                  borderRadius: '12px',
+                  borderRadius: '10px',
                   backgroundColor: '#f5f7fa',
-                  transition: 'all 0.3s ease',
                   pl: 1,
                   '&:hover': {
                     backgroundColor: '#e9ecef',
                   },
                   '&.Mui-focused': {
                     backgroundColor: 'white',
-                    boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)',
-                  }
+                    boxShadow: '0 0 0 2px rgba(10, 138, 13, 0.2)',
+                  },
                 },
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: 'transparent',
                 },
                 '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: 'primary.main',
+                  borderColor: '#0a8a0d',
+                },
+                '& .MuiFormLabel-root.Mui-focused': {
+                  color: '#0a8a0d',
                 },
               }}
             />
           </Box>
           
           <TextField
-            margin="normal"
             required
             fullWidth
             label="Last Name"
@@ -234,31 +304,31 @@ function SignUp() {
               ),
             }}
             sx={{
-              mt: 2,
+              mb: 2,
               '& .MuiInputBase-root': {
-                borderRadius: '12px',
+                borderRadius: '10px',
                 backgroundColor: '#f5f7fa',
-                transition: 'all 0.3s ease',
                 pl: 1,
                 '&:hover': {
                   backgroundColor: '#e9ecef',
                 },
                 '&.Mui-focused': {
                   backgroundColor: 'white',
-                  boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)',
-                }
+                  boxShadow: '0 0 0 2px rgba(10, 138, 13, 0.2)',
+                },
               },
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: 'transparent',
               },
               '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'primary.main',
+                borderColor: '#0a8a0d',
+              },
+              '& .MuiFormLabel-root.Mui-focused': {
+                color: '#0a8a0d',
               },
             }}
           />
-
           <TextField
-            margin="normal"
             required
             fullWidth
             label="Email Address"
@@ -273,31 +343,32 @@ function SignUp() {
               ),
             }}
             sx={{
-              mt: 2,
+              mb: 2,
               '& .MuiInputBase-root': {
-                borderRadius: '12px',
+                borderRadius: '10px',
                 backgroundColor: '#f5f7fa',
-                transition: 'all 0.3s ease',
                 pl: 1,
                 '&:hover': {
                   backgroundColor: '#e9ecef',
                 },
                 '&.Mui-focused': {
                   backgroundColor: 'white',
-                  boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)',
-                }
+                  boxShadow: '0 0 0 2px rgba(10, 138, 13, 0.2)',
+                },
               },
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: 'transparent',
               },
               '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'primary.main',
+                borderColor: '#0a8a0d',
+              },
+              '& .MuiFormLabel-root.Mui-focused': {
+                color: '#0a8a0d',
               },
             }}
           />
-
+          
           <TextField
-            margin="normal"
             required
             fullWidth
             label="Password"
@@ -312,314 +383,116 @@ function SignUp() {
               ),
             }}
             sx={{
-              mt: 2,
-              mb: 4,
+              mb: 3,
               '& .MuiInputBase-root': {
-                borderRadius: '12px',
+                borderRadius: '10px',
                 backgroundColor: '#f5f7fa',
-                transition: 'all 0.3s ease',
                 pl: 1,
                 '&:hover': {
                   backgroundColor: '#e9ecef',
                 },
                 '&.Mui-focused': {
                   backgroundColor: 'white',
-                  boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)',
-                }
+                  boxShadow: '0 0 0 2px rgba(10, 138, 13, 0.2)',
+                },
               },
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: 'transparent',
               },
               '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'primary.main',
+                borderColor: '#0a8a0d',
+              },
+              '& .MuiFormLabel-root.Mui-focused': {
+                color: '#0a8a0d',
               },
             }}
           />
-
           <Button
             type="submit"
             fullWidth
             variant="contained"
             size="large"
             sx={{
-              py: 1.6,
-              borderRadius: '12px',
-              fontWeight: 600,
+              py: { xs: 1.2, sm: 1.5 },
+              borderRadius: '10px',
               textTransform: 'none',
-              fontSize: '16px',
-              boxShadow: '0 4px 15px rgba(25, 118, 210, 0.25)',
+              fontSize: { xs: '1rem', sm: '1.1rem' },
+              fontWeight: 600,
+              background: 'linear-gradient(90deg, #0a8a0d, #26a69a)',
+              boxShadow: '0 4px 15px rgba(10, 138, 13, 0.3)',
               transition: 'all 0.3s ease',
               '&:hover': {
-                boxShadow: '0 6px 20px rgba(25, 118, 210, 0.4)',
+                boxShadow: '0 6px 20px rgba(10, 138, 13, 0.4)',
                 transform: 'translateY(-2px)',
+                background: 'linear-gradient(90deg, #0a8a0d, #26a69a)',
+                filter: 'brightness(1.05)',
               },
               '&:active': {
                 transform: 'translateY(0)',
-              }
+              },
             }}
           >
             Create Account
           </Button>
-
-          <Box sx={{ mt: 4, textAlign: 'center' }}>
+          
+          {/* Optional social login section - can be hidden on smallest screens if desired */}
+          <Box sx={{ display: { xs: 'block', sm: 'block' } }}>
+            <Divider sx={{ my: 3 }}>
+              <Typography variant="body2" sx={{ color: 'text.secondary', px: 1 }}>
+                or
+              </Typography>
+            </Divider>
+            
+          </Box>
+          
+          <Box sx={{ textAlign: 'center' }}>
             <Typography variant="body2" color="text.secondary">
               Already have an account?{' '}
-              <MuiLink 
-                component={Link} 
-                to="/signin" 
-                sx={{ 
-                  fontWeight: 600,
-                  color: 'primary.main',
-                  '&:hover': { textDecoration: 'underline' }
-                }}
+              <Link
+                to="/signin"
+                style={{ textDecoration: 'none' }}
               >
-                Log In
-              </MuiLink>
+                <Typography
+                  component="span"
+                  variant="body2"
+                  sx={{
+                    color: '#0a8a0d',
+                    fontWeight: 600,
+                    '&:hover': {
+                      textDecoration: 'underline',
+                    },
+                  }}
+                >
+                  Log in
+                </Typography>
+              </Link>
             </Typography>
-            
-            <Button
-              onClick={() => navigate('/')}
-              variant="text"
-              sx={{
-                mt: 2,
-                textTransform: 'none',
-                fontSize: '0.875rem',
-                color: 'text.secondary',
-                '&:hover': {
-                  backgroundColor: 'transparent',
-                  color: 'primary.main',
-                },
-              }}
-              startIcon={<ArrowBackIcon fontSize="small" />}
-            >
-              Back to Landing Page
-            </Button>
           </Box>
         </Box>
-      </Box>
-    </Box>
+      </Paper>
+    </Container>
 
-    {/* Right side - Info */}
-    {!isMobile && (
+    {/* Footer with wave shape - HIDDEN ON MOBILE */}
+    <Box
+      sx={{
+        position: 'relative',
+        height: '80px',
+        overflow: 'hidden',
+        display: { xs: 'none', md: 'block' },
+      }}
+    >
       <Box
         sx={{
-          width: '50%',
-          display: 'flex',
-          flexDirection: 'column',
-          position: 'relative',
-          order: { xs: 1, md: 2 },
-          zIndex: 1,
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          width: '100%',
+          height: '150px',
+          background: 'linear-gradient(160deg, #0a8a0d 0%, #26a69a 100%)',
+          clipPath: 'polygon(0 100%, 100% 100%, 100% 35%, 0 70%)',
         }}
-      >
-        <Box
-          sx={{
-            height: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            position: 'relative',
-            overflow: 'hidden',
-            borderRadius: '30px 0 0 30px',
-            boxShadow: '-15px 0 35px rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          {/* Background */}
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 50%, #0d47a1 100%)',
-              opacity: 0.92,
-              zIndex: 1,
-            }}
-          />
-
-          {/* Background pattern overlay */}
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              backgroundImage: 'url("/src/assets/pattern-overlay.png")',
-              backgroundSize: '400px',
-              opacity: 0.03,
-              zIndex: 2,
-            }}
-          />
-
-          <Box
-            sx={{
-              p: 5,
-              display: 'flex',
-              flexDirection: 'column',
-              height: '100%',
-              justifyContent: 'space-between',
-              position: 'relative',
-              zIndex: 3,
-            }}
-          >
-            {/* Logo at top right */}
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-              <Typography 
-                variant="h6" 
-                fontWeight="600" 
-                color="white" 
-                sx={{ mr: 2, letterSpacing: '0.5px' }}
-              >
-                Barangay Maahas
-              </Typography>
-              <img 
-                src="/src/assets/bhub-logo.png" 
-                alt="Barangay Hub Logo" 
-                style={{ height: '40px' }} 
-              />
-            </Box>
-
-            {/* Main content */}
-            <Box sx={{ my: 4, px: 3 }}>
-              <Typography 
-                variant="h2" 
-                fontWeight="800" 
-                color="white" 
-                gutterBottom
-                sx={{ 
-                  fontSize: { md: '2.5rem', lg: '3.25rem' },
-                  textShadow: '0 2px 10px rgba(0,0,0,0.2)',
-                  mb: 3
-                }}
-              >
-                Join Barangay Maahas Hub
-              </Typography>
-              
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 300, 
-                  mb: 5, 
-                  opacity: 0.85,
-                  lineHeight: 1.5,
-                  maxWidth: '90%',
-                }} 
-                color="white"
-              >
-                Create an account to access exclusive services and be part of our community
-              </Typography>
-
-              {/* Services list */}
-              <Box sx={{ mt: 3 }}>
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  mb: 3,
-                  transition: 'transform 0.3s ease',
-                  '&:hover': { transform: 'translateX(8px)' }
-                }}>
-                  <Box sx={{ 
-                    mr: 2, 
-                    bgcolor: 'rgba(255,255,255,0.15)', 
-                    borderRadius: '12px', 
-                    p: 1.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <DescriptionIcon sx={{ color: 'white' }} />
-                  </Box>
-                  <Typography color="white" variant="body1" sx={{ fontWeight: 300 }}>
-                    Request barangay clearances and certificates
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  mb: 3,
-                  transition: 'transform 0.3s ease',
-                  '&:hover': { transform: 'translateX(8px)' }
-                }}>
-                  <Box sx={{ 
-                    mr: 2, 
-                    bgcolor: 'rgba(255,255,255,0.15)', 
-                    borderRadius: '12px', 
-                    p: 1.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <LocalHospitalIcon sx={{ color: 'white' }} />
-                  </Box>
-                  <Typography color="white" variant="body1" sx={{ fontWeight: 300 }}>
-                    Book ambulance services in emergencies
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center',
-                  mb: 3,
-                  transition: 'transform 0.3s ease',
-                  '&:hover': { transform: 'translateX(8px)' }
-                }}>
-                  <Box sx={{ 
-                    mr: 2, 
-                    bgcolor: 'rgba(255,255,255,0.15)', 
-                    borderRadius: '12px', 
-                    p: 1.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <SportsCricketIcon sx={{ color: 'white' }} />
-                  </Box>
-                  <Typography color="white" variant="body1" sx={{ fontWeight: 300 }}>
-                    Reserve court facilities for sports events
-                  </Typography>
-                </Box>
-                
-                <Box sx={{ 
-                  display: 'flex', 
-                  alignItems: 'center',
-                  transition: 'transform 0.3s ease',
-                  '&:hover': { transform: 'translateX(8px)' }
-                }}>
-                  <Box sx={{ 
-                    mr: 2, 
-                    bgcolor: 'rgba(255,255,255,0.15)', 
-                    borderRadius: '12px', 
-                    p: 1.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
-                    <ReportIcon sx={{ color: 'white' }} />
-                  </Box>
-                  <Typography color="white" variant="body1" sx={{ fontWeight: 300 }}>
-                    Report infrastructure issues in the community
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-
-            {/* Call to action */}
-            <Box sx={{ 
-              py: 3, 
-              px: 4, 
-              backgroundColor: 'rgba(255,255,255,0.1)',
-              borderRadius: '12px',
-              backdropFilter: 'blur(10px)'
-            }}>
-              <Typography variant="body1" color="white" sx={{ fontWeight: 400 }}>
-                Join over 1,500+ residents already using our digital services
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-    )}
+      />
+    </Box>
   </Box>
 );
 }
