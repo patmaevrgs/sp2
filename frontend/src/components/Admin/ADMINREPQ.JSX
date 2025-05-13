@@ -4,8 +4,7 @@ import {
   Tab, Tabs, MenuItem, Dialog, DialogActions, DialogContent,
   DialogTitle, CircularProgress, Snackbar, Alert, Chip,
   CardMedia, Card, Avatar, Tooltip, IconButton, TableContainer,
-  Table, TableHead, TableBody, TableRow, TableCell,
-  FormControl, InputLabel, Select
+  Table, TableHead, TableBody, TableRow, TableCell
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { useTheme } from '@mui/material/styles';
@@ -30,7 +29,6 @@ function AdminReport() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedReport, setSelectedReport] = useState(null);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
-  const [issueTypeFilter, setIssueTypeFilter] = useState('all');
   const [statusUpdate, setStatusUpdate] = useState({
     status: '',
     adminComments: ''
@@ -58,24 +56,20 @@ function AdminReport() {
     } else if (tabValue === 4) {
       filtered = filtered.filter(report => report.status === 'Cancelled');
     }
-
-    // Filter by issue type if not set to 'all'
-    if (issueTypeFilter !== 'all') {
-      filtered = filtered.filter(report => report.issueType === issueTypeFilter);
-    }
     
     // Apply search filter if searchTerm exists
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(report => 
-        (report.serviceId && report.serviceId.toLowerCase().includes(term)) ||
         report.fullName.toLowerCase().includes(term) ||
-        report.location.toLowerCase().includes(term)
+        report.location.toLowerCase().includes(term) ||
+        report.issueType.toLowerCase().includes(term) ||
+        report.description.toLowerCase().includes(term)
       );
     }
     
     setFilteredReports(filtered);
-  }, [reports, tabValue, searchTerm, issueTypeFilter]);
+  }, [reports, tabValue, searchTerm]);
 
   const fetchReports = async () => {
     try {
@@ -295,7 +289,7 @@ function AdminReport() {
           <TextField
             fullWidth
             size="small"
-            placeholder="Search by Name, Location, or Service ID"
+            placeholder="Search by name, location or issue type"
             value={searchTerm}
             onChange={handleSearch}
             InputProps={{
@@ -310,34 +304,10 @@ function AdminReport() {
           />
         </Grid>
         
-        {/* Filter by Issue Type */}
-        <Grid item xs={12} sm={6} md={3}>
-          <FormControl fullWidth size="small">
-            <InputLabel>Filter by Issue Type</InputLabel>
-            <Select
-              value={issueTypeFilter}
-              label="Filter by Issue Type"
-              onChange={(e) => setIssueTypeFilter(e.target.value)}
-              sx={{ 
-                borderRadius: 1.5,
-              }}
-            >
-              <MenuItem value="all">All Issue Types</MenuItem>
-              {/* Dynamically generate issue type options from existing reports */}
-              {Array.from(new Set(reports.map(report => report.issueType))).map((issueType) => (
-                <MenuItem key={issueType} value={issueType}>{issueType}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-
         <Grid item xs={12} sm={6} md={3}>
           <Button
             variant="outlined"
-            onClick={() => {
-              setSearchTerm('');
-              setIssueTypeFilter('all');
-            }}
+            onClick={() => setSearchTerm('')}
             fullWidth
             sx={{ 
               borderRadius: 1.5,
@@ -346,7 +316,7 @@ function AdminReport() {
               fontSize: '0.85rem'
             }}
           >
-            Clear Filters
+            Clear Search
           </Button>
         </Grid>
       </Grid>
@@ -607,7 +577,7 @@ function AdminReport() {
                           label="Feedback"
                           variant="outlined"
                           color={report.residentFeedback.satisfied ? "success" : "error"}
-                          sx={{ ml: 0, mt:1, height: 24, fontSize: '0.75rem' }}
+                          sx={{ ml: 0.5, height: 24, fontSize: '0.75rem' }}
                         />
                       </Tooltip>
                     )}
@@ -1166,7 +1136,6 @@ function AdminReport() {
         <Button 
           onClick={() => {
             setUpdateDialogOpen(false);
-            setSelectedReport(null);
           }}
           sx={{ 
             borderRadius: 1.5,
