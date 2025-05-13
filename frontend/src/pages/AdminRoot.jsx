@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, useNavigate, useLoaderData } from 'react-router-dom';
 import Cookies from 'universal-cookie';
-
 import {
   Box,
   useMediaQuery,
@@ -349,32 +348,6 @@ function AdminRoot() {
                   }}
                 >
                   <SearchIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-
-              <Tooltip title="Notifications">
-                <IconButton 
-                  size="small" 
-                  sx={{ 
-                    color: 'text.secondary',
-                    bgcolor: alpha(theme.palette.primary.main, 0.04),
-                    '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.1) }
-                  }}
-                >
-                  <NotificationsNoneIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
-
-              <Tooltip title="Help">
-                <IconButton 
-                  size="small"
-                  sx={{ 
-                    color: 'text.secondary',
-                    bgcolor: alpha(theme.palette.primary.main, 0.04),
-                    '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.1) }
-                  }}
-                >
-                  <HelpOutlineOutlinedIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
             </Box>

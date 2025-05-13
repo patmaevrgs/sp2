@@ -81,115 +81,43 @@ export default function AdminSidebar() {
     // This function fetches pending counts for each service
     const fetchPendingCounts = async () => {
       try {
-        // Get auth token if needed
-        const token = localStorage.getItem('token');
-        const headers = token ? {
-          'Authorization': `Bearer ${token}`
-        } : {};
-
-        // Create an object to store our counts
-        let counts = {
-          ambulance: 0,
-          court: 0,
-          reports: 0,
-          projects: 0,
-          forms: 0,
-          residents: 0,
-          total: 0
-        };
-
-        // Safely fetch function that handles errors and different response formats
-        const safeFetch = async (url) => {
-          try {
-            const response = await fetch(url, { headers });
-            
-            // Check if response is OK
-            if (!response.ok) {
-              console.warn(`Error fetching ${url}: ${response.status} ${response.statusText}`);
-              return null;
-            }
-            
-            // Try to parse as JSON
-            const text = await response.text();
-            try {
-              return JSON.parse(text);
-            } catch (e) {
-              console.warn(`Invalid JSON from ${url}:`, text.substring(0, 100) + '...');
-              return null;
-            }
-          } catch (error) {
-            console.warn(`Network error fetching ${url}:`, error);
-            return null;
-          }
-        };
-
-        // Fetch ambulance bookings
-        const ambulanceData = await safeFetch('http://localhost:3002/ambulance?status=pending');
-        if (ambulanceData) {
-          counts.ambulance = Array.isArray(ambulanceData) ? ambulanceData.length : 0;
-        }
-
-        // Fetch court reservations
-        const courtData = await safeFetch('http://localhost:3002/court?status=pending');
-        if (courtData) {
-          counts.court = Array.isArray(courtData) ? courtData.length : 0;
-        }
-
-        // Fetch infrastructure reports
-        const reportsData = await safeFetch('http://localhost:3002/reports');
-        if (reportsData && reportsData.reports) {
-          counts.reports = reportsData.reports.filter(r => r.status === 'Pending').length;
-        } else if (reportsData && Array.isArray(reportsData)) {
-          counts.reports = reportsData.filter(r => r.status === 'Pending').length;
-        }
-
-        // Fetch project proposals
-        const projectsData = await safeFetch('http://localhost:3002/proposals?status=pending');
-        if (projectsData && projectsData.proposals) {
-          counts.projects = projectsData.proposals.length;
-        } else if (projectsData && Array.isArray(projectsData)) {
-          counts.projects = projectsData.length;
-        }
-
-        // Fetch document requests - using the correct endpoint from your controller
-        // Note: Your error showed this endpoint doesn't exist, so I'm using the endpoint from your controller
-        const formsData = await safeFetch('http://localhost:3002/documents?status=pending');
-        if (formsData) {
-          if (formsData.success && formsData.documentRequests) {
-            // If the API returns {success: true, documentRequests: [...]}
-            counts.forms = formsData.documentRequests.length;
-          } else if (Array.isArray(formsData)) {
-            // If the API directly returns an array
-            counts.forms = formsData.length;
-          } else if (formsData.success && Array.isArray(formsData.data)) {
-            // If the API returns {success: true, data: [...]}
-            counts.forms = formsData.data.length;
-          } else {
-            console.warn('Unexpected format for forms data:', formsData);
-            counts.forms = 0;
-          }
-        }
+        // Create promises for all API calls
+        const ambulancePromise = fetch('http://localhost:3002/ambulance?status=pending');
+        const courtPromise = fetch('http://localhost:3002/court?status=pending');
+        const reportsPromise = fetch('http://localhost:3002/reports');
+        const projectsPromise = fetch('http://localhost:3002/proposals?status=pending');
+        const formsPromise = fetch('http://localhost:3002/document-requests?status=pending');
         
-        // Fetch unverified resident requests - this is the new part
-        const residentsData = await safeFetch('http://localhost:3002/residents?isVerified=false');
-        if (residentsData) {
-          // Handle different response structures
-          if (residentsData.success && residentsData.data) {
-            counts.residents = residentsData.data.length;
-          } else if (Array.isArray(residentsData)) {
-            counts.residents = residentsData.length;
-          } else if (residentsData.pagination && residentsData.data) {
-            counts.residents = residentsData.pagination.total || residentsData.data.length;
-          }
-        }
-
-        // Calculate total
-        counts.total = counts.ambulance + counts.court + counts.reports + counts.projects + counts.forms;
-
-        console.log('Pending counts:', counts);
+        // Wait for all promises to resolve
+        const [ambulanceRes, courtRes, reportsRes, projectsRes, formsRes] = 
+          await Promise.all([ambulancePromise, courtPromise, reportsPromise, projectsPromise, formsPromise]);
+        
+        // Parse the JSON responses
+        const ambulanceData = await ambulanceRes.json();
+        const courtData = await courtRes.json();
+        const reportsData = await reportsRes.json();
+        const projectsData = await projectsRes.json();
+        const formsData = await formsData.json();
+        
+        // Calculate counts
+        const ambulanceCount = Array.isArray(ambulanceData) ? ambulanceData.length : 0;
+        const courtCount = Array.isArray(courtData) ? courtData.length : 0;
+        const reportsCount = reportsData.reports ? 
+          reportsData.reports.filter(report => report.status === 'Pending').length : 0;
+        const projectsCount = projectsData.proposals ? projectsData.proposals.length : 0;
+        const formsCount = formsData.documentRequests ? formsData.documentRequests.length : 0;
+        
+        const totalCount = ambulanceCount + courtCount + reportsCount + projectsCount + formsCount;
         
         // Update state with the counts
-        setPendingCounts(counts);
+        setPendingCounts({
+          ambulance: ambulanceCount,
+          court: courtCount,
+          reports: reportsCount,
+          projects: projectsCount,
+          forms: formsCount,
+          total: totalCount
+        });
       } catch (error) {
         console.error('Error fetching pending counts:', error);
       }
@@ -411,24 +339,6 @@ export default function AdminSidebar() {
                             }}
                           />
                         )}
-                        {item.label === 'Resident Database' && pendingCounts.residents > 0 && (
-                          <Chip 
-                            label={pendingCounts.residents}
-                            size="small"
-                            color="warning"
-                            sx={{
-                              height: 18,
-                              fontSize: '0.65rem',
-                              fontWeight: 600,
-                              minWidth: 24,
-                              ml: 1,
-                              '& .MuiChip-label': {
-                                padding: '0 6px',
-                                overflow: 'visible'
-                              }
-                            }}
-                          />
-                        )}
                       </Box>
                     }
                     sx={{ 
@@ -553,11 +463,7 @@ export default function AdminSidebar() {
                                       fontSize: '0.65rem',
                                       fontWeight: 600,
                                       minWidth: 20,
-                                      ml: 1,
-                                      '& .MuiChip-label': {
-                                        padding: '0 6px',
-                                        overflow: 'visible'
-                                      }
+                                      ml: 1
                                     }}
                                   />
                                 )}
@@ -571,11 +477,7 @@ export default function AdminSidebar() {
                                       fontSize: '0.65rem',
                                       fontWeight: 600,
                                       minWidth: 20,
-                                      ml: 1,
-                                      '& .MuiChip-label': {
-                                        padding: '0 6px',
-                                        overflow: 'visible'
-                                      }
+                                      ml: 1
                                     }}
                                   />
                                 )}
@@ -589,11 +491,7 @@ export default function AdminSidebar() {
                                       fontSize: '0.65rem',
                                       fontWeight: 600,
                                       minWidth: 20,
-                                      ml: 1,
-                                      '& .MuiChip-label': {
-                                        padding: '0 6px',
-                                        overflow: 'visible'
-                                      }
+                                      ml: 1
                                     }}
                                   />
                                 )}
@@ -607,11 +505,7 @@ export default function AdminSidebar() {
                                       fontSize: '0.65rem',
                                       fontWeight: 600,
                                       minWidth: 20,
-                                      ml: 1,
-                                      '& .MuiChip-label': {
-                                        padding: '0 6px',
-                                        overflow: 'visible'
-                                      }
+                                      ml: 1
                                     }}
                                   />
                                 )}
@@ -625,11 +519,7 @@ export default function AdminSidebar() {
                                       fontSize: '0.65rem',
                                       fontWeight: 600,
                                       minWidth: 20,
-                                      ml: 1,
-                                      '& .MuiChip-label': {
-                                        padding: '0 6px',
-                                        overflow: 'visible'
-                                      }
+                                      ml: 1
                                     }}
                                   />
                                 )}
