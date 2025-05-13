@@ -454,7 +454,6 @@ function AdminRequestForms() {
   const getStatusChip = (status) => {
     let color = 'default';
     let label = status;
-    let customSx = {};
     
     switch (status) {
       case 'pending':
@@ -462,14 +461,8 @@ function AdminRequestForms() {
         label = 'Pending';
         break;
       case 'in_progress':
-        color = 'primary'; // We'll override this with custom styling
+        color = 'primary';
         label = 'In Progress';
-        customSx = {
-          bgcolor: '#8e24aa', 
-          color: '#ffffff',   // Dark purple text
-          borderColor: '#8e24aa',
-          '& .MuiChip-label': { color: '#ffffff' }
-        };
         break;
       case 'completed':
         color = 'success';
@@ -488,20 +481,7 @@ function AdminRequestForms() {
         label = status.replace('_', ' ');
     }
     
-    return (
-      <Chip 
-        size="small" 
-        label={label} 
-        color={color}
-        variant={status === 'in_progress' ? 'outlined' : undefined}
-        sx={{ 
-          height: status === 'in_progress' ? 24 : 20, 
-          fontSize: '0.75rem',
-          '& .MuiChip-label': { px: 1 },
-          ...customSx
-        }}
-      />
-    );
+    return <Chip size="small" label={label} color={color} />;
   };
   
   // Handle snackbar close
@@ -546,7 +526,7 @@ function AdminRequestForms() {
         <EventNoteIcon sx={{ mr: 1.5, color: 'primary.main', fontSize: '1.8rem' }} />
         Document Requests
       </Typography>
-      <Box sx={{ display: 'flex', gap: 1}}>
+      <Box sx={{ display: 'flex', gap: 1 }}>
         <TextField
           size="small"
           placeholder="Search by name or service ID"
@@ -559,7 +539,6 @@ function AdminRequestForms() {
             '& .MuiInputBase-root': {
               borderRadius: 1.5,
             },
-            minWidth: '250px'
           }}
         />
         
@@ -579,8 +558,8 @@ function AdminRequestForms() {
         </Button>
       </Box>
     </Box>
-
-    {/* Tabs Section with Count Badges */}
+    
+    {/* Tabs Section */}
     <Paper 
       sx={{ 
         mb: 3, 
@@ -606,68 +585,9 @@ function AdminRequestForms() {
             },
           }}
         >
-          <Tab label={
-            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              All Requests
-              <Chip 
-                label={requests.length} 
-                size="small"
-                sx={{
-                  ml: 1,
-                  height: 20,
-                  fontSize: '0.7rem',
-                  fontWeight: 600,
-                  bgcolor: 'grey.200',
-                  color: 'text.secondary'
-                }}
-              />
-            </Box>
-          } />
-          {/* Pending Tab - With Badge (if count > 0) */}
-          <Tab 
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                Pending
-                {requests.filter(r => r.status === 'pending').length > 0 && (
-                  <Chip 
-                    label={requests.filter(r => r.status === 'pending').length} 
-                    size="small"
-                    sx={{
-                      ml: 1,
-                      height: 20,
-                      fontSize: '0.7rem',
-                      fontWeight: 600,
-                      bgcolor: 'warning.main',
-                      color: 'white'
-                    }}
-                  />
-                )}
-              </Box>
-            } 
-          />
-          
-          {/* In Progress Tab - With Badge (if count > 0) */}
-          <Tab 
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                In Progress
-                {requests.filter(r => r.status === 'in_progress').length > 0 && (
-                  <Chip 
-                    label={requests.filter(r => r.status === 'in_progress').length} 
-                    size="small"
-                    sx={{
-                      ml: 1,
-                      height: 20,
-                      fontSize: '0.7rem',
-                      fontWeight: 600,
-                      bgcolor: '#8e24aa', // Darker purple for better contrast
-                      color: 'white'
-                    }}
-                  />
-                )}
-              </Box>
-            } 
-          />
+          <Tab label="All Requests" />
+          <Tab label="Pending" />
+          <Tab label="In Progress" />
           <Tab label="Completed" />
           <Tab label="Rejected" />
         </Tabs>
@@ -1089,7 +1009,7 @@ function AdminRequestForms() {
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
-      <Box sx={{md:5}} />
+      
       <DialogContent sx={{ px: 3, py: 2 }}>
       {selectedRequest && (
         <>
@@ -1271,29 +1191,7 @@ function AdminRequestForms() {
                             {selectedRequest.formData.address}
                           </Typography>
                         </Box>
-                        {/* Add mother's name if it exists */}
-                        {selectedRequest.formData.motherName && (
-                          <Box>
-                            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-                              Mother's Name
-                            </Typography>
-                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                              {selectedRequest.formData.motherName}
-                            </Typography>
-                          </Box>
-                        )}
                         
-                        {/* Add father's name if it exists */}
-                        {selectedRequest.formData.fatherName && (
-                          <Box>
-                            <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-                              Father's Name
-                            </Typography>
-                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                              {selectedRequest.formData.fatherName}
-                            </Typography>
-                          </Box>
-                        )}
                         <Box>
                           <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
                             Date of Birth
@@ -1901,7 +1799,7 @@ function AdminRequestForms() {
         <EventNoteIcon sx={{ mr: 1.5, color: 'primary.main' }} />
         Update Request Status
       </DialogTitle>
-      <Box sx={{md:5}} />
+      
       <DialogContent sx={{ pt: 2 }}>
         <DialogContentText sx={{ mb: 2, fontSize: '0.9rem' }}>
           Update the status of this {selectedRequest && documentTypeMap[selectedRequest.documentType]} request.
@@ -2122,7 +2020,6 @@ function AdminRequestForms() {
               }}>
                 <Grid container spacing={2}>
                   {/* Document type specific preview */}
-                  {/* Certificate of Residency fields in preview dialog */}
                   {selectedRequest.documentType === 'certificate_of_residency' && (
                     <>
                       <Grid item xs={12} sm={6}>
@@ -2142,13 +2039,6 @@ function AdminRequestForms() {
                           <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
                             <strong>Place of Birth:</strong> {selectedRequest.formData.placeOfBirth}
                           </Typography>
-                          
-                          {/* Add mother's name if it exists */}
-                          {selectedRequest.formData.motherName && (
-                            <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                              <strong>Mother's Name:</strong> {selectedRequest.formData.motherName}
-                            </Typography>
-                          )}
                         </Box>
                       </Grid>
                       <Grid item xs={12} sm={6}>
@@ -2165,13 +2055,6 @@ function AdminRequestForms() {
                           <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
                             <strong>Purpose:</strong> {selectedRequest.purpose}
                           </Typography>
-                          
-                          {/* Add father's name if it exists */}
-                          {selectedRequest.formData.fatherName && (
-                            <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                              <strong>Father's Name:</strong> {selectedRequest.formData.fatherName}
-                            </Typography>
-                          )}
                         </Box>
                       </Grid>
                     </>

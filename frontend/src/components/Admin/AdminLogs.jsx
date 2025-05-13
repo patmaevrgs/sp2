@@ -507,7 +507,7 @@ function AdminLogs() {
       
       <Grid container spacing={2}>
         {/* Add Service ID Search Bar */}
-        <Grid item xs={12}>
+        <Grid item xs={12} lg={6} xl={4}>
           <TextField
             fullWidth
             label="Search by Service ID"
@@ -829,7 +829,11 @@ function AdminLogs() {
         <>
           {/* Table view for desktop/tablet */}
           {!isMobile && (
-            <TableContainer sx={{ maxHeight: 'calc(100vh - 300px)' }}>
+            <TableContainer sx={{ 
+              maxHeight: 'calc(100vh - 300px)',
+              overflowX: 'auto',  // Add horizontal scroll for small screens
+              width: '100%'
+            }}>
               <Table size="small" stickyHeader>
                 <TableHead>
                   <TableRow>
@@ -940,7 +944,14 @@ function AdminLogs() {
                             }}
                           />
                         </TableCell>
-                        <TableCell sx={{ fontSize: '0.85rem' }}>{log.details}</TableCell>
+                        <TableCell sx={{ 
+                          fontSize: '0.85rem',
+                          maxWidth: '200px',  // Limit the width
+                          wordWrap: 'break-word',
+                          whiteSpace: 'pre-wrap'
+                        }}>
+                          {log.details}
+                        </TableCell>
                         <TableCell sx={{ fontSize: '0.85rem' }}>
                           {serviceId ? (
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
