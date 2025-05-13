@@ -414,7 +414,7 @@ function LandingPage() {
           <Button
             variant="contained"
             component={RouterLink}
-            to="/resident/announcements"
+            to="/announcements"
             sx={{
               bgcolor: 'primary.main',
               color: 'white',
@@ -429,7 +429,7 @@ function LandingPage() {
           <Button
             variant="outlined"
             component={RouterLink}
-            to="/resident/services"
+            to="/services"
             sx={{
               color: 'primary.main',
               borderColor: 'primary.main',
@@ -616,7 +616,7 @@ function LandingPage() {
                       {/* The button is now part of the card content with margin-top:auto to push it to the bottom */}
                       <Button 
                         component={RouterLink} 
-                        to={`/resident/announcements#${announcement._id}`}
+                        to={`/announcements#${announcement._id}`}
                         size="small" 
                         endIcon={<ArrowForwardIcon fontSize="small" />}
                         sx={{ 
@@ -737,7 +737,7 @@ function LandingPage() {
                 <Box sx={{ display: 'flex', justifyContent: 'start' }}>
                   <Button 
                       component={RouterLink}
-                      to="/resident/register-database"
+                      to="/signin"
                       variant="contained" 
                       startIcon={<PersonAddIcon />}
                       sx={(theme) => ({ 
