@@ -1825,6 +1825,25 @@ const ResidentTransaction = () => {
                                         
                                         <Grid item xs={12} sm={6}>
                                         <List dense disablePadding>
+                                          <ListItem sx={{ px: 0, py: 0.75 }}>
+                                              <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                              <ListItemText 
+                                                  primary="Mother's Name" 
+                                                  secondary={selectedTransaction.referenceDetails.formData.motherName || 'N/A'} 
+                                                  primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                  secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                              />
+                                              </ListItem>
+                                              
+                                              <ListItem sx={{ px: 0, py: 0.75 }}>
+                                              <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                              <ListItemText 
+                                                  primary="Father's Name" 
+                                                  secondary={selectedTransaction.referenceDetails.formData.fatherName || 'N/A'} 
+                                                  primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                                  secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                              />
+                                            </ListItem>
                                             <ListItem sx={{ px: 0, py: 0.75 }}>
                                             <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
                                             <ListItemText 
@@ -4289,6 +4308,26 @@ const ResidentTransaction = () => {
                                     
                                     <Grid item xs={12} sm={6}>
                                     <List dense disablePadding>
+                                      <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Mother's Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.motherName || 'N/A'} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                        </ListItem>
+                                        
+                                        <ListItem sx={{ px: 0, py: 0.75 }}>
+                                        <PersonIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
+                                        <ListItemText 
+                                            primary="Father's Name" 
+                                            secondary={selectedTransaction.referenceDetails.formData.fatherName || 'N/A'} 
+                                            primaryTypographyProps={{ variant: 'body2', color: 'text.secondary' }}
+                                            secondaryTypographyProps={{ variant: 'body1', color: 'text.primary' }}
+                                        />
+                                      </ListItem>
+
                                         <ListItem sx={{ px: 0, py: 0.75 }}>
                                         <InfoIcon fontSize="small" sx={{ color: 'text.secondary', mr: 2 }} />
                                         <ListItemText 

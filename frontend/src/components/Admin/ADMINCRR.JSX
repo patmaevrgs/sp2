@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useContext } from 'react';
 import { 
   Container, 
   Typography, 
@@ -47,6 +47,9 @@ import Avatar from '@mui/material/Avatar';
 import { alpha } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+
 import InfoIcon from '@mui/icons-material/Info';
 
 
@@ -432,7 +435,7 @@ function AdminCourt() {
         </Box>
       </Box>
 
-      {/* Date Filter */}
+      {/* Search and Filter */}
       <Paper 
         sx={{ 
           mb: 3, 
@@ -442,6 +445,40 @@ function AdminCourt() {
         }}
       >
         <Grid container spacing={2} alignItems="center">
+          {/* Search by Service ID */}
+          <Grid item xs={12} sm={6} md={4}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search by Service ID"
+              onChange={(e) => {
+                const searchValue = e.target.value.trim();
+                // Implement local filtering based on serviceId
+                // This is a simple implementation - you could modify fetchReservations to accept a search parameter
+                if (searchValue) {
+                  setStatusFilter('all'); // Reset to all when searching
+                  const filtered = reservations.filter(r => 
+                    r.serviceId && r.serviceId.toLowerCase().includes(searchValue.toLowerCase())
+                  );
+                  // You might need to adjust this to fit your actual data structure
+                  // If using a server filter, you'd call fetchReservations with the search term instead
+                } else {
+                  // Reset to original data if search is cleared
+                  fetchReservations();
+                }
+              }}
+              InputProps={{
+                startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: 'action.active' }} />
+              }}
+              sx={{ 
+                '& .MuiInputBase-root': {
+                  borderRadius: 1.5,
+                },
+                minWidth: '250px'
+              }}
+            />
+          </Grid>
+          
           <Grid item xs={12} sm={6} md={3}>
             <DatePicker
               label="Filter by Date"
@@ -455,6 +492,7 @@ function AdminCourt() {
               }}
             />
           </Grid>
+          
           <Grid item xs={12} sm={6} md={3}>
             <Button
               variant="outlined"
@@ -622,28 +660,7 @@ function AdminCourt() {
                   </Box>
                 } 
               />
-              <Tab 
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    Approved
-                    {reservations.filter(r => r.status === 'approved').length > 0 && (
-                      <Chip 
-                        label={reservations.filter(r => r.status === 'approved').length} 
-                        size="small"
-                        sx={{
-                          ml: 1,
-                          height: 20,
-                          fontSize: '0.7rem',
-                          fontWeight: 600,
-                          bgcolor: 'success.main',
-                          color: 'white',
-                          display: reservations.filter(r => r.status === 'approved').length > 0 ? 'flex' : 'none'
-                        }}
-                      />
-                    )}
-                  </Box>
-                } 
-              />
+              <Tab label="Approved" />
               <Tab label="Cancelled" />
               <Tab label="Rejected" />
             </Tabs>
@@ -1009,6 +1026,62 @@ function AdminCourt() {
                 </Paper>
               </Box>
               
+              {/* Timeline info */}
+              <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box sx={{ 
+                    p: 1.5, 
+                    border: '1px solid', 
+                    borderColor: 'divider', 
+                    borderRadius: 1,
+                    bgcolor: alpha('#f5f5f5', 0.5) 
+                  }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                      Reservation Date
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {format(new Date(selectedReservation.reservationDate), 'MMMM d, yyyy')}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box sx={{ 
+                    p: 1.5, 
+                    border: '1px solid', 
+                    borderColor: 'divider', 
+                    borderRadius: 1,
+                    bgcolor: alpha('#f5f5f5', 0.5) 
+                  }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                      Time
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {selectedReservation.startTime} ({selectedReservation.duration} hour{selectedReservation.duration > 1 ? 's' : ''})
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={12} md={6}>
+                  <Box sx={{ 
+                    p: 1.5, 
+                    border: '1px solid', 
+                    borderColor: 'divider', 
+                    borderRadius: 1,
+                    bgcolor: alpha('#f5f5f5', 0.5),
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center'
+                  }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                      Payment
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {calculatePayment(selectedReservation.startTime)}
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+              
               {/* Main content */}
               <Grid container spacing={3}>
                 {/* Left column */}
@@ -1060,19 +1133,10 @@ function AdminCourt() {
                     
                     <Box>
                       <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-                        Duration
+                        Booked By
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {selectedReservation.duration} hour{selectedReservation.duration > 1 ? 's' : ''}
-                      </Typography>
-                    </Box>
-                    
-                    <Box>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-                        Payment
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {calculatePayment(selectedReservation.startTime)}
+                        {selectedReservation.bookedBy?.firstName} {selectedReservation.bookedBy?.lastName}
                       </Typography>
                     </Box>
                   </Box>
@@ -1107,15 +1171,6 @@ function AdminCourt() {
                       </Typography>
                     </Box>
                     
-                    <Box>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-                        Booked By
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {selectedReservation.bookedBy?.firstName} {selectedReservation.bookedBy?.lastName}
-                      </Typography>
-                    </Box>
-                    
                     {selectedReservation.additionalNotes && (
                       <Box>
                         <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
@@ -1128,13 +1183,33 @@ function AdminCourt() {
                     )}
                     
                     {selectedReservation.adminComment && (
-                      <Box>
-                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-                          Admin Comment
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {selectedReservation.adminComment}
-                        </Typography>
+                      <Box sx={{ mt: 2 }}>
+                        <Paper 
+                          elevation={0} 
+                          sx={{ 
+                            p: 2, 
+                            bgcolor: alpha('#f5f5f5', 0.7),
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            borderRadius: 2
+                          }}
+                        >
+                          <Typography 
+                            variant="subtitle2" 
+                            sx={{ 
+                              display: 'flex', 
+                              alignItems: 'center',
+                              color: 'text.secondary',
+                              fontSize: '0.8rem'
+                            }}
+                          >
+                            <CommentIcon sx={{ mr: 1, fontSize: '1rem' }} />
+                            Admin Comment
+                          </Typography>
+                          <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1 }}>
+                            {selectedReservation.adminComment}
+                          </Typography>
+                        </Paper>
                       </Box>
                     )}
                     

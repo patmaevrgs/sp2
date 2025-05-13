@@ -44,8 +44,10 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import Avatar from '@mui/material/Avatar';
+import SearchIcon from '@mui/icons-material/Search';
 import { alpha } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
+import CommentIcon from '@mui/icons-material/Comment';
 import PersonIcon from '@mui/icons-material/Person';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -74,6 +76,8 @@ function AdminCourt() {
   const [dateFilter, setDateFilter] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
   const [calendarLoading, setCalendarLoading] = useState(false);
+  const [allReservations, setAllReservations] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   
   // For pagination
   const [page, setPage] = useState(0);
@@ -109,7 +113,22 @@ function AdminCourt() {
       setLoading(true);
       const token = localStorage.getItem('token');
       
-      // Build query parameters
+      // First, fetch all reservations for badges/counts
+      const allResponse = await fetch('http://localhost:3002/court', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!allResponse.ok) {
+        throw new Error('Failed to fetch reservations');
+      }
+      
+      const allData = await allResponse.json();
+      setAllReservations(allData);
+      
+      // Build query parameters for filtered view
       let url = 'http://localhost:3002/court';
       const params = new URLSearchParams();
       if (dateFilter) params.append('startDate', format(dateFilter, 'yyyy-MM-dd'));
@@ -119,19 +138,28 @@ function AdminCourt() {
         url += `?${params.toString()}`;
       }
       
-      const response = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      // If we have filters, fetch filtered data
+      if (dateFilter || statusFilter !== 'all') {
+        const filteredResponse = await fetch(url, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!filteredResponse.ok) {
+          throw new Error('Failed to fetch filtered reservations');
         }
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch reservations');
+        
+        const filteredData = await filteredResponse.json();
+        setReservations(filteredData);
+      } else {
+        // If no filters, use the all data
+        setReservations(allData);
       }
       
-      const data = await response.json();
-      setReservations(data);
+      // Clear search term when refreshing data
+      setSearchTerm('');
     } catch (error) {
       console.error('Error fetching reservations:', error);
       setError('Failed to load reservations');
@@ -145,6 +173,31 @@ function AdminCourt() {
     fetchReservations();
   }, [dateFilter, statusFilter]);
   
+  useEffect(() => {
+  if (!searchTerm) {
+    // If no search term, just apply normal filters
+    if (statusFilter === 'all') {
+      setReservations(allReservations);
+    } else {
+      setReservations(allReservations.filter(r => r.status === statusFilter));
+    }
+    return;
+  }
+  
+  // Filter by serviceId and status
+  const filtered = allReservations.filter(r => {
+    const matchesSearch = r.serviceId && 
+      r.serviceId.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
+  
+  setReservations(filtered);
+}, [searchTerm, statusFilter, allReservations]);
+
+
   const fetchCalendarData = useCallback(async () => {
     try {
       setCalendarLoading(true);
@@ -309,8 +362,12 @@ function AdminCourt() {
       const data = await response.json();
       console.log(`Reservation ${status} response:`, data);
       
-      // Update local state
+      // Update both state variables
       setReservations(reservations.map(res => 
+        res._id === selectedReservation._id ? data : res
+      ));
+      
+      setAllReservations(allReservations.map(res => 
         res._id === selectedReservation._id ? data : res
       ));
       
@@ -328,7 +385,7 @@ function AdminCourt() {
       setLoading(false);
     }
   };
-  
+    
   // Toggle calendar view
   const toggleCalendar = () => {
     setShowCalendar(prev => !prev);
@@ -354,6 +411,7 @@ function AdminCourt() {
   const handleClearFilters = () => {
     setDateFilter(null);
     setStatusFilter('all');
+    setSearchTerm('');
   };
   
   // Calculate payment based on start time
@@ -435,7 +493,7 @@ function AdminCourt() {
         </Box>
       </Box>
 
-      {/* Date Filter */}
+      {/* Search and Filter */}
       <Paper 
         sx={{ 
           mb: 3, 
@@ -445,19 +503,40 @@ function AdminCourt() {
         }}
       >
         <Grid container spacing={2} alignItems="center">
+          {/* Search by Service ID */}
+          <Grid item xs={12} sm={6} md={4}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search by Service ID"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value.trim())}
+              InputProps={{
+                startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: 'action.active' }} />
+              }}
+              sx={{ 
+                '& .MuiInputBase-root': {
+                  borderRadius: 1.5,
+                },
+                minWidth: '250px'
+              }}
+            />
+          </Grid>
+          
           <Grid item xs={12} sm={6} md={3}>
             <DatePicker
               label="Filter by Date"
+              size="small"
               value={dateFilter}
               onChange={(newDate) => setDateFilter(newDate)}
               sx={{ 
-                width: '100%',
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 1.5,
                 }
               }}
             />
           </Grid>
+          
           <Grid item xs={12} sm={6} md={3}>
             <Button
               variant="outlined"
@@ -558,95 +637,73 @@ function AdminCourt() {
           }}
         >
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs 
-              value={statusFilter === 'all' ? 0 : statusFilter === 'pending' ? 1 : statusFilter === 'approved' ? 2 : statusFilter === 'cancelled' ? 3 : 4}
-              onChange={(e, newValue) => {
-                switch(newValue) {
-                  case 0: setStatusFilter('all'); break;
-                  case 1: setStatusFilter('pending'); break;
-                  case 2: setStatusFilter('approved'); break;
-                  case 3: setStatusFilter('cancelled'); break;
-                  case 4: setStatusFilter('rejected'); break;
-                  default: setStatusFilter('all');
-                }
-                setPage(0); // Reset to first page when changing tabs
-              }}
-              variant="scrollable"
-              scrollButtons="auto"
-              sx={{
-                '& .MuiTab-root': {
-                  textTransform: 'none',
-                  fontWeight: 500,
-                  fontSize: '0.85rem',
-                  py: 1.5
-                },
-                '& .Mui-selected': {
-                  fontWeight: 600
-                },
-              }}
-            >
-              <Tab 
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    All Reservations
-                    <Chip 
-                      label={reservations.length} 
-                      size="small"
-                      sx={{
-                        ml: 1,
-                        height: 20,
-                        fontSize: '0.7rem',
-                        fontWeight: 600,
-                        bgcolor: 'grey.600',
-                        color: 'white'
-                      }}
-                    />
-                  </Box>
-                } 
-              />
-              <Tab 
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    Pending
-                    {reservations.filter(r => r.status === 'pending').length > 0 && (
+              <Tabs 
+                value={statusFilter === 'all' ? 0 : statusFilter === 'pending' ? 1 : statusFilter === 'approved' ? 2 : statusFilter === 'cancelled' ? 3 : 4}
+                onChange={(e, newValue) => {
+                  switch(newValue) {
+                    case 0: setStatusFilter('all'); break;
+                    case 1: setStatusFilter('pending'); break;
+                    case 2: setStatusFilter('approved'); break;
+                    case 3: setStatusFilter('cancelled'); break;
+                    case 4: setStatusFilter('rejected'); break;
+                    default: setStatusFilter('all');
+                  }
+                  setPage(0); // Reset to first page when changing tabs
+                }}
+                variant="scrollable"
+                scrollButtons="auto"
+                sx={{
+                  '& .MuiTab-root': {
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    fontSize: '0.85rem',
+                    py: 1.5
+                  },
+                  '& .Mui-selected': {
+                    fontWeight: 600
+                  },
+                }}
+              >
+                <Tab 
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      All Reservations
                       <Chip 
-                        label={reservations.filter(r => r.status === 'pending').length} 
+                        label={allReservations.length} 
                         size="small"
                         sx={{
                           ml: 1,
                           height: 20,
                           fontSize: '0.7rem',
                           fontWeight: 600,
-                          bgcolor: 'warning.main',
+                          bgcolor: 'grey.600',
                           color: 'white'
                         }}
                       />
-                    )}
-                  </Box>
-                } 
-              />
-              <Tab 
-                label={
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    Approved
-                    {reservations.filter(r => r.status === 'approved').length > 0 && (
+                    </Box>
+                  } 
+                />
+                <Tab 
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      Pending
                       <Chip 
-                        label={reservations.filter(r => r.status === 'approved').length} 
+                        label={allReservations.filter(r => r.status === 'pending').length} 
                         size="small"
                         sx={{
                           ml: 1,
                           height: 20,
                           fontSize: '0.7rem',
                           fontWeight: 600,
-                          bgcolor: 'success.main',
+                          bgcolor: allReservations.filter(r => r.status === 'pending').length > 0 ? 'warning.main' : 'grey.400',
                           color: 'white',
-                          display: reservations.filter(r => r.status === 'approved').length > 0 ? 'flex' : 'none'
+                          display: allReservations.filter(r => r.status === 'pending').length > 0 ? 'flex' : 'none'
                         }}
                       />
-                    )}
-                  </Box>
-                } 
-              />
+                    </Box>
+                  } 
+                />
+              <Tab label="Approved" />
               <Tab label="Cancelled" />
               <Tab label="Rejected" />
             </Tabs>
@@ -970,7 +1027,7 @@ function AdminCourt() {
                 <CloseIcon fontSize="small" />
               </IconButton>
             </DialogTitle>
-            
+            <Box sx={{md: 5}} />
             <DialogContent sx={{ px: 3, py: 2 }}>
               {/* Header info */}
               <Box sx={{ mb: 3 }}>
@@ -1011,6 +1068,62 @@ function AdminCourt() {
                   </Grid>
                 </Paper>
               </Box>
+              
+              {/* Timeline info */}
+              <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box sx={{ 
+                    p: 1.5, 
+                    border: '1px solid', 
+                    borderColor: 'divider', 
+                    borderRadius: 1,
+                    bgcolor: alpha('#f5f5f5', 0.5) 
+                  }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                      Reservation Date
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {format(new Date(selectedReservation.reservationDate), 'MMMM d, yyyy')}
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                  <Box sx={{ 
+                    p: 1.5, 
+                    border: '1px solid', 
+                    borderColor: 'divider', 
+                    borderRadius: 1,
+                    bgcolor: alpha('#f5f5f5', 0.5) 
+                  }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                      Time
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {selectedReservation.startTime} ({selectedReservation.duration} hour{selectedReservation.duration > 1 ? 's' : ''})
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={12} md={6}>
+                  <Box sx={{ 
+                    p: 1.5, 
+                    border: '1px solid', 
+                    borderColor: 'divider', 
+                    borderRadius: 1,
+                    bgcolor: alpha('#f5f5f5', 0.5),
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center'
+                  }}>
+                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
+                      Payment
+                    </Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      {calculatePayment(selectedReservation.startTime)}
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
               
               {/* Main content */}
               <Grid container spacing={3}>
@@ -1063,19 +1176,10 @@ function AdminCourt() {
                     
                     <Box>
                       <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-                        Duration
+                        Booked By
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {selectedReservation.duration} hour{selectedReservation.duration > 1 ? 's' : ''}
-                      </Typography>
-                    </Box>
-                    
-                    <Box>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-                        Payment
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {calculatePayment(selectedReservation.startTime)}
+                        {selectedReservation.bookedBy?.firstName} {selectedReservation.bookedBy?.lastName}
                       </Typography>
                     </Box>
                   </Box>
@@ -1110,15 +1214,6 @@ function AdminCourt() {
                       </Typography>
                     </Box>
                     
-                    <Box>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-                        Booked By
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {selectedReservation.bookedBy?.firstName} {selectedReservation.bookedBy?.lastName}
-                      </Typography>
-                    </Box>
-                    
                     {selectedReservation.additionalNotes && (
                       <Box>
                         <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
@@ -1131,13 +1226,33 @@ function AdminCourt() {
                     )}
                     
                     {selectedReservation.adminComment && (
-                      <Box>
-                        <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block' }}>
-                          Admin Comment
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {selectedReservation.adminComment}
-                        </Typography>
+                      <Box sx={{ mt: 2 }}>
+                        <Paper 
+                          elevation={0} 
+                          sx={{ 
+                            p: 2, 
+                            bgcolor: alpha('#f5f5f5', 0.7),
+                            border: '1px solid',
+                            borderColor: 'divider',
+                            borderRadius: 2
+                          }}
+                        >
+                          <Typography 
+                            variant="subtitle2" 
+                            sx={{ 
+                              display: 'flex', 
+                              alignItems: 'center',
+                              color: 'text.secondary',
+                              fontSize: '0.8rem'
+                            }}
+                          >
+                            <CommentIcon sx={{ mr: 1, fontSize: '1rem' }} />
+                            Admin Comment
+                          </Typography>
+                          <Typography variant="body2" sx={{ whiteSpace: 'pre-line', mt: 1 }}>
+                            {selectedReservation.adminComment}
+                          </Typography>
+                        </Paper>
                       </Box>
                     )}
                     
