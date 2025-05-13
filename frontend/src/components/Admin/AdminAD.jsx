@@ -31,12 +31,6 @@ import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import SaveIcon from '@mui/icons-material/Save';
 import Avatar from '@mui/material/Avatar';
 import Chip from '@mui/material/Chip';
-import SearchIcon from '@mui/icons-material/Search';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import SortIcon from '@mui/icons-material/Sort';
-import InputAdornment from '@mui/material/InputAdornment';
-import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
 
 function AdminAccounts() {
   const [users, setUsers] = useState([]);
@@ -46,11 +40,6 @@ function AdminAccounts() {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [newUserType, setNewUserType] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedUserType, setSelectedUserType] = useState('');
-  const [sortOrder, setSortOrder] = useState('asc');
-  const [sortField, setSortField] = useState('lastName');
-  const [filteredUsers, setFilteredUsers] = useState([]);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -61,45 +50,6 @@ function AdminAccounts() {
   useEffect(() => {
     fetchUsers();
   }, []);
-
-  useEffect(() => {
-    if (!users.length) {
-      setFilteredUsers([]);
-      return;
-    }
-    
-    let result = [...users];
-    
-    // Apply search filter
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      result = result.filter(user => 
-        user.firstName.toLowerCase().includes(searchLower) ||
-        user.lastName.toLowerCase().includes(searchLower) ||
-        (user.middleName && user.middleName.toLowerCase().includes(searchLower)) ||
-        user.email.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    // Apply user type filter
-    if (selectedUserType) {
-      result = result.filter(user => user.userType === selectedUserType);
-    }
-    
-    // Apply sorting
-    result.sort((a, b) => {
-      let valueA = a[sortField] ? a[sortField].toLowerCase() : '';
-      let valueB = b[sortField] ? b[sortField].toLowerCase() : '';
-      
-      if (sortOrder === 'asc') {
-        return valueA.localeCompare(valueB);
-      } else {
-        return valueB.localeCompare(valueA);
-      }
-    });
-    
-    setFilteredUsers(result);
-  }, [users, searchTerm, selectedUserType, sortField, sortOrder]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -292,7 +242,7 @@ function AdminAccounts() {
             }}
           />
         </Grid>
-        <Grid item xs={12} sm={6} md={3} sx={{minWidth: '120px'}}>
+        <Grid item xs={12} sm={6} md={3}>
           <FormControl fullWidth variant="outlined" size="small">
             <InputLabel id="user-type-select-label">User Type</InputLabel>
             <Select
@@ -331,6 +281,10 @@ function AdminAccounts() {
             >
               <MenuItem value="lastName-asc">Last Name (A-Z)</MenuItem>
               <MenuItem value="lastName-desc">Last Name (Z-A)</MenuItem>
+              <MenuItem value="firstName-asc">First Name (A-Z)</MenuItem>
+              <MenuItem value="firstName-desc">First Name (Z-A)</MenuItem>
+              <MenuItem value="email-asc">Email (A-Z)</MenuItem>
+              <MenuItem value="email-desc">Email (Z-A)</MenuItem>
             </Select>
           </FormControl>
         </Grid>
@@ -504,7 +458,7 @@ function AdminAccounts() {
     </Paper>
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
       <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
-        {filteredUsers.length} of {users.length} Users Shown
+        Total Users: {users.length}
       </Typography>
       <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
         Last updated: {new Date().toLocaleString()}
@@ -529,7 +483,6 @@ function AdminAccounts() {
         <EditIcon sx={{ mr: 1, color: 'primary.main' }} />
         Edit User Access Level
       </DialogTitle>
-      <Box sx={{md: 5}} />
       <DialogContent sx={{ pt: 3 }}>
         {selectedUser && (
           <Box>
