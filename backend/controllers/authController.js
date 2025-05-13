@@ -4,15 +4,49 @@ import bcrypt from 'bcrypt';
 import User from '../models/User.js';
 
 const signUp = async (req, res) => {
-    const { password, ...userData } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ ...userData, password: hashedPassword });
-    const result = await newUser.save();
+    try {
+        // First check if the email already exists
+        const existingUser = await User.findOne({ email: req.body.email });
+        
+        if (existingUser) {
+            // Return a specific error for duplicate email
+            return res.status(409).json({ 
+                success: false, 
+                message: "Email address already registered. Please use a different email or log in." 
+            });
+        }
+        
+        // If email doesn't exist, proceed with creating the account
+        const { password, ...userData } = req.body;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ ...userData, password: hashedPassword });
+        const result = await newUser.save();
 
-    if (result._id) {
-        res.send({ success: true });
-    } else {
-        res.send({ success: false, message: "Error creating account. Please try again." });
+        if (result._id) {
+            res.status(201).json({ success: true });
+        } else {
+            res.status(400).json({ 
+                success: false, 
+                message: "Error creating account. Please try again." 
+            });
+        }
+    } catch (error) {
+        // Handle any other errors that might occur
+        console.error("SignUp error:", error);
+        
+        // Check if it's a MongoDB duplicate key error (another way to catch duplicates)
+        if (error.code === 11000) {
+            return res.status(409).json({ 
+                success: false, 
+                message: "Email address already registered. Please use a different email or log in."
+            });
+        }
+        
+        // Generic error response
+        res.status(500).json({ 
+            success: false, 
+            message: "An unexpected error occurred. Please try again later."
+        });
     }
 };
 

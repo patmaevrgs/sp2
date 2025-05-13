@@ -11,7 +11,15 @@ import {
   useMediaQuery,
   InputAdornment,
   useTheme,
-  CssBaseline
+  CssBaseline,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Snackbar,
+  Alert,
+  IconButton
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import DescriptionIcon from '@mui/icons-material/Description';
@@ -26,6 +34,9 @@ import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
 import GoogleIcon from '@mui/icons-material/Google';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import ReportIcon from '@mui/icons-material/Report';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import CircularProgress from '@mui/material/CircularProgress';
 
 function SignUp() {
   const [firstName, setFirstName] = useState('');
@@ -33,26 +44,107 @@ function SignUp() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  // New state variables for validation and dialogs
+  const [firstNameError, setFirstNameError] = useState('');
+  const [lastNameError, setLastNameError] = useState('');
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   const navigate = useNavigate();
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const MuiLink = Link;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await fetch('http://localhost:3002/signup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ firstName, middleName, lastName, email, password, userType: "resident" }),
-    });
-    const data = await response.json();
-    if (data.success) {
-      navigate('/signin'); // Redirect to sign-in page after successful sign-up
-    } else {
-      alert('Error: Unable to create account');
+    
+    // Reset errors
+    setFirstNameError('');
+    setLastNameError('');
+    setEmailError('');
+    setPasswordError('');
+    
+    // Validate form
+    let isValid = true;
+    
+    // First name validation
+    if (!firstName.trim()) {
+      setFirstNameError('First name is required');
+      isValid = false;
+    }
+    
+    // Last name validation
+    if (!lastName.trim()) {
+      setLastNameError('Last name is required');
+      isValid = false;
+    }
+    
+    // Email validation
+    if (!email) {
+      setEmailError('Email address is required');
+      isValid = false;
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setEmailError('Please enter a valid email address');
+      isValid = false;
+    }
+    
+    // Password validation
+    if (!password) {
+      setPasswordError('Password is required');
+      isValid = false;
+    } else if (password.length < 8) {
+      setPasswordError('Password must be at least 8 characters long');
+      isValid = false;
+    } else if (!/(?=.*[a-zA-Z])(?=.*[0-9])/.test(password)) {
+      setPasswordError('Password must contain both letters and numbers');
+      isValid = false;
+    }
+    
+    // If validation passes, submit the form
+    if (isValid) {
+      setIsLoading(true); // Show loading state immediately
+      
+      // Create a timeout for the request
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timed out')), 8000); // 8 seconds timeout
+      });
+      
+      try {
+        const response = await fetch('http://localhost:3002/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ firstName, middleName, lastName, email, password, userType: "resident" }),
+        });
+        
+        const data = await response.json();
+        
+        setIsLoading(false);
+        
+        if (data.success) {
+          setShowSuccessSnackbar(true);
+          setTimeout(() => {
+            navigate('/signin');
+          }, 1500);
+        } else {
+          // Handle the error from the server
+          setErrorMessage(data.message || "Unable to create account. Please try again later.");
+          setShowErrorDialog(true);
+        }
+      } catch (error) {
+        setIsLoading(false);
+        console.error('Error creating account:', error);
+        setErrorMessage('A network error occurred. Please check your connection and try again.');
+        setShowErrorDialog(true);
+      }
     }
   };
 
@@ -220,11 +312,18 @@ function SignUp() {
               fullWidth
               label="First Name"
               value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
+              onChange={(e) => {
+                setFirstName(e.target.value);
+                if (firstNameError) setFirstNameError('');
+              }}
+              error={!!firstNameError}
+              helperText={firstNameError}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <PersonIcon color="action" sx={{ color: 'rgba(0, 0, 0, 0.54)' }} />
+                    <PersonIcon 
+                      sx={{ color: firstNameError ? 'error.main' : 'rgba(0, 0, 0, 0.54)' }} 
+                    />
                   </InputAdornment>
                 ),
               }}
@@ -240,16 +339,26 @@ function SignUp() {
                     backgroundColor: 'white',
                     boxShadow: '0 0 0 2px rgba(10, 138, 13, 0.2)',
                   },
+                  '&.Mui-error': {
+                    boxShadow: '0 0 0 2px rgba(211, 47, 47, 0.2)',
+                  }
                 },
                 '& .MuiOutlinedInput-notchedOutline': {
                   borderColor: 'transparent',
                 },
                 '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#0a8a0d',
+                  borderColor: firstNameError ? 'error.main' : '#0a8a0d',
+                },
+                '& .Mui-error .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'error.main',
                 },
                 '& .MuiFormLabel-root.Mui-focused': {
-                  color: '#0a8a0d',
+                  color: firstNameError ? 'error.main' : '#0a8a0d',
                 },
+                '& .MuiFormHelperText-root': {
+                  marginLeft: 1,
+                  marginTop: 0.5,
+                }
               }}
             />
             <TextField
@@ -295,16 +404,23 @@ function SignUp() {
             fullWidth
             label="Last Name"
             value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
+            onChange={(e) => {
+              setLastName(e.target.value);
+              if (lastNameError) setLastNameError('');
+            }}
+            error={!!lastNameError}
+            helperText={lastNameError}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <PersonIcon color="action" sx={{ color: 'rgba(0, 0, 0, 0.54)' }} />
+                  <PersonIcon 
+                    sx={{ color: lastNameError ? 'error.main' : 'rgba(0, 0, 0, 0.54)' }} 
+                  />
                 </InputAdornment>
               ),
             }}
             sx={{
-              mb: 2,
+              mb: lastNameError ? 1 : 2,
               '& .MuiInputBase-root': {
                 borderRadius: '10px',
                 backgroundColor: '#f5f7fa',
@@ -316,16 +432,26 @@ function SignUp() {
                   backgroundColor: 'white',
                   boxShadow: '0 0 0 2px rgba(10, 138, 13, 0.2)',
                 },
+                '&.Mui-error': {
+                  boxShadow: '0 0 0 2px rgba(211, 47, 47, 0.2)',
+                }
               },
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: 'transparent',
               },
               '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#0a8a0d',
+                borderColor: lastNameError ? 'error.main' : '#0a8a0d',
+              },
+              '& .Mui-error .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'error.main',
               },
               '& .MuiFormLabel-root.Mui-focused': {
-                color: '#0a8a0d',
+                color: lastNameError ? 'error.main' : '#0a8a0d',
               },
+              '& .MuiFormHelperText-root': {
+                marginLeft: 1,
+                marginTop: 0.5,
+              }
             }}
           />
           <TextField
@@ -334,16 +460,23 @@ function SignUp() {
             label="Email Address"
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (emailError) setEmailError('');
+            }}
+            error={!!emailError}
+            helperText={emailError}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <EmailIcon color="action" sx={{ color: 'rgba(0, 0, 0, 0.54)' }} />
+                  <EmailIcon 
+                    sx={{ color: emailError ? 'error.main' : 'rgba(0, 0, 0, 0.54)' }} 
+                  />
                 </InputAdornment>
               ),
             }}
             sx={{
-              mb: 2,
+              mb: emailError ? 1 : 2,
               '& .MuiInputBase-root': {
                 borderRadius: '10px',
                 backgroundColor: '#f5f7fa',
@@ -355,16 +488,26 @@ function SignUp() {
                   backgroundColor: 'white',
                   boxShadow: '0 0 0 2px rgba(10, 138, 13, 0.2)',
                 },
+                '&.Mui-error': {
+                  boxShadow: '0 0 0 2px rgba(211, 47, 47, 0.2)',
+                }
               },
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: 'transparent',
               },
               '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#0a8a0d',
+                borderColor: emailError ? 'error.main' : '#0a8a0d',
+              },
+              '& .Mui-error .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'error.main',
               },
               '& .MuiFormLabel-root.Mui-focused': {
-                color: '#0a8a0d',
+                color: emailError ? 'error.main' : '#0a8a0d',
               },
+              '& .MuiFormHelperText-root': {
+                marginLeft: 1,
+                marginTop: 0.5,
+              }
             }}
           />
           
@@ -374,16 +517,23 @@ function SignUp() {
             label="Password"
             type="password"
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (passwordError) setPasswordError('');
+            }}
+            error={!!passwordError}
+            helperText={passwordError}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <LockIcon color="action" sx={{ color: 'rgba(0, 0, 0, 0.54)' }} />
+                  <LockIcon 
+                    sx={{ color: passwordError ? 'error.main' : 'rgba(0, 0, 0, 0.54)' }} 
+                  />
                 </InputAdornment>
               ),
             }}
             sx={{
-              mb: 3,
+              mb: passwordError ? 1 : 3,
               '& .MuiInputBase-root': {
                 borderRadius: '10px',
                 backgroundColor: '#f5f7fa',
@@ -395,16 +545,26 @@ function SignUp() {
                   backgroundColor: 'white',
                   boxShadow: '0 0 0 2px rgba(10, 138, 13, 0.2)',
                 },
+                '&.Mui-error': {
+                  boxShadow: '0 0 0 2px rgba(211, 47, 47, 0.2)',
+                }
               },
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: 'transparent',
               },
               '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#0a8a0d',
+                borderColor: passwordError ? 'error.main' : '#0a8a0d',
+              },
+              '& .Mui-error .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'error.main',
               },
               '& .MuiFormLabel-root.Mui-focused': {
-                color: '#0a8a0d',
+                color: passwordError ? 'error.main' : '#0a8a0d',
               },
+              '& .MuiFormHelperText-root': {
+                marginLeft: 1,
+                marginTop: 0.5,
+              }
             }}
           />
           <Button
@@ -412,27 +572,44 @@ function SignUp() {
             fullWidth
             variant="contained"
             size="large"
+            disabled={isLoading}
             sx={{
               py: { xs: 1.2, sm: 1.5 },
               borderRadius: '10px',
               textTransform: 'none',
               fontSize: { xs: '1rem', sm: '1.1rem' },
               fontWeight: 600,
-              background: 'linear-gradient(90deg, #0a8a0d, #26a69a)',
+              position: 'relative',
+              background: isLoading ? 'rgba(10, 138, 13, 0.7)' : 'linear-gradient(90deg, #0a8a0d, #26a69a)',
               boxShadow: '0 4px 15px rgba(10, 138, 13, 0.3)',
               transition: 'all 0.3s ease',
               '&:hover': {
                 boxShadow: '0 6px 20px rgba(10, 138, 13, 0.4)',
-                transform: 'translateY(-2px)',
-                background: 'linear-gradient(90deg, #0a8a0d, #26a69a)',
-                filter: 'brightness(1.05)',
+                transform: isLoading ? 'none' : 'translateY(-2px)',
+                background: isLoading ? 'rgba(10, 138, 13, 0.7)' : 'linear-gradient(90deg, #0a8a0d, #26a69a)',
+                filter: isLoading ? 'none' : 'brightness(1.05)',
               },
               '&:active': {
                 transform: 'translateY(0)',
               },
             }}
           >
-            Create Account
+            {isLoading ? (
+              <>
+                <CircularProgress 
+                  size={24} 
+                  color="inherit" 
+                  sx={{ 
+                    position: 'absolute',
+                    left: 'calc(50% - 12px)',
+                    color: 'white'
+                  }} 
+                />
+                <span style={{ visibility: 'hidden' }}>Create Account</span>
+              </>
+            ) : (
+              'Create Account'
+            )}
           </Button>
           
           {/* Optional social login section - can be hidden on smallest screens if desired */}
@@ -493,6 +670,113 @@ function SignUp() {
         }}
       />
     </Box>
+    {/* Error Dialog */}
+      <Dialog
+        open={showErrorDialog}
+        onClose={() => setShowErrorDialog(false)}
+        aria-labelledby="registration-error-dialog"
+        TransitionProps={{ timeout: 50 }} // Minimal transition time
+        PaperProps={{
+          sx: {
+            borderRadius: '8px',
+            maxWidth: '450px',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+          }
+        }}
+      >
+        <DialogTitle 
+          id="registration-error-dialog"
+          sx={{ 
+            borderBottom: '1px solid #e0e0e0',
+            py: 2,
+            px: 3,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            color: '#424242',
+            fontWeight: 600
+          }}
+        >
+          <ErrorOutlineIcon sx={{ color: '#d32f2f' }} />
+          Registration Error
+        </DialogTitle>
+        <Box sx={{md:5}} />
+        <DialogContent sx={{ py: 3, px: 3 }}>
+          <DialogContentText 
+            sx={{ 
+              color: '#212121',
+              fontSize: '0.95rem'
+            }}
+          >
+            {errorMessage}
+          </DialogContentText>
+          
+          <Box sx={{ 
+            mt: 2, 
+            p: 2, 
+            bgcolor: '#f5f5f5', 
+            borderRadius: '4px',
+            borderLeft: '3px solid #0a8a0d'
+          }}>
+            <Typography variant="body2" color="text.secondary">
+              If you continue to experience issues, please contact the Barangay Maahas administrative office for assistance.
+            </Typography>
+          </Box>
+        </DialogContent>
+        
+        <DialogActions sx={{ 
+          px: 3, 
+          py: 2,
+          borderTop: '1px solid #e0e0e0',
+        }}>
+          <Button 
+            onClick={() => setShowErrorDialog(false)} 
+            variant="contained"
+            disableElevation
+            sx={{
+              bgcolor: '#0a8a0d',
+              color: 'white',
+              textTransform: 'none',
+              borderRadius: '4px',
+              px: 3,
+              '&:hover': {
+                bgcolor: '#097a0c',
+              }
+            }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={showSuccessSnackbar}
+        autoHideDuration={3000}
+        onClose={() => setShowSuccessSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        TransitionProps={{ appear: false, timeout: 100 }}
+      >
+        <Alert 
+          onClose={() => setShowSuccessSnackbar(false)} 
+          severity="success"
+          variant="filled"
+          sx={{ 
+            width: '100%',
+            alignItems: 'center',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+            '& .MuiAlert-icon': {
+              fontSize: '1.2rem'
+            }
+          }}
+          icon={<CheckCircleOutlineIcon fontSize="inherit" />}
+        >
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            Account created successfully! Redirecting to login page...
+          </Typography>
+        </Alert>
+      </Snackbar>
+
   </Box>
 );
 }
