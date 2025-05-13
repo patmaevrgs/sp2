@@ -44,6 +44,15 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon
 } from '@mui/icons-material';
+import {
+  FiberManualRecord as FiberManualRecordIcon,
+  Save as SaveIcon,
+  Info as InfoIcon,
+  AttachFile as AttachFileIcon,
+  CloudUpload as CloudUploadIcon,
+  FilterAlt as FilterAltIcon,
+  VerifiedUser as VerifiedUserIcon
+} from '@mui/icons-material';
 import AlertTitle from '@mui/material/AlertTitle';
 
 // Resident type options
@@ -737,110 +746,632 @@ function AdminDatabase() {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      {/* Header */}
-      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h4" component="h2">
-          Resident Database
-        </Typography>
-        <Box>
-          {pendingRequests.length > 0 && (
-            <Button
-              variant="outlined"
-              color="warning"
-              onClick={handleOpenPendingDialog}
-              startIcon={<WarningIcon />}
-              sx={{ mr: 1 }}
-            >
-              Pending Requests ({pendingRequests.length})
-            </Button>
-          )}
+  <Box sx={{ p: 3 }}>
+    {/* Header */}
+    <Box 
+      sx={{ 
+        mb: 3, 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        pb: 2,
+        borderBottom: '1px solid',
+        borderColor: 'divider',
+      }}
+    >
+      <Typography 
+        variant="h5" 
+        component="h2"
+        sx={{ 
+          fontWeight: 600,
+          display: 'flex', 
+          alignItems: 'center'
+        }}
+      >
+        <PeopleAltIcon sx={{ mr: 1.5, color: 'primary.main', fontSize: '1.8rem' }} />
+        Resident Database
+      </Typography>
+      <Box>
+        {pendingRequests.length > 0 && (
           <Button
             variant="outlined"
-            onClick={handleOpenUploadDialog}
-            startIcon={<UploadIcon />}
-            sx={{ mr: 1 }}
+            color="warning"
+            onClick={handleOpenPendingDialog}
+            startIcon={<WarningIcon />}
+            size="small"
+            sx={{ 
+              mr: 1,
+              borderRadius: 1.5,
+              fontWeight: 500,
+              textTransform: 'none',
+              fontSize: '0.85rem'
+            }}
           >
-            Import CSV
+            Pending Requests ({pendingRequests.length})
           </Button>
-          <Button
-            variant="contained"
-            onClick={handleOpenAddDialog}
-            startIcon={<AddIcon />}
-          >
-            Add Resident
-          </Button>
-        </Box>
+        )}
+        <Button
+          variant="outlined"
+          onClick={handleOpenUploadDialog}
+          startIcon={<UploadIcon />}
+          size="small"
+          sx={{ 
+            mr: 1,
+            borderRadius: 1.5,
+            fontWeight: 500,
+            textTransform: 'none',
+            fontSize: '0.85rem'
+          }}
+        >
+          Import CSV
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleOpenAddDialog}
+          startIcon={<AddIcon />}
+          size="small"
+          sx={{ 
+            borderRadius: 1.5,
+            fontWeight: 500,
+            textTransform: 'none',
+            fontSize: '0.85rem'
+          }}
+        >
+          Add Resident
+        </Button>
       </Box>
+    </Box>
 
-      {/* Filters */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item xs={12} sm={6} md={3}>
+    {/* Filters */}
+    <Paper 
+      sx={{ 
+        p: 2, 
+        mb: 3, 
+        borderRadius: 2,
+        boxShadow: '0 2px 10px 0 rgba(0,0,0,0.04)'
+      }}
+    >
+      <Typography 
+        variant="subtitle1" 
+        sx={{ 
+          mb: 2, 
+          fontWeight: 600, 
+          fontSize: '0.9rem',
+          display: 'flex',
+          alignItems: 'center' 
+        }}
+      >
+        <FilterAltIcon sx={{ mr: 1, fontSize: '1.1rem', color: 'primary.main' }} />
+        Filter Residents
+      </Typography>
+      
+      <Grid container spacing={2} alignItems="center">
+        <Grid item xs={12} sm={6} md={3}>
+          <TextField
+            fullWidth
+            label="Search by Name"
+            variant="outlined"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            size="small"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ fontSize: '1.2rem', color: 'action.active' }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={2}>
+          <FormControl fullWidth variant="outlined" size="small">
+            <InputLabel id="address-select-label">Address</InputLabel>
+            <Select
+              labelId="address-select-label"
+              value={selectedAddress}
+              onChange={(e) => setSelectedAddress(e.target.value)}
+              label="Address"
+            >
+              <MenuItem value="">
+                <em>All Addresses</em>
+              </MenuItem>
+              {addressOptions.map((address) => (
+                <MenuItem key={address} value={address}>
+                  {address}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={6} md={2}>
+          <FormControl fullWidth variant="outlined" size="small">
+            <InputLabel id="precinct-select-label">Precinct</InputLabel>
+            <Select
+              labelId="precinct-select-label"
+              value={selectedPrecinct}
+              onChange={(e) => setSelectedPrecinct(e.target.value)}
+              label="Precinct"
+            >
+              <MenuItem value="">
+                <em>All Precincts</em>
+              </MenuItem>
+              {precinctOptions.map((precinct) => (
+                <MenuItem key={precinct} value={precinct}>
+                  {precinct}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={6} md={2}>
+          <FormControl fullWidth variant="outlined" size="small">
+            <InputLabel id="types-select-label">Resident Type</InputLabel>
+            <Select
+              labelId="types-select-label"
+              multiple
+              value={selectedTypes}
+              onChange={(e) => setSelectedTypes(e.target.value)}
+              input={<OutlinedInput label="Resident Type" />}
+              renderValue={(selected) => (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                  {selected.map((value) => (
+                    <Chip 
+                      key={value} 
+                      label={value} 
+                      size="small" 
+                      sx={{ 
+                        fontSize: '0.75rem', 
+                        height: 20, 
+                        '& .MuiChip-label': { p: '0 8px' } 
+                      }} 
+                    />
+                  ))}
+                </Box>
+              )}
+            >
+              {residentTypes.map((type) => (
+                <MenuItem key={type} value={type}>
+                  {type}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={6} md={1}>
+          <FormControl fullWidth variant="outlined" size="small">
+            <InputLabel id="voter-select-label">Voter</InputLabel>
+            <Select
+              labelId="voter-select-label"
+              value={voterStatus}
+              onChange={(e) => setVoterStatus(e.target.value)}
+              label="Voter"
+            >
+              <MenuItem value=""><em>All</em></MenuItem>
+              <MenuItem value="yes">Yes</MenuItem>
+              <MenuItem value="no">No</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={6} md={2}>
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={handleResetFilters}
+            startIcon={<RefreshIcon />}
+            size="small"
+            sx={{ 
+              height: '40px', 
+              borderRadius: 1, 
+              textTransform: 'none', 
+              fontWeight: 500,
+              fontSize: '0.85rem'
+            }}
+          >
+            Reset Filters
+          </Button>
+        </Grid>
+      </Grid>
+    </Paper>
+
+    {/* Residents Table */}
+    <Paper 
+      sx={{ 
+        width: '100%', 
+        overflow: 'hidden',
+        borderRadius: 2,
+        boxShadow: '0 2px 10px 0 rgba(0,0,0,0.04)',
+        mb: 2
+      }}
+    >
+      <TableContainer sx={{ maxHeight: 'calc(100vh - 300px)' }}>
+        <Table stickyHeader size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell 
+                sx={{ 
+                  fontWeight: 600, 
+                  backgroundColor: theme => alpha(theme.palette.primary.main, 0.05),
+                  fontSize: '0.8rem'
+                }}
+              >
+                Full Name
+              </TableCell>
+              <TableCell 
+                sx={{ 
+                  fontWeight: 600, 
+                  backgroundColor: theme => alpha(theme.palette.primary.main, 0.05),
+                  fontSize: '0.8rem'
+                }}
+              >
+                Address
+              </TableCell>
+              <TableCell 
+                sx={{ 
+                  fontWeight: 600, 
+                  backgroundColor: theme => alpha(theme.palette.primary.main, 0.05),
+                  fontSize: '0.8rem'
+                }}
+              >
+                Precinct
+              </TableCell>
+              <TableCell 
+                sx={{ 
+                  fontWeight: 600, 
+                  backgroundColor: theme => alpha(theme.palette.primary.main, 0.05),
+                  fontSize: '0.8rem'
+                }}
+              >
+                Contact
+              </TableCell>
+              <TableCell 
+                sx={{ 
+                  fontWeight: 600, 
+                  backgroundColor: theme => alpha(theme.palette.primary.main, 0.05),
+                  fontSize: '0.8rem'
+                }}
+              >
+                Types
+              </TableCell>
+              <TableCell 
+                sx={{ 
+                  fontWeight: 600, 
+                  backgroundColor: theme => alpha(theme.palette.primary.main, 0.05),
+                  fontSize: '0.8rem'
+                }}
+              >
+                Voter
+              </TableCell>
+              <TableCell 
+                align="right"
+                sx={{ 
+                  fontWeight: 600, 
+                  backgroundColor: theme => alpha(theme.palette.primary.main, 0.05),
+                  fontSize: '0.8rem'
+                }}
+              >
+                Actions
+              </TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                  <CircularProgress size={28} sx={{ mb: 1 }} />
+                  <Typography variant="body2" display="block" sx={{ color: 'text.secondary' }}>
+                    Loading residents...
+                  </Typography>
+                </TableCell>
+              </TableRow>
+            ) : residents.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <PeopleAltIcon sx={{ fontSize: '2rem', color: 'text.secondary', mb: 1 }} />
+                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      No residents found matching your filters
+                    </Typography>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ) : (
+              residents.map((resident) => (
+                <TableRow key={resident._id} hover>
+                  <TableCell sx={{ fontSize: '0.85rem' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Avatar 
+                        sx={{ 
+                          width: 28, 
+                          height: 28, 
+                          mr: 1.5, 
+                          bgcolor: resident.isVerified ? 'primary.light' : 'warning.light',
+                          fontSize: '0.7rem'
+                        }}
+                      >
+                        {resident.firstName ? resident.firstName.charAt(0) : ''}
+                        {resident.lastName ? resident.lastName.charAt(0) : ''}
+                      </Avatar>
+                      <Box>
+                        {resident.firstName === 'Resident' 
+                          ? resident.lastName 
+                          : `${resident.lastName}, ${resident.firstName} ${resident.middleName || ''}`}
+                        {!resident.isVerified && (
+                          <Chip 
+                            label="Pending" 
+                            size="small" 
+                            color="warning" 
+                            sx={{ 
+                              ml: 1, 
+                              height: 18, 
+                              fontSize: '0.7rem',
+                              '& .MuiChip-label': { px: 1 } 
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={{ fontSize: '0.85rem' }}>{resident.address}</TableCell>
+                  <TableCell sx={{ fontSize: '0.85rem' }}>{resident.precinctLevel || '-'}</TableCell>
+                  <TableCell sx={{ fontSize: '0.85rem' }}>{resident.contactNumber || '-'}</TableCell>
+                  <TableCell sx={{ fontSize: '0.85rem' }}>{renderTypes(resident.types)}</TableCell>
+                  <TableCell sx={{ fontSize: '0.85rem' }}>
+                    {resident.isVoter ? 
+                      <Chip 
+                        label="Yes" 
+                        size="small" 
+                        color="success" 
+                        variant="outlined"
+                        sx={{ height: 20, fontSize: '0.75rem' }} 
+                      /> : 
+                      <Chip 
+                        label="No" 
+                        size="small" 
+                        color="default" 
+                        variant="outlined"
+                        sx={{ height: 20, fontSize: '0.75rem' }} 
+                      />
+                    }
+                  </TableCell>
+                  <TableCell align="right">
+                    {!resident.isVerified ? (
+                      <Tooltip title="Verify">
+                        <IconButton 
+                          color="success" 
+                          onClick={() => handleOpenVerifyDialog(resident)}
+                          size="small"
+                          sx={{ 
+                            bgcolor: theme => alpha(theme.palette.success.main, 0.1),
+                            '&:hover': {
+                              bgcolor: theme => alpha(theme.palette.success.main, 0.2),
+                            },
+                            p: 0.75
+                          }}
+                        >
+                          <CheckCircleIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    ) : (
+                      <>
+                        <Tooltip title="Edit">
+                          <IconButton 
+                            color="primary" 
+                            onClick={() => handleOpenEditDialog(resident)}
+                            size="small"
+                            sx={{ 
+                              mr: 0.5,
+                              bgcolor: theme => alpha(theme.palette.primary.main, 0.1),
+                              '&:hover': {
+                                bgcolor: theme => alpha(theme.palette.primary.main, 0.2),
+                              },
+                              p: 0.75
+                            }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Delete">
+                          <IconButton 
+                            color="error" 
+                            onClick={() => handleOpenDeleteDialog(resident)}
+                            size="small"
+                            sx={{ 
+                              bgcolor: theme => alpha(theme.palette.error.main, 0.1),
+                              '&:hover': {
+                                bgcolor: theme => alpha(theme.palette.error.main, 0.2),
+                              },
+                              p: 0.75
+                            }}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25, 50, 100]}
+        component="div"
+        count={totalRows}
+        rowsPerPage={rowsPerPage}
+        page={page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        sx={{ 
+          borderTop: '1px solid',
+          borderColor: 'divider',
+          '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+            fontSize: '0.8rem'
+          }
+        }}
+      />
+    </Paper>
+    
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 1 }}>
+      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+        Total Verified Residents: {totalRows}
+      </Typography>
+      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+        Last updated: {new Date().toLocaleString()}
+      </Typography>
+    </Box>
+
+    {/* Add Resident Dialog */}
+    <Dialog 
+      open={openAddDialog} 
+      onClose={() => setOpenAddDialog(false)} 
+      maxWidth="md" 
+      fullWidth
+      PaperProps={{
+        sx: { borderRadius: 2 }
+      }}
+    >
+      <DialogTitle sx={{ 
+        bgcolor: theme => alpha(theme.palette.primary.main, 0.05),
+        fontWeight: 600, 
+        display: 'flex',
+        alignItems: 'center',
+        fontSize: '1.1rem'
+      }}>
+        <AddIcon sx={{ mr: 1, color: 'primary.main' }} />
+        Add New Resident
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3 }}>
+        {duplicateWarning && (
+          <Alert 
+            severity="warning" 
+            sx={{ 
+              mb: 2,
+              '.MuiAlert-message': { width: '100%' }
+            }}
+            icon={<WarningIcon fontSize="inherit" />}
+            variant="outlined"
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                Potential duplicate found
+              </Typography>
+            </Box>
+            <Typography variant="body2">
+              {duplicateWarning.map(r => 
+                r.firstName === 'Resident' 
+                  ? r.lastName
+                  : `${r.lastName}, ${r.firstName} ${r.middleName || ''}`
+              ).join(', ')}
+            </Typography>
+          </Alert>
+        )}
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={4}>
             <TextField
               fullWidth
-              label="Search by Name"
+              label="First Name"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleInputChange}
+              required
               variant="outlined"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon />
-                  </InputAdornment>
-                ),
-              }}
+              size="small"
             />
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel id="address-select-label">Address</InputLabel>
-              <Select
-                labelId="address-select-label"
-                value={selectedAddress}
-                onChange={(e) => setSelectedAddress(e.target.value)}
-                label="Address"
-              >
-                <MenuItem value="">All</MenuItem>
-                {addressOptions.map((address) => (
-                  <MenuItem key={address} value={address}>
-                    {address}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Middle Name"
+              name="middleName"
+              value={formData.middleName}
+              onChange={handleInputChange}
+              variant="outlined"
+              size="small"
+            />
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel id="precinct-select-label">Precinct</InputLabel>
-              <Select
-                labelId="precinct-select-label"
-                value={selectedPrecinct}
-                onChange={(e) => setSelectedPrecinct(e.target.value)}
-                label="Precinct"
-              >
-                <MenuItem value="">All</MenuItem>
-                {precinctOptions.map((precinct) => (
-                  <MenuItem key={precinct} value={precinct}>
-                    {precinct}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Last Name"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleInputChange}
+              required
+              variant="outlined"
+              size="small"
+            />
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel id="types-select-label">Resident Type</InputLabel>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Address"
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              required
+              variant="outlined"
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="Precinct Level"
+              name="precinctLevel"
+              value={formData.precinctLevel}
+              onChange={handleInputChange}
+              variant="outlined"
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="Contact Number"
+              name="contactNumber"
+              value={formData.contactNumber}
+              onChange={handleInputChange}
+              variant="outlined"
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              variant="outlined"
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <FormControl fullWidth variant="outlined" size="small">
+              <InputLabel id="add-types-label">Resident Types</InputLabel>
               <Select
-                labelId="types-select-label"
+                labelId="add-types-label"
                 multiple
-                value={selectedTypes}
-                onChange={(e) => setSelectedTypes(e.target.value)}
-                input={<OutlinedInput label="Resident Type" />}
+                value={formData.types}
+                onChange={handleTypesChange}
+                input={<OutlinedInput label="Resident Types" />}
                 renderValue={(selected) => (
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                     {selected.map((value) => (
-                      <Chip key={value} label={value} size="small" />
+                      <Chip 
+                        key={value} 
+                        label={value} 
+                        size="small" 
+                        sx={{ 
+                          backgroundColor: getTypeColor(value),
+                          color: '#fff',
+                          fontSize: '0.75rem',
+                          height: 24
+                        }} 
+                      />
                     ))}
                   </Box>
                 )}
@@ -853,596 +1384,689 @@ function AdminDatabase() {
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={6} md={1}>
-            <FormControl fullWidth variant="outlined">
-              <InputLabel id="voter-select-label">Voter</InputLabel>
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={formData.isVoter}
+                  onChange={handleCheckboxChange}
+                  name="isVoter"
+                  size="small"
+                  color="primary"
+                />
+              }
+              label={<Typography variant="body2">Registered Voter</Typography>}
+            />
+          </Grid>
+        </Grid>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button 
+          onClick={() => setOpenAddDialog(false)}
+          variant="outlined"
+          size="small"
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleAddResident} 
+          variant="contained"
+          size="small"
+          startIcon={<AddIcon />}
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Add Resident
+        </Button>
+      </DialogActions>
+    </Dialog>
+
+    {/* Edit Resident Dialog */}
+    <Dialog 
+      open={openEditDialog} 
+      onClose={() => setOpenEditDialog(false)} 
+      maxWidth="md" 
+      fullWidth
+      PaperProps={{
+        sx: { borderRadius: 2 }
+      }}
+    >
+      <DialogTitle sx={{ 
+        bgcolor: theme => alpha(theme.palette.primary.main, 0.05),
+        fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        fontSize: '1.1rem'
+      }}>
+        <EditIcon sx={{ mr: 1, color: 'primary.main' }} />
+        Edit Resident Information
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="First Name"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleInputChange}
+              required
+              variant="outlined"
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Middle Name"
+              name="middleName"
+              value={formData.middleName}
+              onChange={handleInputChange}
+              variant="outlined"
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <TextField
+              fullWidth
+              label="Last Name"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleInputChange}
+              required
+              variant="outlined"
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Address"
+              name="address"
+              value={formData.address}
+              onChange={handleInputChange}
+              required
+              variant="outlined"
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="Precinct Level"
+              name="precinctLevel"
+              value={formData.precinctLevel}
+              onChange={handleInputChange}
+              variant="outlined"
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <TextField
+              fullWidth
+              label="Contact Number"
+              name="contactNumber"
+              value={formData.contactNumber}
+              onChange={handleInputChange}
+              variant="outlined"
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              variant="outlined"
+              size="small"
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <FormControl fullWidth variant="outlined" size="small">
+              <InputLabel id="edit-types-label">Resident Types</InputLabel>
               <Select
-                labelId="voter-select-label"
-                value={voterStatus}
-                onChange={(e) => setVoterStatus(e.target.value)}
-                label="Voter"
+                labelId="edit-types-label"
+                multiple
+                value={formData.types}
+                onChange={handleTypesChange}
+                input={<OutlinedInput label="Resident Types" />}
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value) => (
+                      <Chip 
+                        key={value} 
+                        label={value} 
+                        size="small" 
+                        sx={{ 
+                          backgroundColor: getTypeColor(value),
+                          color: '#fff',
+                          fontSize: '0.75rem',
+                          height: 24
+                        }} 
+                      />
+                    ))}
+                  </Box>
+                )}
               >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="yes">Yes</MenuItem>
-                <MenuItem value="no">No</MenuItem>
+                {residentTypes.map((type) => (
+                  <MenuItem key={type} value={type}>
+                    {type}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sm={6} md={2}>
-            <Button
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={formData.isVoter}
+                  onChange={handleCheckboxChange}
+                  name="isVoter"
+                  size="small"
+                  color="primary"
+                />
+              }
+              label={<Typography variant="body2">Registered Voter</Typography>}
+            />
+          </Grid>
+          <Grid item xs={12} sx={{ mt: 1 }}>
+            <TextField
               fullWidth
+              label="Enter your password to confirm changes"
+              name="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
               variant="outlined"
-              onClick={handleResetFilters}
-              startIcon={<RefreshIcon />}
-            >
-              Reset Filters
-            </Button>
+              size="small"
+              helperText="For security reasons, please enter your password to modify resident information"
+            />
           </Grid>
         </Grid>
-      </Paper>
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button 
+          onClick={() => setOpenEditDialog(false)}
+          variant="outlined"
+          size="small"
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleUpdateResident} 
+          variant="contained"
+          size="small"
+          startIcon={<SaveIcon />}
+          disabled={!password}
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Update Resident
+        </Button>
+      </DialogActions>
+    </Dialog>
 
-      {/* Residents Table */}
-      <Paper sx={{ width: '100%', overflow: 'hidden' }}>
-        <TableContainer sx={{ maxHeight: 'calc(100vh - 300px)' }}>
-          <Table stickyHeader>
-            <TableHead>
-              <TableRow>
-                <TableCell>Full Name</TableCell>
-                <TableCell>Address</TableCell>
-                <TableCell>Precinct</TableCell>
-                <TableCell>Contact</TableCell>
-                <TableCell>Types</TableCell>
-                <TableCell>Voter</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    <CircularProgress sx={{ my: 2 }} />
-                  </TableCell>
-                </TableRow>
-              ) : residents.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} align="center">
-                    No residents found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                residents.map((resident) => (
-                  <TableRow key={resident._id} hover>
-                    <TableCell>
-                      {resident.firstName === 'Resident' 
-                        ? resident.lastName // Display just the lastName for legacy entries (contains full name)
-                        : `${resident.lastName}, ${resident.firstName} ${resident.middleName || ''}`}
-                      {!resident.isVerified && (
-                        <Chip 
-                          label="Pending" 
-                          size="small" 
-                          color="warning" 
-                          sx={{ ml: 1 }}
-                        />
-                      )}
-                    </TableCell>
-                    <TableCell>{resident.address}</TableCell>
-                    <TableCell>{resident.precinctLevel || '-'}</TableCell>
-                    <TableCell>{resident.contactNumber || '-'}</TableCell>
-                    <TableCell>{renderTypes(resident.types)}</TableCell>
-                    <TableCell>{resident.isVoter ? 'Yes' : 'No'}</TableCell>
-                    <TableCell align="right">
-                      {!resident.isVerified ? (
-                        <Tooltip title="Verify">
-                          <IconButton 
-                            color="success" 
-                            onClick={() => handleOpenVerifyDialog(resident)}
-                            size="small"
-                          >
-                            <CheckCircleIcon />
-                          </IconButton>
-                        </Tooltip>
-                      ) : (
-                        <>
-                          <Tooltip title="Edit">
-                            <IconButton 
-                              color="primary" 
-                              onClick={() => handleOpenEditDialog(resident)}
-                              size="small"
-                            >
-                              <EditIcon />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete">
-                            <IconButton 
-                              color="error" 
-                              onClick={() => handleOpenDeleteDialog(resident)}
-                              size="small"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          </Tooltip>
-                        </>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25, 50, 100]}
-          component="div"
-          count={totalRows}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-      </Paper>
-
-      {/* Add Resident Dialog */}
-      <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)} maxWidth="md" fullWidth>
-        <DialogTitle>Add New Resident</DialogTitle>
-        <DialogContent>
-          {duplicateWarning && (
-            <Alert severity="warning" sx={{ mb: 2 }}>
-              Potential duplicate found: {duplicateWarning.map(r => 
-                r.firstName === 'Resident' 
-                  ? r.lastName  // For legacy format
-                  : `${r.lastName}, ${r.firstName} ${r.middleName || ''}`
-              ).join(', ')}
-            </Alert>
+    {/* Delete Resident Dialog */}
+    <Dialog 
+      open={openDeleteDialog} 
+      onClose={() => setOpenDeleteDialog(false)}
+      PaperProps={{
+        sx: { borderRadius: 2 }
+      }}
+    >
+      <DialogTitle sx={{ 
+        bgcolor: theme => alpha(theme.palette.error.main, 0.05),
+        fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        color: 'error.main',
+        fontSize: '1.1rem'
+      }}>
+        <DeleteIcon sx={{ mr: 1 }} />
+        Delete Resident
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3 }}>
+        <Alert severity="warning" variant="outlined" sx={{ mb: 2 }}>
+          <AlertTitle sx={{ fontWeight: 600 }}>This action cannot be undone</AlertTitle>
+          <Typography variant="body2">
+            You are about to permanently delete this resident's record from the database.
+          </Typography>
+        </Alert>
+        
+        <Box sx={{ 
+          p: 2, 
+          bgcolor: alpha('#f5f5f5', 0.5), 
+          borderRadius: 1, 
+          mb: 2,
+          border: '1px solid',
+          borderColor: 'divider'
+        }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+            Resident Information:
+          </Typography>
+          <Typography variant="body2">
+            <strong>Name:</strong> {selectedResident?.lastName}, {selectedResident?.firstName} {selectedResident?.middleName}
+          </Typography>
+          <Typography variant="body2">
+            <strong>Address:</strong> {selectedResident?.address}
+          </Typography>
+          {selectedResident?.contactNumber && (
+            <Typography variant="body2">
+              <strong>Contact:</strong> {selectedResident?.contactNumber}
+            </Typography>
           )}
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                label="First Name"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                label="Middle Name"
-                name="middleName"
-                value={formData.middleName}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                label="Last Name"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Address"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Precinct Level"
-                name="precinctLevel"
-                value={formData.precinctLevel}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Contact Number"
-                name="contactNumber"
-                value={formData.contactNumber}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <InputLabel id="add-types-label">Resident Types</InputLabel>
-                <Select
-                  labelId="add-types-label"
-                  multiple
-                  value={formData.types}
-                  onChange={handleTypesChange}
-                  input={<OutlinedInput label="Resident Types" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {selected.map((value) => (
-                        <Chip key={value} label={value} size="small" />
-                      ))}
-                    </Box>
-                    )}
-                    >
-                      {residentTypes.map((type) => (
-                        <MenuItem key={type} value={type}>
-                          {type}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={formData.isVoter}
-                        onChange={handleCheckboxChange}
-                        name="isVoter"
-                      />
-                    }
-                    label="Registered Voter"
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpenAddDialog(false)}>Cancel</Button>
-              <Button onClick={handleAddResident} variant="contained">Add Resident</Button>
-            </DialogActions>
-          </Dialog>
+        </Box>
+        
+        <TextField
+          fullWidth
+          margin="dense"
+          label="Enter your password to confirm"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          size="small"
+          error={!password}
+          helperText={!password ? "Password is required to delete resident" : ""}
+        />
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button onClick={() => setOpenDeleteDialog(false)}
+          variant="outlined"
+          size="small"
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleDeleteResident} 
+          color="error" 
+          variant="contained"
+          size="small"
+          startIcon={<DeleteIcon />}
+          disabled={!password}
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Delete Resident
+        </Button>
+      </DialogActions>
+    </Dialog>
 
-          {/* Edit Resident Dialog */}
-          <Dialog open={openEditDialog} onClose={() => setOpenEditDialog(false)} maxWidth="md" fullWidth>
-            <DialogTitle>Edit Resident</DialogTitle>
-            <DialogContent>
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                label="First Name"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                label="Middle Name"
-                name="middleName"
-                value={formData.middleName}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <TextField
-                fullWidth
-                label="Last Name"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Address"
-                name="address"
-                value={formData.address}
-                onChange={handleInputChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Precinct Level"
-                name="precinctLevel"
-                value={formData.precinctLevel}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                label="Contact Number"
-                name="contactNumber"
-                value={formData.contactNumber}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <InputLabel id="add-types-label">Resident Types</InputLabel>
-                <Select
-                  labelId="add-types-label"
-                  multiple
-                  value={formData.types}
-                  onChange={handleTypesChange}
-                  input={<OutlinedInput label="Resident Types" />}
-                  renderValue={(selected) => (
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                      {selected.map((value) => (
-                        <Chip key={value} label={value} size="small" />
-                      ))}
-                    </Box>
-                    )}
-                    >
-                      {residentTypes.map((type) => (
-                        <MenuItem key={type} value={type}>
-                          {type}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12}>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={formData.isVoter}
-                        onChange={handleCheckboxChange}
-                        name="isVoter"
-                      />
-                    }
-                    label="Registered Voter"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Enter your password to confirm changes"
-                    name="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    helperText="For security reasons, please enter your password to modify resident information"
-                  />
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpenEditDialog(false)}>Cancel</Button>
-              <Button onClick={handleUpdateResident} variant="contained">Update Resident</Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* Delete Resident Dialog */}
-      <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
-        <DialogTitle>Delete Resident</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete the resident record for {selectedResident?.lastName}, {selectedResident?.firstName} {selectedResident?.middleName}? 
-            This action cannot be undone.
-          </DialogContentText>
-          <TextField
-            fullWidth
-            margin="dense"
-            label="Enter your password to confirm"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            sx={{ mt: 2 }}
+    {/* Upload CSV Dialog */}
+    <Dialog 
+      open={openUploadDialog} 
+      onClose={() => setOpenUploadDialog(false)}
+      PaperProps={{
+        sx: { borderRadius: 2 }
+      }}
+    >
+      <DialogTitle sx={{ 
+        bgcolor: theme => alpha(theme.palette.info.main, 0.05),
+        fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        fontSize: '1.1rem'
+      }}>
+        <UploadIcon sx={{ mr: 1, color: 'info.main' }} />
+        Import Residents from CSV
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3 }}>
+        <Box sx={{ 
+          p: 2, 
+          bgcolor: alpha('#f5f5f5', 0.5), 
+          borderRadius: 1, 
+          mb: 3,
+          border: '1px solid',
+          borderColor: 'divider'
+        }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, display: 'flex', alignItems: 'center' }}>
+            <InfoIcon sx={{ fontSize: '1.1rem', mr: 0.5, color: 'info.main' }} />
+            CSV Format Guidelines:
+          </Typography>
+          
+          <Typography variant="body2" sx={{ fontWeight: 600, mt: 1 }}>Required Columns:</Typography>
+          <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', ml: 1, fontSize: '0.85rem' }}>
+            <FiberManualRecordIcon sx={{ fontSize: '0.6rem', mr: 0.5 }} />
+            Name (format: "Last name, First name Middle name")
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', ml: 1, fontSize: '0.85rem' }}>
+            <FiberManualRecordIcon sx={{ fontSize: '0.6rem', mr: 0.5 }} />
+            Address
+          </Typography>
+          
+          <Typography variant="body2" sx={{ fontWeight: 600, mt: 1 }}>Optional Columns:</Typography>
+          <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', ml: 1, fontSize: '0.85rem' }}>
+            <FiberManualRecordIcon sx={{ fontSize: '0.6rem', mr: 0.5 }} />
+            Precinct Level
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', ml: 1, fontSize: '0.85rem' }}>
+            <FiberManualRecordIcon sx={{ fontSize: '0.6rem', mr: 0.5 }} />
+            Type (comma-separated values)
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', ml: 1, fontSize: '0.85rem' }}>
+            <FiberManualRecordIcon sx={{ fontSize: '0.6rem', mr: 0.5 }} />
+            Voter (Yes/No)
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', ml: 1, fontSize: '0.85rem' }}>
+            <FiberManualRecordIcon sx={{ fontSize: '0.6rem', mr: 0.5 }} />
+            Contact Number
+          </Typography>
+          <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center', ml: 1, fontSize: '0.85rem' }}>
+            <FiberManualRecordIcon sx={{ fontSize: '0.6rem', mr: 0.5 }} />
+            Email
+          </Typography>
+        </Box>
+        <Button
+          variant="outlined"
+          component="label"
+          startIcon={<UploadIcon />}
+          fullWidth
+          sx={{ 
+            mb: 2, 
+            p: 1.5, 
+            borderStyle: 'dashed', 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Select CSV File
+          <input
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            hidden
+            onChange={handleFileChange}
           />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)}>Cancel</Button>
-          <Button onClick={handleDeleteResident} color="error" variant="contained">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Upload CSV Dialog */}
-      <Dialog open={openUploadDialog} onClose={() => setOpenUploadDialog(false)}>
-        <DialogTitle>Import Residents from CSV</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Upload a CSV file to import multiple residents at once. The CSV should have the following columns:
-          </DialogContentText>
-          <Box sx={{ mt: 2, mb: 3 }}>
-            <Typography variant="subtitle2">Required Columns:</Typography>
-            <Typography variant="body2">- Name (format: "Last name, First name Middle name")</Typography>
-            <Typography variant="body2">- Address</Typography>
-            <Typography variant="subtitle2" sx={{ mt: 1 }}>Optional Columns:</Typography>
-            <Typography variant="body2">- Precinct Level</Typography>
-            <Typography variant="body2">- Type (comma-separated values)</Typography>
-            <Typography variant="body2">- Voter (Yes/No)</Typography>
-            <Typography variant="body2">- Contact Number</Typography>
-            <Typography variant="body2">- Email</Typography>
-          </Box>
-          <Button
+        </Button>
+        
+        {csvFile && (
+          <Alert 
+            severity="info" 
             variant="outlined"
-            component="label"
-            startIcon={<UploadIcon />}
-            fullWidth
+            icon={<AttachFileIcon />}
             sx={{ mb: 2 }}
           >
-            Select CSV File
-            <input
-              type="file"
-              accept=".csv,.xlsx,.xls"
-              hidden
-              onChange={handleFileChange}
-            />
-          </Button>
-          {csvFile && (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              Selected file: {csvFile.name}
-            </Alert>
-          )}
-          <TextField
-            fullWidth
-            margin="dense"
-            label="Enter your password to confirm import"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenUploadDialog(false)}>Cancel</Button>
-          <Button 
-            onClick={handleImportResidents} 
-            variant="contained"
-            disabled={!csvFile || !password}
-          >
-            Import
-          </Button>
-        </DialogActions>
-      </Dialog>
-          {/* reason reject dialog */}
-          <Dialog 
-            open={openRejectConfirmDialog} 
-            onClose={() => setOpenRejectConfirmDialog(false)}
-          >
-            <DialogTitle>Provide Rejection Reason</DialogTitle>
-            <DialogContent>
-              <DialogContentText>
-                Please provide a reason for rejecting the registration request from {selectedResident?.firstName} {selectedResident?.lastName}.
-                This information will be visible to the resident.
-              </DialogContentText>
-              <TextField
-                autoFocus
-                margin="dense"
-                label="Rejection Reason"
-                type="text"
-                fullWidth
-                required
-                multiline
-                rows={3}
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                error={!rejectReason}
-                helperText={!rejectReason ? "Rejection reason is required" : ""}
-                sx={{ mt: 2 }}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpenRejectConfirmDialog(false)}>Cancel</Button>
-              <Button 
-                onClick={() => {
-                  if (!rejectReason.trim()) {
-                    setSnackbar({
-                      open: true,
-                      message: 'Please provide a rejection reason',
-                      severity: 'error'
-                    });
-                    return;
-                  }
-                  handleRejectWithReason();
-                  setOpenRejectConfirmDialog(false);
-                }} 
-                color="error" 
-                variant="contained"
-                disabled={!rejectReason.trim()}
-              >
-                Reject Request
-              </Button>
-            </DialogActions>
-          </Dialog>
+            <Typography variant="body2">
+              Selected file: <strong>{csvFile.name}</strong> ({(csvFile.size / 1024).toFixed(2)} KB)
+            </Typography>
+          </Alert>
+        )}
+        
+        <TextField
+          fullWidth
+          margin="dense"
+          label="Enter your password to confirm import"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          size="small"
+          error={!password && csvFile}
+          helperText={!password && csvFile ? "Password is required to import residents" : ""}
+        />
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button 
+          onClick={() => setOpenUploadDialog(false)}
+          variant="outlined"
+          size="small"
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={handleImportResidents} 
+          variant="contained"
+          size="small"
+          startIcon={<CloudUploadIcon />}
+          disabled={!csvFile || !password}
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Import Residents
+        </Button>
+      </DialogActions>
+    </Dialog>
 
-      {/* Enhanced Verify Resident Dialog */}
-      <Dialog 
-        open={openVerifyDialog} 
-        onClose={() => setOpenVerifyDialog(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          Verify Resident Request
-        </DialogTitle>
-        <DialogContent>
-          {selectedResident && (
-            <>
-              {/* Check for duplicates when a resident is selected */}
-              {duplicateWarning && duplicateWarning.length > 0 && (
-                <Alert severity="warning" sx={{ mb: 3 }}>
-                  <AlertTitle>Potential Duplicate Records Found</AlertTitle>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    The following similar records were found in the database:
-                  </Typography>
-                  <ul style={{ margin: 0 }}>
-                    {duplicateWarning.map((resident, index) => (
-                      <li key={index}>
+    {/* Rejection Reason Dialog */}
+    <Dialog 
+      open={openRejectConfirmDialog} 
+      onClose={() => setOpenRejectConfirmDialog(false)}
+      PaperProps={{
+        sx: { borderRadius: 2 }
+      }}
+    >
+      <DialogTitle sx={{ 
+        bgcolor: theme => alpha(theme.palette.error.main, 0.05),
+        fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        fontSize: '1.1rem'
+      }}>
+        <CancelIcon sx={{ mr: 1, color: 'error.main' }} />
+        Provide Rejection Reason
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3 }}>
+        <Typography variant="body2" sx={{ mb: 2 }}>
+          Please provide a reason for rejecting the registration request from:
+        </Typography>
+        
+        <Box sx={{ 
+          p: 2, 
+          bgcolor: alpha('#f5f5f5', 0.5), 
+          borderRadius: 1, 
+          mb: 3,
+          border: '1px solid',
+          borderColor: 'divider'
+        }}>
+          <Typography variant="body2">
+            <strong>Name:</strong> {selectedResident?.firstName} {selectedResident?.lastName}
+          </Typography>
+          <Typography variant="body2">
+            <strong>Address:</strong> {selectedResident?.address}
+          </Typography>
+        </Box>
+        <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary', fontSize: '0.85rem' }}>
+          This information will be visible to the resident.
+        </Typography>
+        
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Rejection Reason"
+          type="text"
+          fullWidth
+          required
+          multiline
+          rows={3}
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+          error={!rejectReason}
+          helperText={!rejectReason ? "Rejection reason is required" : ""}
+          size="small"
+        />
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button 
+          onClick={() => setOpenRejectConfirmDialog(false)}
+          variant="outlined"
+          size="small"
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={() => {
+            if (!rejectReason.trim()) {
+              setSnackbar({
+                open: true,
+                message: 'Please provide a rejection reason',
+                severity: 'error'
+              });
+              return;
+            }
+            handleRejectWithReason();
+            setOpenRejectConfirmDialog(false);
+          }} 
+          color="error" 
+          variant="contained"
+          size="small"
+          startIcon={<CancelIcon />}
+          disabled={!rejectReason.trim()}
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Reject Request
+        </Button>
+      </DialogActions>
+    </Dialog>
+
+    {/* Verify Resident Dialog */}
+    <Dialog 
+      open={openVerifyDialog} 
+      onClose={() => setOpenVerifyDialog(false)}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: { borderRadius: 2 }
+      }}
+    >
+      <DialogTitle sx={{ 
+        bgcolor: theme => alpha(theme.palette.success.main, 0.05),
+        fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        fontSize: '1.1rem'
+      }}>
+        <VerifiedUserIcon sx={{ mr: 1, color: 'success.main' }} />
+        Verify Resident Request
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3 }}>
+        {selectedResident && (
+          <>
+            {duplicateWarning && duplicateWarning.length > 0 && (
+              <Alert 
+                severity="warning" 
+                variant="outlined"
+                sx={{ mb: 3 }}
+                icon={<WarningIcon />}
+              >
+                <AlertTitle sx={{ fontWeight: 600 }}>Potential Duplicate Records Found</AlertTitle>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  The following similar records were found in the database:
+                </Typography>
+                <Box component="ul" sx={{ mt: 1, pl: 2 }}>
+                  {duplicateWarning.map((resident, index) => (
+                    <li key={index}>
+                      <Typography variant="body2">
                         {resident.lastName}, {resident.firstName} - {resident.address}
-                      </li>
-                    ))}
-                  </ul>
-                  <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
-                    You can still verify this resident if the information is correct and represents a different person.
-                  </Typography>
-                </Alert>
-              )}
+                      </Typography>
+                    </li>
+                  ))}
+                </Box>
+                <Typography variant="body2" sx={{ mt: 1, fontWeight: 500, color: 'text.primary' }}>
+                  You can still verify this resident if the information is correct and represents a different person.
+                </Typography>
+              </Alert>
+            )}
+            <Box sx={{ 
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: 2, 
+              overflow: 'hidden',
+              mb: 3 
+            }}>
+              <Box sx={{ 
+                bgcolor: alpha('#f5f5f5', 0.5), 
+                p: 2, 
+                borderBottom: '1px solid',
+                borderColor: 'divider'
+              }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
+                  Resident Information
+                </Typography>
+              </Box>
               
-              <Box sx={{ border: '1px solid #e0e0e0', borderRadius: 1, p: 2, mb: 3 }}>
+              <Box sx={{ p: 2 }}>
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="subtitle2">First Name:</Typography>
-                    <Typography variant="body1">{selectedResident.firstName}</Typography>
+                    <Typography variant="subtitle2" sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>First Name:</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>{selectedResident.firstName}</Typography>
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="subtitle2">Middle Name:</Typography>
-                    <Typography variant="body1">{selectedResident.middleName || '-'}</Typography>
+                    <Typography variant="subtitle2" sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>Middle Name:</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>{selectedResident.middleName || '-'}</Typography>
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="subtitle2">Last Name:</Typography>
-                    <Typography variant="body1">{selectedResident.lastName}</Typography>
+                    <Typography variant="subtitle2" sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>Last Name:</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>{selectedResident.lastName}</Typography>
                   </Grid>
                   
                   <Grid item xs={12}>
-                    <Typography variant="subtitle2">Address:</Typography>
-                    <Typography variant="body1">{selectedResident.address}</Typography>
+                    <Typography variant="subtitle2" sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>Address:</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>{selectedResident.address}</Typography>
                   </Grid>
                   
                   <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2">Precinct Level:</Typography>
-                    <Typography variant="body1">{selectedResident.precinctLevel || '-'}</Typography>
+                    <Typography variant="subtitle2" sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>Precinct Level:</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>{selectedResident.precinctLevel || '-'}</Typography>
                   </Grid>
                   
                   <Grid item xs={12} md={6}>
-                    <Typography variant="subtitle2">Contact Number:</Typography>
-                    <Typography variant="body1">{selectedResident.contactNumber || '-'}</Typography>
+                    <Typography variant="subtitle2" sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>Contact Number:</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>{selectedResident.contactNumber || '-'}</Typography>
                   </Grid>
                   
                   <Grid item xs={12}>
-                    <Typography variant="subtitle2">Email:</Typography>
-                    <Typography variant="body1">{selectedResident.email || '-'}</Typography>
+                    <Typography variant="subtitle2" sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>Email:</Typography>
+                    <Typography variant="body1" sx={{ fontWeight: 500 }}>{selectedResident.email || '-'}</Typography>
                   </Grid>
                   
                   <Grid item xs={12}>
-                    <Typography variant="subtitle2">Resident Types:</Typography>
+                    <Typography variant="subtitle2" sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>Resident Types:</Typography>
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
                       {selectedResident.types && selectedResident.types.length > 0 ? (
                         selectedResident.types.map((type) => (
@@ -1452,7 +2076,9 @@ function AdminDatabase() {
                             size="small" 
                             sx={{ 
                               backgroundColor: getTypeColor(type),
-                              color: '#fff'
+                              color: '#fff',
+                              fontSize: '0.75rem',
+                              height: 24
                             }} 
                           />
                         ))
@@ -1463,87 +2089,148 @@ function AdminDatabase() {
                   </Grid>
                   
                   <Grid item xs={12}>
-                    <Typography variant="subtitle2">Registered Voter:</Typography>
-                    <Typography variant="body1">{selectedResident.isVoter ? 'Yes' : 'No'}</Typography>
+                    <Typography variant="subtitle2" sx={{ fontSize: '0.85rem', color: 'text.secondary' }}>Registered Voter:</Typography>
+                    <Chip 
+                      label={selectedResident.isVoter ? "Yes" : "No"} 
+                      size="small" 
+                      color={selectedResident.isVoter ? "success" : "default"} 
+                      variant="outlined"
+                      sx={{ fontSize: '0.75rem', height: 24 }} 
+                    />
                   </Grid>
                 </Grid>
               </Box>
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button 
-            onClick={() => {
-              setOpenVerifyDialog(false);
-              setOpenRejectConfirmDialog(true);
-            }} 
-            color="error"
-            startIcon={<CancelIcon />}
-          >
-            Reject
-          </Button>
-          <Button 
-            onClick={() => {
-              setOpenVerifyDialog(false);
-              setOpenVerifyConfirmDialog(true);
-            }} 
-            color="success" 
-            variant="contained"
-            startIcon={<CheckCircleIcon />}
-          >
-            Verify
-          </Button>
-        </DialogActions>
-      </Dialog>
+            </Box>
+          </>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button 
+          onClick={() => {
+            setOpenVerifyDialog(false);
+            setOpenRejectConfirmDialog(true);
+          }} 
+          color="error"
+          startIcon={<CancelIcon />}
+          size="small"
+          variant="outlined"
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Reject
+        </Button>
+        <Button 
+          onClick={() => {
+            setOpenVerifyDialog(false);
+            setOpenVerifyConfirmDialog(true);
+          }} 
+          color="success" 
+          variant="contained"
+          startIcon={<CheckCircleIcon />}
+          size="small"
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Verify
+        </Button>
+      </DialogActions>
+    </Dialog>
 
-      {/* Pending Requests Dialog - Enhanced with more details */}
-      <Dialog 
-        open={openPendingDialog} 
-        onClose={() => setOpenPendingDialog(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          Pending Resident Requests
-        </DialogTitle>
-        <DialogContent>
-          {pendingRequests.length === 0 ? (
-            <Typography align="center" sx={{ py: 3 }}>
+    {/* Pending Requests Dialog - Enhanced with more details */}
+    <Dialog 
+      open={openPendingDialog} 
+      onClose={() => setOpenPendingDialog(false)}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: { borderRadius: 2 }
+      }}
+    >
+      <DialogTitle sx={{ 
+        bgcolor: theme => alpha(theme.palette.warning.main, 0.05),
+        fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        fontSize: '1.1rem'
+      }}>
+        <PendingIcon sx={{ mr: 1, color: 'warning.main' }} />
+        Pending Resident Requests ({pendingRequests.length})
+      </DialogTitle>
+      <DialogContent sx={{ pt: 2 }}>
+        {pendingRequests.length === 0 ? (
+          <Box sx={{ py: 4, textAlign: 'center' }}>
+            <CheckCircleIcon sx={{ fontSize: '3rem', color: 'success.light', mb: 1, opacity: 0.5 }} />
+            <Typography align="center" variant="body1" sx={{ fontWeight: 500 }}>
               No pending requests
             </Typography>
-          ) : (
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Name</TableCell>
-                    <TableCell>Address</TableCell>
-                    <TableCell>Contact</TableCell>
-                    <TableCell>Details</TableCell>
-                    <TableCell align="right">Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {pendingRequests.map((resident) => (
-                    <TableRow key={resident._id} hover>
-                      <TableCell>
+            <Typography align="center" variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
+              All resident registration requests have been processed
+            </Typography>
+          </Box>
+        ) : (
+          <TableContainer sx={{ maxHeight: '60vh', mt: 1 }}>
+            <Table size="small" stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem' }}>Name</TableCell>
+                  <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem' }}>Address</TableCell>
+                  <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem' }}>Contact</TableCell>
+                  <TableCell sx={{ fontWeight: 600, fontSize: '0.8rem' }}>Submitted On</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {pendingRequests.map((resident) => (
+                  <TableRow key={resident._id} hover>
+                    <TableCell sx={{ fontSize: '0.85rem' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Avatar 
+                          sx={{ 
+                            width: 24, 
+                            height: 24, 
+                            mr: 1, 
+                            bgcolor: 'warning.light',
+                            fontSize: '0.6rem'
+                          }}
+                        >
+                          {resident.firstName.charAt(0)}{resident.lastName.charAt(0)}
+                        </Avatar>
                         {resident.lastName}, {resident.firstName} {resident.middleName && resident.middleName}
-                      </TableCell>
-                      <TableCell>{resident.address}</TableCell>
-                      <TableCell>{resident.contactNumber || '-'}</TableCell>
-                      <TableCell>
+                      </Box>
+                    </TableCell>
+                    <TableCell sx={{ fontSize: '0.85rem' }}>{resident.address}</TableCell>
+                    <TableCell sx={{ fontSize: '0.85rem' }}>{resident.contactNumber || '-'}</TableCell>
+                    <TableCell sx={{ fontSize: '0.85rem' }}>
+                      {resident.createdAt ? new Date(resident.createdAt).toLocaleDateString() : '-'}
+                    </TableCell>
+                    <TableCell align="center">
+                      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
                         <Button 
                           size="small" 
+                          variant="outlined"
+                          color="info"
                           onClick={() => {
                             setSelectedResident(resident);
                             setOpenPendingDialog(false);
                             setOpenVerifyDialog(true);
                           }}
+                          sx={{ 
+                            fontSize: '0.75rem',
+                            py: 0.5,
+                            minWidth: 0,
+                            borderRadius: 1,
+                            textTransform: 'none',
+                            fontWeight: 500
+                          }}
                         >
-                          View Details
+                          View
                         </Button>
-                      </TableCell>
-                      <TableCell align="right">
                         <Tooltip title="Verify">
                           <IconButton 
                             color="success" 
@@ -1553,8 +2240,15 @@ function AdminDatabase() {
                               setOpenVerifyConfirmDialog(true);
                             }}
                             size="small"
+                            sx={{ 
+                              bgcolor: theme => alpha(theme.palette.success.main, 0.1),
+                              '&:hover': {
+                                bgcolor: theme => alpha(theme.palette.success.main, 0.2),
+                              },
+                              p: 0.5
+                            }}
                           >
-                            <CheckCircleIcon />
+                            <CheckCircleIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Reject">
@@ -1566,95 +2260,150 @@ function AdminDatabase() {
                               setOpenRejectConfirmDialog(true);
                             }}
                             size="small"
+                            sx={{ 
+                              bgcolor: theme => alpha(theme.palette.error.main, 0.1),
+                              '&:hover': {
+                                bgcolor: theme => alpha(theme.palette.error.main, 0.2),
+                              },
+                              p: 0.5
+                            }}
                           >
-                            <CancelIcon />
+                            <CancelIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenPendingDialog(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Verify Confirmation Dialog - Enhanced with better duplicate warnings */}
-      <Dialog open={openVerifyConfirmDialog} onClose={() => setOpenVerifyConfirmDialog(false)}>
-        <DialogTitle>Confirm Verification</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to verify and add {selectedResident?.firstName} {selectedResident?.lastName} to the resident database?
-          </DialogContentText>
-          
-          {duplicateWarning && duplicateWarning.length > 0 && (
-            <Alert severity="warning" sx={{ mt: 2 }}>
-              <AlertTitle>Warning: Duplicate Records Found!</AlertTitle>
-              <Typography variant="body2" sx={{ mb: 1 }}>
-                The following similar records already exist in the database:
-              </Typography>
-              <Box sx={{ ml: 2 }}>
-                {duplicateWarning.map((resident, index) => (
-                  <Box key={index} sx={{ mb: 1 }}>
-                    <Typography variant="body2" fontWeight="bold">
-                      {resident.lastName}, {resident.firstName} {resident.middleName || ''}
-                    </Typography>
-                    <Typography variant="body2">
-                      Address: {resident.address}
-                    </Typography>
-                    {resident.contactNumber && (
-                      <Typography variant="body2">
-                        Contact: {resident.contactNumber}
-                      </Typography>
-                    )}
-                  </Box>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
                 ))}
-              </Box>
-              <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>
-                Do you still want to add this resident despite the potential duplicates?
-              </Typography>
-            </Alert>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenVerifyConfirmDialog(false)}>Cancel</Button>
-          <Button 
-            onClick={() => {
-              handleVerifyResident();
-              setOpenVerifyConfirmDialog(false);
-            }} 
-            color="success" 
-            variant="contained"
-          >
-            Yes, Verify Resident
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      
-      
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{ width: '100%' }}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button 
+          onClick={() => setOpenPendingDialog(false)}
+          variant="outlined"
+          size="small"
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-      </Box>
-  );
+          Close
+        </Button>
+      </DialogActions>
+    </Dialog>
+
+    {/* Verify Confirmation Dialog */}
+    <Dialog 
+      open={openVerifyConfirmDialog} 
+      onClose={() => setOpenVerifyConfirmDialog(false)}
+      PaperProps={{
+        sx: { borderRadius: 2 }
+      }}
+    >
+      <DialogTitle sx={{ 
+        bgcolor: theme => alpha(theme.palette.success.main, 0.05),
+        fontWeight: 600,
+        display: 'flex',
+        alignItems: 'center',
+        fontSize: '1.1rem'
+      }}>
+        <CheckCircleIcon sx={{ mr: 1, color: 'success.main' }} />
+        Confirm Verification
+      </DialogTitle>
+      <DialogContent sx={{ pt: 3 }}>
+        <Typography variant="body2" gutterBottom>
+          Are you sure you want to verify and add {selectedResident?.firstName} {selectedResident?.lastName} to the resident database?
+        </Typography>
+        
+        {duplicateWarning && duplicateWarning.length > 0 && (
+          <Alert 
+            severity="warning" 
+            variant="outlined"
+            sx={{ mt: 2 }}
+            icon={<WarningIcon />}
+          >
+            <AlertTitle sx={{ fontWeight: 600 }}>Warning: Duplicate Records Found!</AlertTitle>
+            <Typography variant="body2">
+              The following similar records already exist in the database:
+            </Typography>
+            <Box sx={{ ml: 2, mt: 1 }}>
+              {duplicateWarning.map((resident, index) => (
+                <Box key={index} sx={{ mb: 1, p: 1, bgcolor: alpha('#f5f5f5', 0.5), borderRadius: 1 }}>
+                  <Typography variant="body2" fontWeight="bold">
+                    {resident.lastName}, {resident.firstName} {resident.middleName || ''}
+                  </Typography>
+                  <Typography variant="body2" fontSize="0.85rem">
+                    Address: {resident.address}
+                  </Typography>
+                  {resident.contactNumber && (
+                    <Typography variant="body2" fontSize="0.85rem">
+                      Contact: {resident.contactNumber}
+                    </Typography>
+                  )}
+                </Box>
+              ))}
+            </Box>
+            <Typography variant="body2" sx={{ mt: 1, fontWeight: 500, color: 'error.main' }}>
+              Do you still want to add this resident despite the potential duplicates?
+            </Typography>
+          </Alert>
+        )}
+      </DialogContent>
+      <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+        <Button 
+          onClick={() => setOpenVerifyConfirmDialog(false)}
+          variant="outlined"
+          size="small"
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Cancel
+        </Button>
+        <Button 
+          onClick={() => {
+            handleVerifyResident();
+            setOpenVerifyConfirmDialog(false);
+          }} 
+          color="success" 
+          variant="contained"
+          startIcon={<CheckCircleIcon />}
+          size="small"
+          sx={{ 
+            borderRadius: 1.5,
+            textTransform: 'none',
+            fontWeight: 500
+          }}
+        >
+          Yes, Verify Resident
+        </Button>
+      </DialogActions>
+    </Dialog>
+      
+    {/* Snackbar for notifications */}
+    <Snackbar
+      open={snackbar.open}
+      autoHideDuration={5000}
+      onClose={handleCloseSnackbar}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+    >
+      <Alert
+        onClose={handleCloseSnackbar}
+        severity={snackbar.severity}
+        variant="filled"
+        sx={{ width: '100%' }}
+      >
+        {snackbar.message}
+      </Alert>
+    </Snackbar>
+  </Box>
+);
 }
 
 export default AdminDatabase;

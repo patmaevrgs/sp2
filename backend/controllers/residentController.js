@@ -812,6 +812,7 @@ export const rejectResidentRequest = async (req, res) => {
 };
 
 // Import residents from CSV - updated version with fixes
+// Updated importResidentsFromCSV function for residentController.js
 export const importResidentsFromCSV = async (req, res) => {
   try {
     if (!req.file) {
@@ -863,6 +864,7 @@ export const importResidentsFromCSV = async (req, res) => {
     const duplicates = [];
     let successCount = 0;
     let errorCount = 0;
+    let totalCount = results.length;
 
     // Get admin name for logging
     const adminName = `${admin.firstName} ${admin.lastName}`;
@@ -907,7 +909,7 @@ export const importResidentsFromCSV = async (req, res) => {
           continue;
         }
 
-        // Process types - THIS WAS MISSING IN YOUR CODE
+        // Process types
         let types = [];
         if (row.TYPE || row.Types || row.types) {
           types = (row.TYPE || row.Types || row.types).split(',').map(type => type.trim());
@@ -922,7 +924,7 @@ export const importResidentsFromCSV = async (req, res) => {
           precinctLevel: row['PRECINCT LEVEL'] || row.Precinct || row.precinct || '',
           contactNumber: row['CONTACT NUMBER'] || row.Contact || row.contact || '',
           email: row.EMAIL || row.Email || row.email || '',
-          types: types, // Using the defined variable now
+          types: types,
           isVoter: row.VOTER === 'Yes' || row.Voter === 'Yes' || row.voter === 'Yes' || 
                    row.VOTER === 'true' || row.Voter === 'true' || row.voter === 'true' || 
                    row.VOTER === 'TRUE' || row.Voter === 'TRUE' || row.voter === 'TRUE',
@@ -942,12 +944,41 @@ export const importResidentsFromCSV = async (req, res) => {
     // Log action without using createLog
     console.log(`Import: Admin ${adminName} imported ${successCount} residents`);
 
-    return res.status(200).json({
-      success: true,
-      message: `Successfully imported ${successCount} residents`,
-      errors: errorCount,
-      duplicates: duplicates
-    });
+    // Enhanced response messages based on import results
+    if (successCount === 0 && duplicates.length > 0) {
+      // All valid rows were duplicates
+      return res.status(200).json({
+        success: false, // Set to false to trigger error styling in frontend
+        message: `Import failed: All ${duplicates.length} residents already exist in the database`,
+        isDuplicateError: true, // Special flag to identify duplicate errors
+        errors: errorCount,
+        duplicates: duplicates
+      });
+    } else if (successCount === 0 && errorCount > 0) {
+      // No success due to errors
+      return res.status(200).json({
+        success: false,
+        message: `Import failed: All ${errorCount} entries had errors`,
+        errors: errorCount,
+        duplicates: duplicates
+      });
+    } else if (duplicates.length > 0) {
+      // Partial success with some duplicates
+      return res.status(200).json({
+        success: true,
+        message: `Imported ${successCount} residents. ${duplicates.length} residents were skipped (duplicates)`,
+        errors: errorCount,
+        duplicates: duplicates
+      });
+    } else {
+      // Complete success
+      return res.status(200).json({
+        success: true,
+        message: `Successfully imported ${successCount} residents`,
+        errors: errorCount,
+        duplicates: duplicates
+      });
+    }
   } catch (error) {
     console.error('Error importing residents:', error);
     return res.status(500).json({
