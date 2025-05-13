@@ -99,7 +99,7 @@ export default function SignIn() {
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'linear-gradient(135deg, #f9fbfd 0%, #e6eef7 100%)',
+        backgroundColor: 'primary',
         zIndex: 0,
         '&::before': {
           content: '""',
@@ -108,7 +108,7 @@ export default function SignIn() {
           left: '-50%',
           width: '200%',
           height: '200%',
-          backgroundImage: 'radial-gradient(circle, #1976d2 0%, transparent 4%)',
+          backgroundImage: 'radial-gradient(circle, #0a8a0d 0%, transparent 4%)',
           backgroundSize: '25px 25px',
           opacity: 0.03,
           animation: 'backgroundAnimation 40s linear infinite',
@@ -154,7 +154,7 @@ export default function SignIn() {
               left: 0,
               width: '100%',
               height: '100%',
-              background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 50%, #0d47a1 100%)',
+              background: 'linear-gradient(135deg, #0a8a0d 0%, #0d7a10 50%, #086309 100%)',
               opacity: 0.92,
               zIndex: 1,
               '&::before': {
@@ -174,7 +174,6 @@ export default function SignIn() {
               },
             }}
           />
-
           {/* Background pattern overlay */}
           <Box
             sx={{
@@ -185,7 +184,7 @@ export default function SignIn() {
               height: '100%',
               backgroundImage: 'url("/src/assets/pattern-overlay.png")',
               backgroundSize: '400px',
-              opacity: 0.03,
+              opacity: 0.05,
               zIndex: 2,
             }}
           />
@@ -202,19 +201,28 @@ export default function SignIn() {
             }}
           >
             {/* Logo at top left */}
+            {/* Logo with contrasting background */}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <img 
-                src="/src/assets/bhub-logo.png" 
-                alt="Barangay Hub Logo" 
-                style={{ height: '40px' }} 
-              />
+              <Box 
+                sx={{ 
+                  backgroundColor: 'rgb(240, 239, 239)', 
+                  padding: '8px 50px',
+                  borderRadius: '0px 100px 100px 0px',
+                }}
+              >
+                <img 
+                  src="/src/assets/bhub-logo.png" 
+                  alt="Barangay Hub Logo" 
+                  style={{ height: '50px' }} 
+                />
+              </Box>
               <Typography 
                 variant="h6" 
                 fontWeight="600" 
                 color="white" 
                 sx={{ ml: 2, letterSpacing: '0.5px' }}
               >
-                Barangay Maahas
+                Barangay Maahas, Los Baños, Laguna
               </Typography>
             </Box>
 
@@ -245,9 +253,8 @@ export default function SignIn() {
                 }} 
                 color="white"
               >
-                Your digital gateway to convenient community services and information
+                Your digital gateway to convenient community services in Los Baños, Laguna
               </Typography>
-
               {/* Feature list with animated icons */}
               <Box sx={{ mt: 3 }}>
                 <Box sx={{ 
@@ -269,7 +276,7 @@ export default function SignIn() {
                     <DocumentScannerIcon sx={{ color: 'white' }} />
                   </Box>
                   <Typography color="white" variant="body1" sx={{ fontWeight: 300 }}>
-                    Request and track official documents online
+                    Request certificates and permits with ease
                   </Typography>
                 </Box>
                 
@@ -289,10 +296,10 @@ export default function SignIn() {
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    <CampaignIcon sx={{ color: 'white' }} />
+                    <NotificationsActiveIcon sx={{ color: 'white' }} />
                   </Box>
                   <Typography color="white" variant="body1" sx={{ fontWeight: 300 }}>
-                    Stay updated with important announcements
+                    Stay updated with barangay announcements
                   </Typography>
                 </Box>
                 
@@ -311,10 +318,10 @@ export default function SignIn() {
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    <MeetingRoomIcon sx={{ color: 'white' }} />
+                    <GroupsIcon sx={{ color: 'white' }} />
                   </Box>
                   <Typography color="white" variant="body1" sx={{ fontWeight: 300 }}>
-                    Book facilities and emergency services
+                    Book facilities and community services
                   </Typography>
                 </Box>
               </Box>
@@ -329,17 +336,16 @@ export default function SignIn() {
               backdropFilter: 'blur(10px)'
             }}>
               <Typography variant="body2" color="white" sx={{ opacity: 0.7, fontWeight: 300 }}>
-                "Bringing government services closer to the people through technology."
+                "Integrating technology for a more accessible and efficient barangay service."
               </Typography>
               <Typography color="white" variant="body2" sx={{ fontWeight: 500, mt: 1, opacity: 0.9 }}>
-                — Barangay Maahas Administration
+                — Barangay Maahas, Los Baños
               </Typography>
             </Box>
           </Box>
         </Box>
       </Box>
     )}
-
     {/* Right side - Login form */}
     <Box
       sx={{
@@ -359,7 +365,19 @@ export default function SignIn() {
         px: { xs: 3, md: 5 },
         backgroundColor: 'white',
         borderRadius: '20px',
-        boxShadow: isMobile ? '0 10px 30px rgba(0,0,0,0.1)' : 'none',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.08)',
+        position: 'relative',
+        overflow: 'hidden',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '8px',
+          height: '100%',
+          background: 'linear-gradient(to bottom, #0a8a0d, #26a69a)',
+          borderRadius: '4px 0 0 4px',
+        }
       }}>
         {/* Form header */}
         <Box sx={{ mb: 4, textAlign: 'center' }}>
@@ -376,7 +394,7 @@ export default function SignIn() {
             color="primary"
             sx={{ 
               mb: 1.5,
-              background: 'linear-gradient(90deg, #1976d2, #2196f3)',
+              background: 'linear-gradient(90deg, #0a8a0d, #26a69a)',
               backgroundClip: 'text',
               textFillColor: 'transparent',
               WebkitBackgroundClip: 'text',
@@ -389,7 +407,6 @@ export default function SignIn() {
             Access services and stay connected with Barangay Maahas
           </Typography>
         </Box>
-
         {/* Login form */}
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <TextField
@@ -419,15 +436,18 @@ export default function SignIn() {
                 },
                 '&.Mui-focused': {
                   backgroundColor: 'white',
-                  boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)',
+                  boxShadow: '0 0 0 2px rgba(10, 138, 13, 0.2)',
                 }
               },
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: 'transparent',
               },
               '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'primary.main',
+                borderColor: '#0a8a0d',
               },
+              '& .MuiFormLabel-root.Mui-focused': {
+                color: '#0a8a0d',
+              }
             }}
           />
 
@@ -458,18 +478,20 @@ export default function SignIn() {
                 },
                 '&.Mui-focused': {
                   backgroundColor: 'white',
-                  boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)',
+                  boxShadow: '0 0 0 2px rgba(10, 138, 13, 0.2)',
                 }
               },
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: 'transparent',
               },
               '& .Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: 'primary.main',
+                borderColor: '#0a8a0d',
               },
+              '& .MuiFormLabel-root.Mui-focused': {
+                color: '#0a8a0d',
+              }
             }}
           />
-
           {/* Remember me and forgot password */}
           <Box sx={{ 
             display: 'flex', 
@@ -482,9 +504,9 @@ export default function SignIn() {
                 <Checkbox 
                   size="small" 
                   sx={{ 
-                    color: 'primary.main',
+                    color: '#0a8a0d',
                     '&.Mui-checked': {
-                      color: 'primary.main',
+                      color: '#0a8a0d',
                     },
                   }} 
                 />
@@ -498,7 +520,7 @@ export default function SignIn() {
             <Typography 
               variant="body2" 
               sx={{ 
-                color: 'primary.main', 
+                color: '#0a8a0d', 
                 cursor: 'pointer',
                 fontWeight: 500,
                 '&:hover': {
@@ -522,12 +544,14 @@ export default function SignIn() {
               fontWeight: 600,
               textTransform: 'none',
               fontSize: '16px',
-              background: 'linear-gradient(90deg, #1976d2, #2196f3)',
-              boxShadow: '0 4px 15px rgba(25, 118, 210, 0.25)',
+              background: 'linear-gradient(90deg, #0a8a0d, #26a69a)',
+              boxShadow: '0 4px 15px rgba(10, 138, 13, 0.3)',
               transition: 'all 0.3s ease',
               '&:hover': {
-                boxShadow: '0 6px 20px rgba(25, 118, 210, 0.4)',
+                boxShadow: '0 6px 20px rgba(10, 138, 13, 0.4)',
                 transform: 'translateY(-2px)',
+                background: 'linear-gradient(90deg, #0a8a0d, #26a69a)',
+                filter: 'brightness(1.05)'
               },
               '&:active': {
                 transform: 'translateY(0)',
@@ -541,37 +565,10 @@ export default function SignIn() {
           <Box sx={{ mt: 4, mb: 3 }}>
             <Divider>
               <Typography variant="body2" sx={{ color: 'text.secondary', px: 1 }}>
-                Or continue with
+                Or 
               </Typography>
             </Divider>
             
-            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 3 }}>
-              <IconButton 
-                sx={{ 
-                  p: 1.5,
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '12px',
-                  '&:hover': {
-                    backgroundColor: '#f5f5f5',
-                  }
-                }}
-              >
-                <GoogleIcon sx={{ fontSize: 22 }} />
-              </IconButton>
-              
-              <IconButton 
-                sx={{ 
-                  p: 1.5,
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '12px',
-                  '&:hover': {
-                    backgroundColor: '#f5f5f5',
-                  }
-                }}
-              >
-                <FacebookIcon sx={{ fontSize: 22 }} />
-              </IconButton>
-            </Box>
           </Box>
 
           {/* Signup link */}
@@ -583,7 +580,7 @@ export default function SignIn() {
                 to="/signup" 
                 sx={{ 
                   fontWeight: 600,
-                  color: 'primary.main',
+                  color: '#0a8a0d',
                   '&:hover': { textDecoration: 'underline' }
                 }}
               >
@@ -601,7 +598,7 @@ export default function SignIn() {
                 color: 'text.secondary',
                 '&:hover': {
                   backgroundColor: 'transparent',
-                  color: 'primary.main',
+                  color: '#0a8a0d',
                 },
               }}
               startIcon={<ArrowBackIcon fontSize="small" />}
