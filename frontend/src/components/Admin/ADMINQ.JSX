@@ -47,8 +47,6 @@ import {
   AttachFile as AttachFileIcon
 } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import { format } from 'date-fns';
 
 function AdminProposal() {
@@ -414,6 +412,25 @@ function AdminProposal() {
                 borderRadius: 1.5,
               },
               minWidth: '250px'
+            }}
+          />
+        </Grid>
+        
+        <Grid item xs={12} sm={6} md={4}>
+          <FormControlLabel
+            control={
+              <Switch 
+                checked={showArchived} 
+                onChange={(e) => setShowArchived(e.target.checked)}
+                color="primary"
+              />
+            }
+            label="Show Rejected Proposals"
+            sx={{ 
+              '& .MuiFormControlLabel-label': {
+                fontSize: '0.9rem',
+                fontWeight: 500
+              }
             }}
           />
         </Grid>
