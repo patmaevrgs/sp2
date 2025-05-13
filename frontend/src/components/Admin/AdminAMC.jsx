@@ -147,7 +147,6 @@ const AdminAmbulance = () => {
   
   const [showCalendar, setShowCalendar] = useState(false);
   const [calendarLoading, setCalendarLoading] = useState(false);
-  const [sortOrder, setSortOrder] = useState('newest'); // Options: 'newest', 'oldest'
 
   // Dialog states
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
@@ -214,16 +213,9 @@ const AdminAmbulance = () => {
       setBookedCount(bookedBookings.length);
       setNeedsApprovalCount(needsApprovalBookings.length);
       
-      // Initialize filtered bookings based on current status filter
-      if (statusFilter === '') {
-        setFilteredBookings(data);
-      } else {
-        setFilteredBookings(data.filter(booking => booking.status === statusFilter));
-      }
+      // Initialize filtered bookings
+      setFilteredBookings(data);
       
-      // Reset search query when refreshing data
-      setSearchQuery('');
-
       setError(null);
     } catch (error) {
       console.error('Error fetching bookings:', error);
@@ -238,39 +230,39 @@ const AdminAmbulance = () => {
     fetchBookings();
   }, []);
   
-  // filter bookings when search query changes
+  // Apply filters when filter states change
   useEffect(() => {
     if (bookings.length === 0) return;
     
-    // Start with all bookings
     let filtered = [...bookings];
     
-    // Apply tab filter first
-    switch (tabValue) {
-      case 0: // All
-        break;
-      case 1: // Pending
-        filtered = filtered.filter(booking => booking.status === 'pending');
-        break;
-      case 2: // Booked
-        filtered = filtered.filter(booking => booking.status === 'booked');
-        break;
-      case 3: // Needs Approval
-        filtered = filtered.filter(booking => booking.status === 'needs_approval');
-        break;
-      case 4: // Completed
-        filtered = filtered.filter(booking => booking.status === 'completed');
-        break;
-      case 5: // Cancelled
-        filtered = filtered.filter(booking => booking.status === 'cancelled');
-        break;
-      default:
-        break;
-    }
-    
-    // Apply status filter if one is selected (overrides tab)
+    // Apply status filter
     if (statusFilter) {
       filtered = filtered.filter(booking => booking.status === statusFilter);
+    }
+    // Apply tab filter
+    else {
+      switch (tabValue) {
+        case 0: // All
+          break;
+        case 1: // Pending
+          filtered = filtered.filter(booking => booking.status === 'pending');
+          break;
+        case 2: // Booked
+          filtered = filtered.filter(booking => booking.status === 'booked');
+          break;
+        case 3: // Needs Approval
+          filtered = filtered.filter(booking => booking.status === 'needs_approval');
+          break;
+        case 4: // Completed
+          filtered = filtered.filter(booking => booking.status === 'completed');
+          break;
+        case 5: // Cancelled
+          filtered = filtered.filter(booking => booking.status === 'cancelled');
+          break;
+        default:
+          break;
+      }
     }
     
     // Apply date filter
@@ -285,32 +277,19 @@ const AdminAmbulance = () => {
       });
     }
     
-    // Apply search filter for both serviceId and patientName
+    // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(booking => {
-        const matchesServiceId = booking.serviceId && booking.serviceId.toLowerCase().includes(query);
-        const matchesPatientName = booking.patientName && booking.patientName.toLowerCase().includes(query);
-        
-        // Match either serviceId OR patientName
-        return matchesServiceId || matchesPatientName;
-      });
+      filtered = filtered.filter(booking => 
+        booking.patientName.toLowerCase().includes(query) ||
+        booking.pickupAddress.toLowerCase().includes(query) ||
+        booking.destination.toLowerCase().includes(query) ||
+        booking.contactNumber.includes(query)
+      );
     }
     
-    // Apply sorting
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.pickupDate);
-      const dateB = new Date(b.pickupDate);
-      
-      if (sortOrder === 'newest') {
-        return dateB - dateA; // Newest first (descending)
-      } else {
-        return dateA - dateB; // Oldest first (ascending)
-      }
-    });
-
     setFilteredBookings(filtered);
-  }, [bookings, tabValue, statusFilter, dateFilter, searchQuery, sortOrder]);
+  }, [bookings, statusFilter, dateFilter, searchQuery, tabValue]);
   
   // Handle tab change
   const handleTabChange = (event, newValue) => {
@@ -344,8 +323,6 @@ const handleChangeRowsPerPage = (event) => {
     setStatusFilter('');
     setDateFilter(null);
     setSearchQuery('');
-    setSortOrder('newest');
-    setPage(0); // Reset to first page
   };
   
   // Format booking for calendar
@@ -941,11 +918,11 @@ const handleChangeRowsPerPage = (event) => {
     >
       <Grid container spacing={2} alignItems="center">
         {/* Search by Patient Name */}
-        <Grid item xs={12} sm={6} md={4} sx={{minWidth:'310px'}}>
+        <Grid item xs={12} sm={6} md={4}>
           <TextField
             fullWidth
             size="small"
-            placeholder="Search by Patient Name or Service ID"
+            placeholder="Search by patient name, contact, etc."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             InputProps={{
@@ -974,7 +951,7 @@ const handleChangeRowsPerPage = (event) => {
           />
         </Grid>
         
-        <Grid item xs={12} sm={6} md={3} sx={{minWidth:'120px'}}>
+        <Grid item xs={12} sm={6} md={3}>
           <FormControl fullWidth size="small">
             <InputLabel>Status</InputLabel>
             <Select
@@ -994,25 +971,7 @@ const handleChangeRowsPerPage = (event) => {
             </Select>
           </FormControl>
         </Grid>
-          
-        {/* Sort order - NEW! */}
-        <Grid item xs={12} sm={6} md={2}>
-          <FormControl fullWidth size="small">
-            <InputLabel>Sort by Date</InputLabel>
-            <Select
-              value={sortOrder}
-              label="Sort by Date"
-              onChange={(e) => setSortOrder(e.target.value)}
-              sx={{ 
-                borderRadius: 1.5,
-              }}
-            >
-              <MenuItem value="newest">Newest First</MenuItem>
-              <MenuItem value="oldest">Oldest First</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-
+        
         <Grid item xs={12} sm={6} md={2}>
           <Button
             variant="outlined"
@@ -1158,7 +1117,26 @@ const handleChangeRowsPerPage = (event) => {
                 </Box>
               } 
             />
-            <Tab label="Booked" />
+            <Tab 
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  Booked
+                  <Chip 
+                    label={bookedCount} 
+                    size="small"
+                    sx={{
+                      ml: 1,
+                      height: 20,
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      bgcolor: 'success.main',
+                      color: 'white',
+                      display: bookedCount > 0 ? 'flex' : 'none'
+                    }}
+                  />
+                </Box>
+              } 
+            />
             <Tab 
               label={
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -1179,8 +1157,46 @@ const handleChangeRowsPerPage = (event) => {
                 </Box>
               } 
             />
-            <Tab label="Completed" />
-            <Tab label="Cancelled" />
+            <Tab 
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  Completed
+                  <Chip 
+                    label={bookings.filter(b => b.status === 'completed').length} 
+                    size="small"
+                    sx={{
+                      ml: 1,
+                      height: 20,
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                      display: bookings.filter(b => b.status === 'completed').length > 0 ? 'flex' : 'none'
+                    }}
+                  />
+                </Box>
+              }
+            />
+            <Tab 
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  Cancelled
+                  <Chip 
+                    label={bookings.filter(b => b.status === 'cancelled').length} 
+                    size="small"
+                    sx={{
+                      ml: 1,
+                      height: 20,
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      bgcolor: 'error.main',
+                      color: 'white',
+                      display: bookings.filter(b => b.status === 'cancelled').length > 0 ? 'flex' : 'none'
+                    }}
+                  />
+                </Box>
+              }
+            />
           </Tabs>
         </Box>
         {/* Loading State */}
@@ -1622,7 +1638,7 @@ const handleChangeRowsPerPage = (event) => {
                   <CloseIcon fontSize="small" />
                 </IconButton>
               </DialogTitle>
-              <Box sx={{md:5}} />
+              
               <DialogContent sx={{ px: 3, py: 2 }}>
                 {/* Header info */}
                 <Box sx={{ mb: 3 }}>
@@ -2044,7 +2060,7 @@ const handleChangeRowsPerPage = (event) => {
             <CheckCircleIcon sx={{ mr: 1.5, color: 'success.main' }} />
             Accept Ambulance Booking
           </DialogTitle>
-          <Box sx={{md:5}} />
+          
           <DialogContent sx={{ pt: 2 }}>
             <DialogContentText sx={{ mb: 2, fontSize: '0.9rem' }}>
               Are you sure you want to accept this ambulance booking for {selectedBooking?.patientName}?
@@ -2056,6 +2072,7 @@ const handleChangeRowsPerPage = (event) => {
               </Alert>
             )}
           </DialogContent>
+          
           <DialogActions sx={{ px: 3, py: 2 }}>
             <Button
               onClick={() => setAcceptDialogOpen(false)}
@@ -2102,7 +2119,7 @@ const handleChangeRowsPerPage = (event) => {
             <CancelIcon sx={{ mr: 1.5, color: 'error.main' }} />
             {selectedBooking?.status === 'pending' ? 'Reject' : 'Cancel'} Ambulance Booking
           </DialogTitle>
-          <Box sx={{md:5}} />
+          
           <DialogContent sx={{ pt: 2 }}>
             <DialogContentText sx={{ mb: 2, fontSize: '0.9rem' }}>
               Are you sure you want to {selectedBooking?.status === 'pending' ? 'reject' : 'cancel'} this ambulance booking for {selectedBooking?.patientName}?
@@ -2180,7 +2197,7 @@ const handleChangeRowsPerPage = (event) => {
             <CheckCircleIcon sx={{ mr: 1.5, color: 'success.main' }} />
             Mark Booking as Completed
           </DialogTitle>
-          <Box sx={{md:5}} />
+          
           <DialogContent sx={{ pt: 2 }}>
             <DialogContentText sx={{ mb: 2, fontSize: '0.9rem' }}>
               Are you sure you want to mark this ambulance service for {selectedBooking?.patientName} as completed?

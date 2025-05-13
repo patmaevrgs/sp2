@@ -77,6 +77,7 @@ function AdminCourt() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [calendarLoading, setCalendarLoading] = useState(false);
   const [allReservations, setAllReservations] = useState([]);
+  const [sortOrder, setSortOrder] = useState('newest'); // Options: 'newest', 'oldest'
   const [searchTerm, setSearchTerm] = useState('');
   
   // For pagination
@@ -126,12 +127,26 @@ function AdminCourt() {
       }
       
       const allData = await allResponse.json();
-      setAllReservations(allData);
+
+      // Apply initial sorting to all reservations
+      const sortedAllData = [...allData].sort((a, b) => {
+        const dateA = new Date(a.reservationDate);
+        const dateB = new Date(b.reservationDate);
+        
+        return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+      });
+
+      setAllReservations(sortedAllData);
       
       // Build query parameters for filtered view
       let url = 'http://localhost:3002/court';
       const params = new URLSearchParams();
-      if (dateFilter) params.append('startDate', format(dateFilter, 'yyyy-MM-dd'));
+      if (dateFilter) {
+        // Format date as YYYY-MM-DD for startDate and endDate to get exact date
+        const formattedDate = format(dateFilter, 'yyyy-MM-dd');
+        params.append('startDate', formattedDate);
+        params.append('endDate', formattedDate); // Add this line to filter for exact date
+      }
       if (statusFilter !== 'all') params.append('status', statusFilter);
       
       if (params.toString()) {
@@ -152,10 +167,19 @@ function AdminCourt() {
         }
         
         const filteredData = await filteredResponse.json();
-        setReservations(filteredData);
+
+        // Apply the same sorting to filtered data
+        const sortedFilteredData = [...filteredData].sort((a, b) => {
+          const dateA = new Date(a.reservationDate);
+          const dateB = new Date(b.reservationDate);
+          
+          return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+        });
+
+        setReservations(sortedFilteredData);
       } else {
         // If no filters, use the all data
-        setReservations(allData);
+        setReservations(sortedAllData);
       }
       
       // Clear search term when refreshing data
@@ -173,29 +197,86 @@ function AdminCourt() {
     fetchReservations();
   }, [dateFilter, statusFilter]);
   
+  // Add this useEffect to handle sorting
   useEffect(() => {
-  if (!searchTerm) {
-    // If no search term, just apply normal filters
-    if (statusFilter === 'all') {
-      setReservations(allReservations);
-    } else {
-      setReservations(allReservations.filter(r => r.status === statusFilter));
+    // Sort allReservations
+    if (allReservations.length > 0) {
+      const sortedAllData = [...allReservations].sort((a, b) => {
+        const dateA = new Date(a.reservationDate);
+        const dateB = new Date(b.reservationDate);
+        
+        return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+      });
+      setAllReservations(sortedAllData);
     }
-    return;
-  }
-  
-  // Filter by serviceId and status
-  const filtered = allReservations.filter(r => {
-    const matchesSearch = r.serviceId && 
-      r.serviceId.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
+    // Sort current reservations
+    if (reservations.length > 0) {
+      const sortedReservations = [...reservations].sort((a, b) => {
+        const dateA = new Date(a.reservationDate);
+        const dateB = new Date(b.reservationDate);
+        
+        return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+      });
+      setReservations(sortedReservations);
+    }
+  }, [sortOrder]); // Only run when sort order changes
+
+  useEffect(() => {
+    if (!searchTerm) {
+      // If no search term, just apply normal filters
+      if (statusFilter === 'all') {
+        // Sort allReservations before setting
+        const sortedData = [...allReservations].sort((a, b) => {
+          const dateA = new Date(a.reservationDate);
+          const dateB = new Date(b.reservationDate);
+          
+          return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+        });
+        setReservations(sortedData);
+      } else {
+        // Filter by status and then sort
+        const filteredData = allReservations.filter(r => r.status === statusFilter);
+        const sortedFilteredData = [...filteredData].sort((a, b) => {
+          const dateA = new Date(a.reservationDate);
+          const dateB = new Date(b.reservationDate);
+          
+          return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+        });
+        setReservations(sortedFilteredData);
+      }
+      return;
+    }
     
-    return matchesSearch && matchesStatus;
-  });
-  
-  setReservations(filtered);
-}, [searchTerm, statusFilter, allReservations]);
+    // Filter by serviceId OR representativeName AND status
+    const filtered = allReservations.filter(r => {
+      const query = searchTerm.toLowerCase();
+      
+      // Check for matches in both serviceId and representativeName
+      const matchesServiceId = r.serviceId && 
+        r.serviceId.toLowerCase().includes(query);
+      const matchesRepresentative = r.representativeName && 
+        r.representativeName.toLowerCase().includes(query);
+      
+      // Match either serviceId OR representativeName
+      const matchesSearch = matchesServiceId || matchesRepresentative;
+      
+      // Also check if status filter is applied
+      const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
+      
+      return matchesSearch && matchesStatus;
+    });
+    
+    // Sort the filtered results
+    const sortedFiltered = [...filtered].sort((a, b) => {
+      const dateA = new Date(a.reservationDate);
+      const dateB = new Date(b.reservationDate);
+      
+      return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+    });
+    
+    setReservations(sortedFiltered);
+  }, [searchTerm, statusFilter, allReservations, sortOrder]); // Added sortOrder dependency
 
 
   const fetchCalendarData = useCallback(async () => {
@@ -412,6 +493,8 @@ function AdminCourt() {
     setDateFilter(null);
     setStatusFilter('all');
     setSearchTerm('');
+    setSortOrder('newest'); // Reset to default sort order
+    setPage(0); // Reset to first page
   };
   
   // Calculate payment based on start time
@@ -504,11 +587,11 @@ function AdminCourt() {
       >
         <Grid container spacing={2} alignItems="center">
           {/* Search by Service ID */}
-          <Grid item xs={12} sm={6} md={4}>
+          <Grid item xs={12} sm={6} md={4} sx={{minWidth:'320px'}}>
             <TextField
               fullWidth
               size="small"
-              placeholder="Search by Service ID"
+              placeholder="Search by Representative or Service ID"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value.trim())}
               InputProps={{
@@ -537,6 +620,24 @@ function AdminCourt() {
             />
           </Grid>
           
+          {/* Sort order - NEW! */}
+          <Grid item xs={12} sm={6} md={2}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Sort by Date</InputLabel>
+              <Select
+                value={sortOrder}
+                label="Sort by Date"
+                onChange={(e) => setSortOrder(e.target.value)}
+                sx={{ 
+                  borderRadius: 1.5,
+                }}
+              >
+                <MenuItem value="newest">Newest First</MenuItem>
+                <MenuItem value="oldest">Oldest First</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
           <Grid item xs={12} sm={6} md={3}>
             <Button
               variant="outlined"
