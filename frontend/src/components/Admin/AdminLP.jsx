@@ -41,8 +41,6 @@ import CategoryIcon from '@mui/icons-material/Category';
 import { alpha } from '@mui/material/styles';
 import Avatar from '@mui/material/Avatar';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import SearchIcon from '@mui/icons-material/Search';
-import InputAdornment from '@mui/material/InputAdornment';
 
 function AdminLogs() {
   const [logs, setLogs] = useState([]);
@@ -61,7 +59,6 @@ function AdminLogs() {
   const [currentAdmin, setCurrentAdmin] = useState('');
   const [filterExpanded, setFilterExpanded] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
-  const [serviceIdSearch, setServiceIdSearch] = useState('');
 
   // For pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -113,8 +110,7 @@ function AdminLogs() {
       if (filters.adminName) params.append('adminName', filters.adminName);
       if (filters.action) params.append('action', filters.action);
       if (filters.entityType) params.append('entityType', filters.entityType); // Add entity type to query params
-      if (filters.serviceId) params.append('serviceId', filters.serviceId);
-
+      
       const queryString = params.toString() ? `?${params.toString()}` : '';
       const response = await fetch(`http://localhost:3002/logs${queryString}`);
       
@@ -172,7 +168,6 @@ function AdminLogs() {
     setStartDate('');
     setEndDate('');
     setAdminFilter('');
-    setServiceIdSearch('');
     setActionFilter('');
     setEntityTypeFilter(''); // Clear entity type filter
     fetchLogs();
@@ -309,87 +304,6 @@ function AdminLogs() {
     setCurrentPage(value);
   };
 
-  const handleDateChange = (e, field) => {
-    if (field === 'start') {
-      setStartDate(e.target.value);
-      setTimeout(() => {
-        fetchLogs({
-          startDate: e.target.value,
-          endDate,
-          adminName: adminFilter,
-          action: actionFilter,
-          entityType: entityTypeFilter,
-          serviceId: serviceIdSearch
-        });
-      }, 300);
-    } else {
-      setEndDate(e.target.value);
-      setTimeout(() => {
-        fetchLogs({
-          startDate,
-          endDate: e.target.value,
-          adminName: adminFilter,
-          action: actionFilter,
-          entityType: entityTypeFilter,
-          serviceId: serviceIdSearch
-        });
-      }, 300);
-    }
-  };
-
-  const handleAdminFilterChange = (e) => {
-    setAdminFilter(e.target.value);
-    fetchLogs({
-      startDate,
-      endDate,
-      adminName: e.target.value,
-      action: actionFilter,
-      entityType: entityTypeFilter,
-      serviceId: serviceIdSearch
-    });
-  };
-
-  const handleActionFilterChange = (e) => {
-    setActionFilter(e.target.value);
-    fetchLogs({
-      startDate,
-      endDate,
-      adminName: adminFilter,
-      action: e.target.value,
-      entityType: entityTypeFilter,
-      serviceId: serviceIdSearch
-    });
-  };
-
-  const handleEntityTypeFilterChange = (e) => {
-    setEntityTypeFilter(e.target.value);
-    fetchLogs({
-      startDate,
-      endDate,
-      adminName: adminFilter,
-      action: actionFilter,
-      entityType: e.target.value,
-      serviceId: serviceIdSearch
-    });
-  };
-
-  const handleServiceIdSearch = (e) => {
-    setServiceIdSearch(e.target.value);
-    // Small delay to prevent too many requests while typing
-    if (e.target.value.length >= 3 || e.target.value === '') {
-      setTimeout(() => {
-        fetchLogs({
-          startDate,
-          endDate,
-          adminName: adminFilter,
-          action: actionFilter,
-          entityType: entityTypeFilter,
-          serviceId: e.target.value
-        });
-      }, 300);
-    }
-  };
-
   // Get current logs for the page
   const indexOfLastLog = currentPage * logsPerPage;
   const indexOfFirstLog = indexOfLastLog - logsPerPage;
@@ -505,114 +419,91 @@ function AdminLogs() {
         Filter Activity Logs
       </Typography>
       
-      <Grid container spacing={2}>
-        {/* Add Service ID Search Bar */}
-        <Grid item xs={12}>
-          <TextField
-            fullWidth
-            label="Search by Service ID"
-            placeholder="Enter service ID to search"
-            value={serviceIdSearch}
-            onChange={handleServiceIdSearch}
-            size="small"
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ fontSize: '1.2rem', color: 'action.active' }} />
-                </InputAdornment>
-              ),
-            }}
-            sx={{ 
-                  '& .MuiInputBase-root': {
-                    width: '100%',
-                    minWidth: { xs: '180px', sm: '180px', md: '240px' }
-                  },
-                  bgcolor: 'background.paper'
-                }}
-          />
+      <form onSubmit={handleFilter}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              fullWidth
+              label="Start Date"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              size="small"
+              sx={{ bgcolor: 'background.paper' }}
+            />
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={3}>
+            <TextField
+              fullWidth
+              label="End Date"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              size="small"
+              sx={{ bgcolor: 'background.paper' }}
+            />
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={2}>
+            <FormControl fullWidth size="small">
+              <InputLabel id="admin-filter-label">Admin</InputLabel>
+              <Select
+                labelId="admin-filter-label"
+                value={adminFilter}
+                label="Admin"
+                onChange={(e) => setAdminFilter(e.target.value)}
+              >
+                <MenuItem value="">All Admins</MenuItem>
+                {uniqueAdmins.map(admin => (
+                  <MenuItem key={admin} value={admin}>{admin}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={2}>
+            <FormControl fullWidth size="small">
+              <InputLabel id="action-filter-label">Action</InputLabel>
+              <Select
+                labelId="action-filter-label"
+                value={actionFilter}
+                label="Action"
+                onChange={(e) => setActionFilter(e.target.value)}
+              >
+                <MenuItem value="">All Actions</MenuItem>
+                {uniqueActions.map(action => (
+                  <MenuItem key={action} value={action}>{getActionLabel(action)}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+          
+          <Grid item xs={12} sm={6} md={2}>
+            <FormControl fullWidth size="small">
+              <InputLabel id="entity-filter-label">Service Type</InputLabel>
+              <Select
+                labelId="entity-filter-label"
+                value={entityTypeFilter}
+                label="Service Type"
+                onChange={(e) => setEntityTypeFilter(e.target.value)}
+              >
+                <MenuItem value="">All Services</MenuItem>
+                {allEntityTypes.map(type => (
+                  <MenuItem key={type} value={type}>{getEntityTypeLabel(type)}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
         </Grid>
         
-        <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            fullWidth
-            label="Start Date"
-            type="date"
-            value={startDate}
-            onChange={(e) => handleDateChange(e, 'start')}
-            InputLabelProps={{ shrink: true }}
-            size="small"
-            sx={{ bgcolor: 'background.paper' }}
-          />
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={3}>
-          <TextField
-            fullWidth
-            label="End Date"
-            type="date"
-            value={endDate}
-            onChange={(e) => handleDateChange(e, 'end')}
-            InputLabelProps={{ shrink: true }}
-            size="small"
-            sx={{ bgcolor: 'background.paper' }}
-          />
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={2} sx={{minWidth:'90px'}}>
-          <FormControl fullWidth size="small">
-            <InputLabel id="admin-filter-label">Admin</InputLabel>
-            <Select
-              labelId="admin-filter-label"
-              value={adminFilter}
-              label="Admin"
-              onChange={handleAdminFilterChange}
-            >
-              <MenuItem value="">All Admins</MenuItem>
-              {uniqueAdmins.map(admin => (
-                <MenuItem key={admin} value={admin}>{admin}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={2} sx={{minWidth:'90px'}}>
-          <FormControl fullWidth size="small">
-            <InputLabel id="action-filter-label">Action</InputLabel>
-            <Select
-              labelId="action-filter-label"
-              value={actionFilter}
-              label="Action"
-              onChange={handleActionFilterChange}
-            >
-              <MenuItem value="">All Actions</MenuItem>
-              {uniqueActions.map(action => (
-                <MenuItem key={action} value={action}>{getActionLabel(action)}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        
-        <Grid item xs={12} sm={6} md={2} sx={{minWidth:'130px'}}>
-          <FormControl fullWidth size="small">
-            <InputLabel id="entity-filter-label">Service Type</InputLabel>
-            <Select
-              labelId="entity-filter-label"
-              value={entityTypeFilter}
-              label="Service Type"
-              onChange={handleEntityTypeFilterChange}
-            >
-              <MenuItem value="">All Services</MenuItem>
-              {allEntityTypes.map(type => (
-                <MenuItem key={type} value={type}>{getEntityTypeLabel(type)}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
         <Box sx={{ 
           display: 'flex', 
           justifyContent: 'flex-end', 
-          mt: 0,
-          gap: 0,
+          mt: 2,
+          gap: 1,
           flexWrap: 'wrap'
         }}>
           <Button
@@ -624,15 +515,28 @@ function AdminLogs() {
             sx={{ 
               borderRadius: 1.5,
               textTransform: 'none',
-              fontWeight: 500,
+              fontWeight: 500
             }}
           >
             Clear Filters
           </Button>
-      </Box>
-      </Grid>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            startIcon={<FilterListIcon />}
+            size="small"
+            sx={{ 
+              borderRadius: 1.5,
+              textTransform: 'none',
+              fontWeight: 500
+            }}
+          >
+            Apply Filters
+          </Button>
+        </Box>
+      </form>
     </Paper>
-
     {/* Active filters display */}
     {!loading && !error && logs.length > 0 && (
       <Box sx={{ mb: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -664,32 +568,6 @@ function AdminLogs() {
         
         {/* Filter chips */}
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }}>
-          {serviceIdSearch && (
-            <Chip 
-              size="small" 
-              icon={<SearchIcon fontSize="small" />} 
-              label={`Service ID: ${serviceIdSearch}`}
-              color="primary"
-              variant="outlined"
-              onDelete={() => {
-                setServiceIdSearch('');
-                fetchLogs({ 
-                  startDate, 
-                  endDate, 
-                  adminName: adminFilter, 
-                  action: actionFilter,
-                  entityType: entityTypeFilter
-                });
-              }}
-              sx={{ 
-                height: 24, 
-                '& .MuiChip-label': { 
-                  px: 1,
-                  fontSize: '0.75rem'
-                }
-              }}
-            />
-          )}
           {adminFilter && (
             <Chip 
               size="small" 

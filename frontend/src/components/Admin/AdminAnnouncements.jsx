@@ -594,7 +594,7 @@ function AdminAnnouncements() {
   }, [announcements, searchQuery, filterType, sortOrder]);
 
   return (
-  <Container maxWidth="lg" sx={{ mt: 3, mb: 4 }}>
+  <Container maxWidth="xl" sx={{ mt: 3, mb: 4 }}>
     <Box sx={{ width: '100%' }}>
       <Typography variant="h4" gutterBottom>
         Announcement Management
