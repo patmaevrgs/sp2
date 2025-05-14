@@ -435,7 +435,7 @@ function ResidentHome() {
           <Button
             variant="outlined"
             component={RouterLink}
-            to="/resident/services"
+            to="/resident/services/ambulance"
             sx={{
               color: 'primary.main',
               borderColor: 'primary.main',
