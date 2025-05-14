@@ -136,485 +136,531 @@ function Contact() {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 3 }}>
-      {/* Simple Header */}
-      <Box sx={{ mb: 3 }}>
+  <Container maxWidth="lg" sx={{ py: 3 }}>
+    {/* Refined Header - Smaller Text */}
+    <Box sx={{ mb: 4, position: 'relative' }}>
+      {/* Decorative background shapes */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: -20,
+          right: -20,
+          width: 80,
+          height: 80,
+          bgcolor: alpha(theme.palette.primary.main, 0.05),
+          borderRadius: '50%',
+          zIndex: 0
+        }}
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: -15,
+          left: -15,
+          width: 60,
+          height: 60,
+          bgcolor: alpha(theme.palette.secondary.main, 0.08),
+          borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
+          zIndex: 0
+        }}
+      />
+      
+      <Box sx={{ position: 'relative', zIndex: 1 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <ContactPhoneIcon 
+            sx={{ 
+              fontSize: 28,
+              color: 'primary.main',
+              mr: 1.5,
+            }} 
+          />
+          <Typography
+            variant="h4"
+            component="h1"
+            sx={{
+              fontWeight: 600,
+              color: 'text.primary',
+              fontSize: { xs: '1.2rem', sm: '1.2rem', md: '1.23rem' }
+            }}
+          >
+            Contact Barangay Maahas
+          </Typography>
+        </Box>
         <Typography
-          variant="h4"
-          component="h1"
-          gutterBottom
-          sx={{
-            fontWeight: 600,
-            color: 'text.primary',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <ContactPhoneIcon sx={{ mr: 1.5, fontSize: 28, color: 'primary.main' }} />
-          Contact Barangay Maahas
-        </Typography>
-        <Typography
-          variant="body1"
+          variant="body1" // Changed from body1
           sx={{
             color: 'text.secondary',
-            mb: 3,
-            maxWidth: '90%',
+            maxWidth: '600px',
+            lineHeight: 1.6,
+            fontSize: '0.9rem' // Added specific smaller size
           }}
         >
-          Get in touch with Barangay Maahas through any of our contact channels. We're here to assist you with your inquiries and concerns.
+          We're here to serve you. Get in touch with us through any of our contact channels below.
         </Typography>
       </Box>
+    </Box>
 
-      {/* Contact Information and Form Grid */}
-      <Grid container spacing={3}>
-        {/* Contact Information Column */}
-        <Grid item xs={12} md={5}>
-          <Paper 
-            elevation={0}
-            sx={{ 
-              p: 3, 
-              borderRadius: 1, 
-              height: '100%',
-              border: '1px solid',
-              borderColor: 'divider'
+    {/* Creative Contact Methods - Smaller Text */}
+    <Grid container spacing={3} sx={{ mb: 4 }}>
+      <Grid item xs={12} md={4} sx={{minWidth: {sx: '100%', sm: '100%', md: 'auto'}}}>
+        <Paper 
+          sx={{ 
+            p: 3,
+            height: '100%',
+            borderRadius: 3,
+            border: '2px solid',
+            borderColor: alpha(theme.palette.primary.main, 0.1),
+            position: 'relative',
+            overflow: 'hidden',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              borderColor: 'primary.main',
+              transform: 'translateY(-4px)',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+              '& .contact-icon': {
+                transform: 'rotate(360deg) scale(1.1)',
+                color: 'primary.main'
+              }
+            }
+          }}
+        >
+          {/* Decorative corner */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: 60,
+              height: 60,
+              bgcolor: alpha(theme.palette.primary.main, 0.05),
+              borderBottomLeftRadius: '50%'
+            }}
+          />
+          
+          <Avatar
+            className="contact-icon"
+            sx={{
+              width: 48,
+              height: 48,
+              mb: 2,
+              bgcolor: alpha(theme.palette.primary.main, 0.1),
+              color: 'primary.main',
+              transition: 'all 0.3s ease'
             }}
           >
+            <PhoneIcon sx={{ fontSize: 24 }} />
+          </Avatar>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}> {/* Changed from h5 */}
+            Call Us
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Speak directly with our staff during office hours
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
             <Typography 
-              variant="h5" 
-              component="h2" 
-              gutterBottom
-              sx={{ 
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                borderBottom: '2px solid',
-                borderColor: alpha(theme.palette.primary.main, 0.2),
-                pb: 1,
-                mb: 3,
-                fontSize: '1.1rem'
-              }}
-            >
-              <ContactPhoneIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
-              Contact Information
-            </Typography>
-
-            {/* Contact Cards */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
-              {/* Phone */}
-              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                <Avatar 
-                  sx={{ 
-                    bgcolor: alpha(theme.palette.primary.main, 0.1), 
-                    color: 'primary.main', 
-                    width: 36, 
-                    height: 36, 
-                    mr: 2 
-                  }}
-                >
-                  <PhoneIcon fontSize="small" />
-                </Avatar>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem' }}>
-                    Phone
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    component="a" 
-                    href="tel:+6349-536-XXXX"
-                    sx={{ 
-                      display: 'block',
-                      color: 'primary.main', 
-                      textDecoration: 'none',
-                      fontSize: '0.85rem',
-                      '&:hover': { textDecoration: 'underline' }
-                    }}
-                  >
-                    (049) 536-XXXX
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    component="a" 
-                    href="tel:+639XXXXXXXXX"
-                    sx={{ 
-                      display: 'block',
-                      color: 'primary.main', 
-                      textDecoration: 'none',
-                      fontSize: '0.85rem',
-                      '&:hover': { textDecoration: 'underline' }
-                    }}
-                  >
-                    +63 9XX XXX XXXX (Mobile)
-                  </Typography>
-                </Box>
-              </Box>
-
-              {/* Email */}
-              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                <Avatar 
-                  sx={{ 
-                    bgcolor: alpha(theme.palette.primary.main, 0.1), 
-                    color: 'primary.main', 
-                    width: 36, 
-                    height: 36, 
-                    mr: 2 
-                  }}
-                >
-                  <EmailIcon fontSize="small" />
-                </Avatar>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem' }}>
-                    Email
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    component="a" 
-                    href="mailto:brgy.maahas@gmail.com"
-                    sx={{ 
-                      display: 'block',
-                      color: 'primary.main', 
-                      textDecoration: 'none',
-                      fontSize: '0.85rem',
-                      '&:hover': { textDecoration: 'underline' }
-                    }}
-                  >
-                    brgy.maahas@gmail.com
-                  </Typography>
-                </Box>
-              </Box>
-
-              {/* Address */}
-              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                <Avatar 
-                  sx={{ 
-                    bgcolor: alpha(theme.palette.primary.main, 0.1), 
-                    color: 'primary.main', 
-                    width: 36, 
-                    height: 36, 
-                    mr: 2 
-                  }}
-                >
-                  <LocationOnIcon fontSize="small" />
-                </Avatar>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem' }}>
-                    Address
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                    Barangay Maahas Hall,<br />
-                    Brgy. Maahas, Los Baños<br />
-                    Laguna 4030, Philippines
-                  </Typography>
-                </Box>
-              </Box>
-
-              {/* Office Hours */}
-              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                <Avatar 
-                  sx={{ 
-                    bgcolor: alpha(theme.palette.primary.main, 0.1), 
-                    color: 'primary.main', 
-                    width: 36, 
-                    height: 36, 
-                    mr: 2 
-                  }}
-                >
-                  <AccessTimeIcon fontSize="small" />
-                </Avatar>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem' }}>
-                    Office Hours
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
-                    Monday - Friday: 8:00 AM - 5:00 PM<br />
-                    Saturday: 8:00 AM - 12:00 PM<br />
-                    Sunday & Holidays: Closed
-                  </Typography>
-                </Box>
-              </Box>
-
-              {/* Social Media */}
-              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                <Avatar 
-                  sx={{ 
-                    bgcolor: alpha(theme.palette.primary.main, 0.1), 
-                    color: 'primary.main', 
-                    width: 36, 
-                    height: 36, 
-                    mr: 2 
-                  }}
-                >
-                  <FacebookIcon fontSize="small" />
-                </Avatar>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem' }}>
-                    Social Media
-                  </Typography>
-                  <Typography 
-                    variant="body2" 
-                    component="a" 
-                    href="https://www.facebook.com/barangaymaahas" 
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{ 
-                      display: 'flex',
-                      alignItems: 'center',
-                      color: 'primary.main', 
-                      textDecoration: 'none',
-                      fontSize: '0.85rem',
-                      '&:hover': { textDecoration: 'underline' }
-                    }}
-                  >
-                    <FacebookIcon fontSize="small" sx={{ mr: 0.5 }} />
-                    Barangay Maahas Official
-                  </Typography>
-                </Box>
-              </Box>
-              
-              {/* Emergency Contacts */}
-              <Divider sx={{ my: 1.5 }} />
-              
-              <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                <Avatar 
-                  sx={{ 
-                    bgcolor: alpha('#f44336', 0.1), 
-                    color: 'error.main', 
-                    width: 36, 
-                    height: 36, 
-                    mr: 2 
-                  }}
-                >
-                  <ErrorOutlineIcon fontSize="small" />
-                </Avatar>
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5, fontSize: '0.9rem', color: 'error.main' }}>
-                    Emergency Contacts
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1, fontSize: '0.85rem' }}>
-                    For emergencies requiring immediate assistance:
-                  </Typography>
-                  
-                  <Typography variant="body2" sx={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                    <PhoneIcon fontSize="inherit" sx={{ mr: 0.5, color: 'error.main' }} />
-                    Barangay Emergency: 
-                    <Box component="span" sx={{ color: 'error.main', ml: 0.5 }}>
-                      +63 9XX XXX XXXX
-                    </Box>
-                  </Typography>
-                  
-                  <Typography variant="body2" sx={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', mb: 0.5 }}>
-                    <PhoneIcon fontSize="inherit" sx={{ mr: 0.5, color: 'error.main' }} />
-                    Police Station: 
-                    <Box component="span" sx={{ color: 'error.main', ml: 0.5 }}>
-                      (049) XXX-XXXX
-                    </Box>
-                  </Typography>
-                  
-                  <Typography variant="body2" sx={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}>
-                    <PhoneIcon fontSize="inherit" sx={{ mr: 0.5, color: 'error.main' }} />
-                    Fire Station: 
-                    <Box component="span" sx={{ color: 'error.main', ml: 0.5 }}>
-                      (049) XXX-XXXX
-                    </Box>
-                  </Typography>
-                </Box>
-              </Box>
-            </Box>
-          </Paper>
-        </Grid>
-
-        {/* Contact Form Column */}
-        <Grid item xs={12} md={7}>
-          <Paper 
-            elevation={0}
-            sx={{ 
-              p: 3, 
-              borderRadius: 1,
-              border: '1px solid',
-              borderColor: 'divider'
-            }}
-          >
-            <Typography 
-              variant="h5" 
-              component="h2" 
-              gutterBottom
-              sx={{ 
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                borderBottom: '2px solid',
-                borderColor: alpha(theme.palette.primary.main, 0.2),
-                pb: 1,
-                mb: 3,
-                fontSize: '1.1rem'
-              }}
-            >
-              <ContactMailIcon sx={{ mr: 1, color: 'primary.main', fontSize: 20 }} />
-              Send Us a Message
-            </Typography>
-            
-            <Box
+              component="a"
+              href="tel:+63495360000"
+              variant="body2"
               sx={{
-                p: 2,
-                mb: 3,
-                borderRadius: 1,
-                bgcolor: alpha(theme.palette.info.main, 0.05),
-                border: '1px solid',
-                borderColor: alpha(theme.palette.info.main, 0.2),
-                fontSize: '0.85rem',
-                color: 'text.secondary',
-                display: 'flex',
-                alignItems: 'flex-start'
+                color: 'primary.main',
+                textDecoration: 'none',
+                fontWeight: 500,
+                '&:hover': { textDecoration: 'underline' }
               }}
             >
-              <EmailIcon color="info" sx={{ mr: 1, mt: 0.5, fontSize: 20 }} />
-              <Typography variant="body2">
-                Your message will be sent to the Barangay Maahas email address. A copy will be forwarded to <b>pivargas2@up.edu.ph</b> for proper monitoring and handling.
-              </Typography>
-            </Box>
-
-            <form onSubmit={handleSubmit}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <TextField 
-                    label="Full Name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    fullWidth 
-                    required
-                    variant="outlined"
-                    error={!!errors.name}
-                    helperText={errors.name}
-                    sx={{ mb: 2 }}
-                    size="small"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField 
-                    label="Email Address"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    fullWidth 
-                    required
-                    variant="outlined"
-                    error={!!errors.email}
-                    helperText={errors.email}
-                    sx={{ mb: 2 }}
-                    size="small"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField 
-                    label="Phone Number (Optional)"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    fullWidth 
-                    variant="outlined"
-                    sx={{ mb: 2 }}
-                    size="small"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField 
-                    label="Subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleInputChange}
-                    fullWidth 
-                    required
-                    variant="outlined"
-                    error={!!errors.subject}
-                    helperText={errors.subject}
-                    sx={{ mb: 2 }}
-                    size="small"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField 
-                    label="Message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleInputChange}
-                    fullWidth 
-                    required
-                    variant="outlined"
-                    multiline
-                    rows={6}
-                    error={!!errors.message}
-                    helperText={errors.message}
-                    sx={{ mb: 3 }}
-                    size="small"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={submitStatus === 'loading'}
-                    startIcon={submitStatus === 'loading' ? <CircularProgress size={16} /> : <SendIcon />}
-                    sx={{
-                      bgcolor: 'primary.main',
-                      color: 'white',
-                      fontWeight: 500,
-                      textTransform: 'none',
-                      py: 1
-                    }}
-                    size="medium"
-                  >
-                    {submitStatus === 'loading' ? 'Sending...' : 'Send Message'}
-                  </Button>
-                </Grid>
-              </Grid>
-            </form>
-            
-            <Box 
-              sx={{ 
-                mt: 3, 
-                pt: 2, 
-                borderTop: '1px solid', 
-                borderColor: 'divider',
-                display: 'flex',
-                flexDirection: { xs: 'column', sm: 'row' },
-                alignItems: { xs: 'flex-start', sm: 'center' },
-                justifyContent: 'space-between',
-                gap: 1
+              (049) 536-XXXX
+            </Typography>
+            <Typography 
+              component="a"
+              href="tel:+639000000000"
+              variant="body2"
+              sx={{
+                color: 'primary.main',
+                textDecoration: 'none',
+                fontWeight: 500,
+                '&:hover': { textDecoration: 'underline' }
               }}
             >
-              <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem' }}>
-                All fields marked with * are required
-              </Typography>
-              
-              <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}>
-                <AccessTimeIcon fontSize="inherit" sx={{ mr: 0.5 }} />
-                Response time: Usually within 1-2 business days
-              </Typography>
-            </Box>
-          </Paper>
-        </Grid>
+              +63 9XX XXX XXXX
+            </Typography>
+          </Box>
+        </Paper>
       </Grid>
 
-      {/* Snackbar for form submission feedback */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={handleCloseSnackbar} 
-          severity={submitStatus === 'success' ? 'success' : 'error'} 
-          sx={{ width: '100%' }}
+      <Grid item xs={12} md={4} sx={{minWidth: {sx: '100%', sm: '100%', md: 'auto'}}}>
+        <Paper 
+          sx={{ 
+            p: 3,
+            height: '100%',
+            borderRadius: 3,
+            border: '2px solid',
+            borderColor: alpha(theme.palette.info.main, 0.1),
+            position: 'relative',
+            overflow: 'hidden',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              borderColor: 'info.main',
+              transform: 'translateY(-4px)',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+              '& .contact-icon': {
+                transform: 'rotate(360deg) scale(1.1)',
+                color: 'info.main'
+              }
+            }
+          }}
         >
-          {submitStatus === 'success' ? 
-            "Your message has been sent successfully! We'll get back to you soon." :
-            "Failed to send message. Please try again later."
-          }
-        </Alert>
-      </Snackbar>
-    </Container>
-  );
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: 60,
+              height: 60,
+              bgcolor: alpha(theme.palette.info.main, 0.05),
+              borderBottomLeftRadius: '50%'
+            }}
+          />
+          
+          <Avatar
+            className="contact-icon"
+            sx={{
+              width: 48,
+              height: 48,
+              mb: 2,
+              bgcolor: alpha(theme.palette.info.main, 0.1),
+              color: 'info.main',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            <EmailIcon sx={{ fontSize: 24 }} />
+          </Avatar>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}> {/* Changed from h5 */}
+            Email Us
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Send us your inquiries and we'll respond promptly
+          </Typography>
+          <Typography 
+            component="a"
+            href="mailto:brgy.maahas2@gmail.com"
+            variant="body2"
+            sx={{
+              color: 'info.main',
+              textDecoration: 'none',
+              fontWeight: 500,
+              '&:hover': { textDecoration: 'underline' }
+            }}
+          >
+            brgy.maahas2@gmail.com
+          </Typography>
+        </Paper>
+      </Grid>
+
+      <Grid item xs={12} md={4} sx={{minWidth: {sx: '100%', sm: '100%', md: '360px'}}}>
+        <Paper 
+          sx={{ 
+            p: 3,
+            height: '100%',
+            borderRadius: 3,
+            border: '2px solid',
+            borderColor: alpha(theme.palette.success.main, 0.1),
+            position: 'relative',
+            overflow: 'hidden',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              borderColor: 'success.main',
+              transform: 'translateY(-4px)',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+              '& .contact-icon': {
+                transform: 'rotate(360deg) scale(1.1)',
+                color: 'success.main'
+              }
+            },
+          }}
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: 60,
+              height: 60,
+              bgcolor: alpha(theme.palette.success.main, 0.05),
+              borderBottomLeftRadius: '50%'
+            }}
+          />
+          
+          <Avatar
+            className="contact-icon"
+            sx={{
+              width: 48,
+              height: 48,
+              mb: 2,
+              bgcolor: alpha(theme.palette.success.main, 0.1),
+              color: 'success.main',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            <LocationOnIcon sx={{ fontSize: 24 }} />
+          </Avatar>
+          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}> {/* Changed from h5 */}
+            Visit Us
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Drop by our office, it is open from Mon-Sun 8-5 PM
+          </Typography>
+          <Typography 
+            variant="body2"
+            sx={{
+              color: 'success.main',
+              fontWeight: 500,
+              lineHeight: 1.4
+            }}
+          >
+            Barangay Maahas Hall<br />
+            Los Baños, Laguna
+          </Typography>
+        </Paper>
+      </Grid>
+    </Grid>
+
+    {/* Main Content - Form Section Header */}
+    <Grid container spacing={4}>
+      {/* Contact Form */}
+      <Grid item xs={12} lg={7}>
+        <Paper 
+          sx={{ 
+            p: 4, 
+            borderRadius: 3,
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 4,
+              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`
+            }
+          }}
+        >
+          <Box sx={{ mb: 3 }}>
+            <Typography 
+              variant="h6" // Changed from h4
+              component="h2" 
+              sx={{ 
+                fontWeight: 600,
+                color: 'text.primary',
+                mb: 1,
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '1.1rem' // Added specific size
+              }}
+            >
+              <ContactMailIcon sx={{ mr: 1.5, color: 'primary.main', fontSize: 20 }} /> {/* Reduced icon size */}
+              Send Us a Message
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}> {/* Added specific size */}
+              Fill out the form below and we'll get back to you within 1-2 business days.
+            </Typography>
+          </Box>
+
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={2}>
+              {/* Form fields remain the same */}
+              <Grid item xs={12} sm={4} sx={{minWidth: '100%'}}>
+                <TextField 
+                  label="Full Name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  fullWidth 
+                  required
+                  variant="outlined"
+                  error={!!errors.name}
+                  helperText={errors.name}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      transition: 'all 0.3s ease',
+                      '&:hover fieldset': {
+                        borderColor: 'primary.main',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderWidth: 2,
+                      }
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} sx={{minWidth: '100%'}}>
+                <TextField 
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  fullWidth 
+                  required
+                  variant="outlined"
+                  error={!!errors.email}
+                  helperText={errors.email}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      transition: 'all 0.3s ease',
+                      '&:hover fieldset': {
+                        borderColor: 'primary.main',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderWidth: 2,
+                      }
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} sx={{minWidth: '100%'}}>
+                <TextField 
+                  label="Phone Number"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  fullWidth 
+                  variant="outlined"
+                  placeholder="Optional"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      transition: 'all 0.3s ease',
+                      '&:hover fieldset': {
+                        borderColor: 'primary.main',
+                      }
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} sx={{minWidth: '100%'}}>
+                <TextField 
+                  label="Subject"
+                  name="subject"
+                  value={formData.subject}
+                  onChange={handleInputChange}
+                  fullWidth 
+                  required
+                  variant="outlined"
+                  error={!!errors.subject}
+                  helperText={errors.subject}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      transition: 'all 0.3s ease',
+                      '&:hover fieldset': {
+                        borderColor: 'primary.main',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderWidth: 2,
+                      }
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sx={{minWidth: '100%'}}>
+                <TextField 
+                  label="Your Message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleInputChange}
+                  fullWidth 
+                  required
+                  variant="outlined"
+                  multiline
+                  rows={5}
+                  error={!!errors.message}
+                  helperText={errors.message}
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      transition: 'all 0.3s ease',
+                      '&:hover fieldset': {
+                        borderColor: 'primary.main',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderWidth: 2,
+                      }
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} >
+                <Button
+                  type="submit"
+                  variant="contained"
+                  size="medium" // Changed from large
+                  disabled={submitStatus === 'loading'}
+                  startIcon={submitStatus === 'loading' ? <CircularProgress size={16} /> : <SendIcon />}
+                  sx={{
+                    py: 1.25, // Reduced padding
+                    px: 2.5,  // Reduced padding
+                    borderRadius: 2,
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    fontSize: '0.9rem', // Added specific size
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: '-100%',
+                      width: '100%',
+                      height: '100%',
+                      background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)',
+                      transition: 'left 0.5s',
+                    },
+                    '&:hover::before': {
+                      left: '100%',
+                    },
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 6px 20px rgba(0,0,0,0.15)'
+                    },
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  {submitStatus === 'loading' ? 'Sending Message...' : 'Send Message'}
+                </Button>
+              </Grid>
+            </Grid>
+          </form>
+        </Paper>
+      </Grid>
+
+    </Grid>
+
+    {/* Snackbar */}
+    <Snackbar
+      open={snackbarOpen}
+      autoHideDuration={6000}
+      onClose={handleCloseSnackbar}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+    >
+      <Alert 
+        onClose={handleCloseSnackbar} 
+        severity={submitStatus === 'success' ? 'success' : 'error'} 
+        sx={{ 
+          width: '100%',
+          borderRadius: 2
+        }}
+      >
+        {submitStatus === 'success' ? 
+          "Your message has been sent successfully! We'll get back to you soon." :
+          "Failed to send message. Please try again later."
+        }
+      </Alert>
+    </Snackbar>
+  </Container>
+);
 }
 
 export default Contact;

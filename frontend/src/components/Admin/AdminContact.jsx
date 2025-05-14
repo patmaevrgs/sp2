@@ -56,6 +56,8 @@ function AdminContact() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [messageToDelete, setMessageToDelete] = useState(null);
   const [pagination, setPagination] = useState({
     current: 1,
     total: 1,
@@ -140,27 +142,39 @@ function AdminContact() {
     }
   };
 
-  const handleDeleteMessage = async (messageId) => {
-    if (window.confirm('Are you sure you want to delete this message?')) {
-      try {
+  const handleDeleteMessage = (message) => {
+    setMessageToDelete(message);
+    setDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = async () => {
+    if (!messageToDelete) return;
+    
+    try {
         setDeleteLoading(true);
         const token = localStorage.getItem('token');
-        await fetch(`http://localhost:3002/contact/${messageId}`, {
-          method: 'DELETE',
-          headers: {
+        await fetch(`http://localhost:3002/contact/${messageToDelete._id}`, {
+        method: 'DELETE',
+        headers: {
             'Authorization': `Bearer ${token}`
-          }
+        }
         });
         
         // Refresh messages
         fetchMessages(pagination.current, currentTab, searchTerm);
-      } catch (error) {
+        setDeleteDialogOpen(false);
+        setMessageToDelete(null);
+    } catch (error) {
         console.error('Error deleting message:', error);
-      } finally {
+    } finally {
         setDeleteLoading(false);
-      }
     }
-  };
+    };
+
+    const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setMessageToDelete(null);
+    };
 
   const handleReply = (email, subject) => {
     const mailtoLink = `mailto:${email}?subject=Re: ${encodeURIComponent(subject)}`;
@@ -626,22 +640,22 @@ function AdminContact() {
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Delete Message">
-                          <IconButton
-                            size="small"
-                            onClick={() => handleDeleteMessage(message._id)}
-                            color="error"
-                            disabled={deleteLoading}
-                            sx={{ 
-                              bgcolor: theme => alpha(theme.palette.error.main, 0.1),
-                              '&:hover': {
-                                bgcolor: theme => alpha(theme.palette.error.main, 0.2),
-                              },
-                              p: 0.75
-                            }}
-                          >
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
+                            <IconButton
+                                size="small"
+                                onClick={() => handleDeleteMessage(message)} // Changed this line
+                                color="error"
+                                disabled={deleteLoading}
+                                sx={{ 
+                                bgcolor: theme => alpha(theme.palette.error.main, 0.1),
+                                '&:hover': {
+                                    bgcolor: theme => alpha(theme.palette.error.main, 0.2),
+                                },
+                                p: 0.75
+                                }}
+                            >
+                                <DeleteIcon fontSize="small" />
+                            </IconButton>
+                            </Tooltip>
                       </Box>
                     </TableCell>
                   </TableRow>
@@ -839,6 +853,130 @@ function AdminContact() {
             </DialogActions>
           </>
         )}
+      </Dialog>
+    {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleCloseDeleteDialog}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: 2 }
+        }}
+      >
+        <DialogTitle sx={{ 
+          bgcolor: theme => alpha(theme.palette.error.main, 0.05),
+          fontWeight: 600, 
+          display: 'flex',
+          alignItems: 'center',
+          fontSize: '1.1rem',
+          color: 'error.main'
+        }}>
+          <DeleteIcon sx={{ mr: 1 }} />
+          Delete Contact Message
+        </DialogTitle>
+        <Box sx={{md:5}} />
+        <DialogContent sx={{ pt: 3 }}>
+          {messageToDelete && (
+            <Box>
+              <Alert severity="warning" sx={{ mb: 3, borderRadius: 2 }}>
+                <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                  Are you sure you want to delete this message?
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  This action cannot be undone. The message will be permanently removed from the system.
+                </Typography>
+              </Alert>
+              
+              <Box sx={{ 
+                p: 2, 
+                bgcolor: alpha('#f5f5f5', 0.5), 
+                borderRadius: 1, 
+                border: '1px solid',
+                borderColor: 'divider'
+              }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1.5, fontSize: '0.9rem' }}>
+                  Message Details:
+                </Typography>
+                
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ mb: 1 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                        From
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
+                        {messageToDelete.name}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ mb: 1 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                        Email
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
+                        {messageToDelete.email}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12}>
+                    <Box sx={{ mb: 1 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                        Subject
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
+                        {messageToDelete.subject}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12}>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                        Date
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
+                        {formatDate(messageToDelete.createdAt)}
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, py: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+          <Button 
+            onClick={handleCloseDeleteDialog}
+            variant="outlined"
+            size="small"
+            sx={{ 
+              borderRadius: 1.5,
+              textTransform: 'none',
+              fontWeight: 500
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmDelete}
+            variant="contained"
+            color="error"
+            size="small"
+            disabled={deleteLoading}
+            startIcon={deleteLoading ? <CircularProgress size={16} /> : <DeleteIcon />}
+            sx={{ 
+              borderRadius: 1.5,
+              textTransform: 'none',
+              fontWeight: 500
+            }}
+          >
+            {deleteLoading ? 'Deleting...' : 'Delete Message'}
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );
