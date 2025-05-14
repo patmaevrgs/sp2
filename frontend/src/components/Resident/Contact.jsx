@@ -33,7 +33,7 @@ import {
 import Avatar from '@mui/material/Avatar';
 
 function Contact() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -46,14 +46,6 @@ function Contact() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-
-  useEffect(() => {
-    // Simulate loading data
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -96,30 +88,43 @@ function Contact() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (validateForm()) {
-      // Simulate form submission
       setSubmitStatus('loading');
       
-      // In a real application, this would send data to your backend,
-      // which would then forward the email to pivargas2@up.edu.ph
-      
-      setTimeout(() => {
-        // Simulate successful submission
-        setSubmitStatus('success');
-        setSnackbarOpen(true);
-        
-        // Reset form
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          subject: '',
-          message: ''
+      try {
+        const response = await fetch('http://localhost:3002/contact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData)
         });
-      }, 1500);
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          setSubmitStatus('success');
+          setSnackbarOpen(true);
+          
+          // Reset form
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            subject: '',
+            message: ''
+          });
+        } else {
+          throw new Error(data.message || 'Failed to send message');
+        }
+      } catch (error) {
+        console.error('Error sending message:', error);
+        setSubmitStatus('error');
+        setSnackbarOpen(true);
+      }
     }
   };
 
@@ -129,14 +134,6 @@ function Contact() {
     }
     setSnackbarOpen(false);
   };
-
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
-        <CircularProgress />
-      </Box>
-    );
-  }
 
   return (
     <Container maxWidth="lg" sx={{ py: 3 }}>
@@ -607,10 +604,13 @@ function Contact() {
       >
         <Alert 
           onClose={handleCloseSnackbar} 
-          severity="success" 
+          severity={submitStatus === 'success' ? 'success' : 'error'} 
           sx={{ width: '100%' }}
         >
-          Your message has been sent successfully! We'll get back to you soon.
+          {submitStatus === 'success' ? 
+            "Your message has been sent successfully! We'll get back to you soon." :
+            "Failed to send message. Please try again later."
+          }
         </Alert>
       </Snackbar>
     </Container>

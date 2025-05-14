@@ -34,6 +34,7 @@ import {
   Settings as SettingsIcon,
   Logout as LogoutIcon,
   Person as PersonIcon,
+  ContactMail as ContactMailIcon,
 } from '@mui/icons-material';
 import CircleIcon from '@mui/icons-material/Circle';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -95,6 +96,7 @@ export default function AdminSidebar() {
           projects: 0,
           forms: 0,
           residents: 0,
+          contact: 0,
           total: 0
         };
 
@@ -141,6 +143,14 @@ export default function AdminSidebar() {
           counts.reports = reportsData.reports.filter(r => r.status === 'Pending').length;
         } else if (reportsData && Array.isArray(reportsData)) {
           counts.reports = reportsData.filter(r => r.status === 'Pending').length;
+        }
+
+        // Fetch unread contact messages - add this after the documents fetch
+        const contactData = await safeFetch('http://localhost:3002/contact/unread-count');
+        if (contactData && contactData.success) {
+          counts.contact = contactData.count;
+        } else {
+          counts.contact = 0;
         }
 
         // Fetch project proposals
@@ -199,7 +209,7 @@ export default function AdminSidebar() {
     fetchPendingCounts();
     
     // Set up interval to refresh counts every minute
-    const intervalId = setInterval(fetchPendingCounts, 60000);
+    const intervalId = setInterval(fetchPendingCounts, 10);
     
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
@@ -230,6 +240,11 @@ export default function AdminSidebar() {
         { label: 'Infrastructure reports', icon: <InfraIcon />, path: '/admin/services/infrastructure-reports' },
         { label: 'Project proposals', icon: <ProjectIcon />, path: '/admin/services/project-proposals' },
       ],
+    },
+    {
+      label: 'Contact Messages',
+      icon: <ContactMailIcon />,
+      path: '/admin/contact-messages',
     },
     {
       label: 'Resident Database',
@@ -421,6 +436,24 @@ export default function AdminSidebar() {
                               fontSize: '0.65rem',
                               fontWeight: 600,
                               minWidth: 24,
+                              ml: 1,
+                              '& .MuiChip-label': {
+                                padding: '0 6px',
+                                overflow: 'visible'
+                              }
+                            }}
+                          />
+                        )}
+                        {item.label === 'Contact Messages' && pendingCounts.contact > 0 && (
+                          <Chip 
+                            label={pendingCounts.contact}
+                            size="small"
+                            color="warning"
+                            sx={{
+                              height: 18,
+                              fontSize: '0.65rem',
+                              fontWeight: 600,
+                              minWidth: 20,
                               ml: 1,
                               '& .MuiChip-label': {
                                 padding: '0 6px',

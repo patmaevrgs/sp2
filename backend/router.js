@@ -84,6 +84,14 @@ import {
   uploadOfficialImage,
   updateFooterData
 } from './controllers/homePageController.js';
+import {
+  createContactMessage,
+  getContactMessages,
+  getContactMessageById,
+  markAsRead,
+  deleteContactMessage,
+  getUnreadCount
+} from './controllers/contactController.js';
 import multer from 'multer';
 import { generateDocument } from './controllers/documentGeneratorController.js';
 
@@ -216,6 +224,14 @@ router.post('/homepage/carousel', upload.array('images'), uploadCarouselImages);
 router.delete('/homepage/carousel', deleteCarouselImage);
 router.post('/homepage/official-image', upload.single('image'), uploadOfficialImage);
 router.put('/homepage/footer', updateFooterData);
+
+// Contact Message Routes
+router.post('/contact', createContactMessage);
+router.get('/contact', getContactMessages);
+router.get('/contact/unread-count', getUnreadCount);
+router.get('/contact/:id', getContactMessageById);
+router.patch('/contact/:id/read', markAsRead);
+router.delete('/contact/:id', deleteContactMessage);
 
 // Serve static files
 import express from 'express';

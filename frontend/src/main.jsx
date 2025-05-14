@@ -47,6 +47,7 @@ import RequestResidency from './components/Resident/RequestResidency.jsx';
 import RequestObjection from './components/Resident/RequestObjection.jsx';
 import LandingRoot from './components/LandingRoot.jsx';
 import LandingPage from './components/LandingPage';
+import AdminContact from './components/Admin/AdminContact.jsx';
 
 const checkIfLoggedInOnHome = async () => {
 
@@ -147,6 +148,7 @@ const router = createBrowserRouter([
     {path: '/admin/services/court-reservation', element: <AdminCourt />},
     {path: '/admin/services/infrastructure-reports', element: <AdminReport />},
     {path: '/admin/services/project-proposals', element: <AdminProposal />},
+    {path: '/admin/contact-messages/', element: <AdminContact />},
     {
       path: '/admin/manage-app', 
       element: <AdminManageHomepage />,

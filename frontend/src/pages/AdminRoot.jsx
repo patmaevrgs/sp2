@@ -37,6 +37,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import DescriptionIcon from '@mui/icons-material/Description';
 import AccountsIcon from '@mui/icons-material/ManageAccounts';
 import SettingsIcon from '@mui/icons-material/Settings';
+import ContactMailIcon from '@mui/icons-material/ContactMail'
 import { useLocation } from 'react-router-dom';
 
 function AdminRoot() {
@@ -56,6 +57,7 @@ function AdminRoot() {
     { label: 'Announcements', path: '/admin/announcements', icon: <AnnouncementIcon fontSize="small" /> },
     { label: 'Accounts', path: '/admin/accounts', icon: <AccountsIcon fontSize="small" /> },
     { label: 'Residents Database', path: '/admin/database', icon: <PeopleIcon fontSize="small" /> },
+    { label: 'Contact Messages', path: '/admin/contact-messages', icon: <ContactMailIcon fontSize="small" /> },
     { label: 'Request Forms', path: '/admin/services/request-forms', icon: <DescriptionIcon fontSize="small" /> },
     { label: 'Ambulance Booking', path: '/admin/services/ambulance-booking', icon: <DescriptionIcon fontSize="small" /> },
     { label: 'Court Reservation', path: '/admin/services/court-reservation', icon: <DescriptionIcon fontSize="small" /> },

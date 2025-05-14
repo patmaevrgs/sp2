@@ -111,7 +111,7 @@ function AdminCourt() {
   // Fetch all court reservations
   const fetchReservations = async () => {
     try {
-      setLoading(true);
+      setLoading(false);
       const token = localStorage.getItem('token');
       
       // First, fetch all reservations for badges/counts
