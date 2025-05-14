@@ -649,7 +649,7 @@ export default function SignIn() {
               }}
               startIcon={<ArrowBackIcon fontSize="small" />}
             >
-              Back to Landing Page
+              Back to Home
             </Button>
           </Box>
         </Box>

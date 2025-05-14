@@ -58,7 +58,7 @@ function Services() {
     // Simulate loading data
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 0);
+    }, 500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -93,8 +93,7 @@ function Services() {
           sx={{ 
             color: 'text.secondary', 
             mb: 2,
-            maxWidth: '80%',
-            minWidth: {xs: '100%', sm: '100%', md: 'auto'}
+            maxWidth: '80%'
           }}
         >
           Barangay Maahas offers various services to assist residents. Learn about what's available and how to access them.
@@ -196,8 +195,7 @@ function Services() {
           borderColor: alpha(theme.palette.primary.main, 0.1),
           bgcolor: 'background.paper',
           display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          minWidth: '100%'
+          flexDirection: { xs: 'column', md: 'row' }
         }}
       >
         <Box
@@ -374,7 +372,7 @@ function Services() {
             sx={{ 
               display: 'flex', 
               alignItems: 'center', 
-              mt: 2, 
+              mt: 'auto', 
               pt: 2,
               bgcolor: alpha(theme.palette.warning.main, 0.05), 
               p: 1.5, 
@@ -394,7 +392,7 @@ function Services() {
       {/* Other Services in Grid */}
       <Grid container spacing={3} sx={{ mb: 5 }}>
         {/* Ambulance Service - Urgent Alert Style */}
-        <Grid item xs={12} md={6} sx={{minWidth: '100%'}}>
+        <Grid item xs={12} md={6}>
           <Paper 
             elevation={0}
             sx={{ 
@@ -506,7 +504,7 @@ function Services() {
         </Grid>
 
         {/* Court Reservation - Card with Diagonal Pattern */}
-        <Grid item xs={12} md={6} sx={{minWidth: '100%'}}>
+        <Grid item xs={12} md={6}>
           <Paper 
             elevation={0}
             sx={{ 
@@ -641,7 +639,7 @@ function Services() {
         </Grid>
 
         {/* Infrastructure Report - Workmans Style */}
-        <Grid item xs={12} md={6} sx={{minWidth: '100%'}}>
+        <Grid item xs={12} md={6}>
           <Paper 
             elevation={0}
             sx={{ 
@@ -803,7 +801,7 @@ function Services() {
         </Grid>
 
         {/* Project Proposal - Idea Style */}
-        <Grid item xs={12} md={6} sx={{minWidth: '100%'}}>
+        <Grid item xs={12} md={6}>
           <Paper 
             elevation={0}
             sx={{ 
@@ -950,7 +948,7 @@ function Services() {
 
       <Grid container spacing={3} sx={{ mb: 5 }}>
         {/* Health Center - Timeline Style */}
-        <Grid item xs={12} sx={{minWidth: '100%'}}>
+        <Grid item xs={12}>
           <Paper 
             elevation={0}
             sx={{ 
@@ -1049,7 +1047,7 @@ function Services() {
                           Medical Consultations
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          Free basic check-ups and medical advice from healthcare workers every Wednesday morning at the Health Center
+                          Free basic check-ups and medical advice from healthcare workers
                         </Typography>
                       </Box>
                     </Box>
@@ -1074,10 +1072,10 @@ function Services() {
                       </Box>
                       <Box>
                         <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'primary.main' }}>
-                          Free Rabies Immunization
+                          Regular Immunization
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          The first three vaccines needed after being bitten by a rabid animal are free of charge
+                          Every Wednesday morning at the Health Center - vaccination for children and adults
                         </Typography>
                       </Box>
                     </Box>
@@ -1161,7 +1159,7 @@ function Services() {
         </Grid>
 
         {/* Animal Welfare - Horizontal Card */}
-        <Grid item xs={12} sx={{minWidth: '100%'}}>
+        <Grid item xs={12}>
           <Paper 
             elevation={0}
             sx={{ 
@@ -1181,8 +1179,7 @@ function Services() {
                   justifyContent: 'center',
                   p: 3,
                   position: 'relative',
-                  overflow: 'hidden',
-                  minWidth: {xs: '100%', sm: '100%', md: '100%'}
+                  overflow: 'hidden'
                 }}
               >
                 <Box 
@@ -1220,7 +1217,7 @@ function Services() {
                 </Typography>
                 
                 <Grid container spacing={2} sx={{ mb: 2 }}>
-                  <Grid item xs={12} sm={6} md={4} sx={{minWidth: {xs: '100%', sm: '100%', md: 'auto'}}}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <Box 
                       sx={{ 
                         p: 1.5,
@@ -1240,7 +1237,7 @@ function Services() {
                     </Box>
                   </Grid>
                   
-                  <Grid item xs={12} sm={6} md={4} sx={{minWidth: {xs: '100%', sm: '100%', md: 'auto'}}}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <Box 
                       sx={{ 
                         p: 1.5,
@@ -1260,7 +1257,7 @@ function Services() {
                     </Box>
                   </Grid>
                   
-                  <Grid item xs={12} sm={6} md={4} sx={{minWidth: {xs: '100%', sm: '100%', md: 'auto'}}}>
+                  <Grid item xs={12} sm={6} md={4}>
                     <Box 
                       sx={{ 
                         p: 1.5,
@@ -1298,8 +1295,7 @@ function Services() {
                       '&:hover': {
                         borderColor: '#9c27b0',
                         backgroundColor: alpha('#9c27b0', 0.04)
-                      },
-                      minWidth: {xs: '50%', sm: '50%', md: 'auto'}
+                      }
                     }}
                     endIcon={<ArrowForwardIcon />}
                     size="small"
@@ -1358,15 +1354,14 @@ function Services() {
           </Typography>
         </Box>
         
-        {/* <Grid container> */}
+        <Grid container>
           {/* Security Programs */}
           <Grid item xs={12} md={6} 
             sx={{ 
               p: 3, 
               borderRight: { xs: 'none', md: '1px solid' },
               borderBottom: { xs: '1px solid', md: 'none' },
-              borderColor: alpha(theme.palette.primary.main, 0.1),
-              minWidth: {xs: '100%', sm: '100%', md: '100%'}
+              borderColor: alpha(theme.palette.primary.main, 0.1)
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -1382,7 +1377,7 @@ function Services() {
               Barangay Maahas implements various security measures to ensure the safety of residents. Our barangay tanods work diligently to maintain peace and order.
             </Typography>
             
-            <Grid container spacing={2} sx={{minWidth: {xs: '100%', sm: '100%', md: '100%'}}}>
+            <Grid container spacing={2}>
               <Grid item xs={12} sm={6}>
                 <Box 
                   sx={{ 
@@ -1393,8 +1388,7 @@ function Services() {
                     bgcolor: alpha(theme.palette.primary.main, 0.01),
                     height: '100%',
                     display: 'flex',
-                    flexDirection: 'column',
-                    width: {xs: '100%', sm: '100%', md: '260px'}
+                    flexDirection: 'column'
                   }}
                 >
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'primary.main', mb: 0.5 }}>
@@ -1416,8 +1410,7 @@ function Services() {
                     bgcolor: alpha(theme.palette.primary.main, 0.01),
                     height: '100%',
                     display: 'flex',
-                    flexDirection: 'column',
-                    width: {xs: '100%', sm: '100%', md: '260px'}
+                    flexDirection: 'column'
                   }}
                 >
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'primary.main', mb: 0.5 }}>
@@ -1439,8 +1432,7 @@ function Services() {
                     bgcolor: alpha(theme.palette.primary.main, 0.01),
                     height: '100%',
                     display: 'flex',
-                    flexDirection: 'column',
-                    width: {xs: '100%', sm: '100%', md: '260px'}
+                    flexDirection: 'column'
                   }}
                 >
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'primary.main', mb: 0.5 }}>
@@ -1462,8 +1454,7 @@ function Services() {
                     bgcolor: alpha(theme.palette.primary.main, 0.01),
                     height: '100%',
                     display: 'flex',
-                    flexDirection: 'column',
-                    width: {xs: '100%', sm: '100%', md: '260px'}
+                    flexDirection: 'column'
                   }}
                 >
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'primary.main', mb: 0.5 }}>
@@ -1575,7 +1566,6 @@ function Services() {
                 sx={{ 
                   textTransform: 'none',
                   fontWeight: 500,
-                  minWidth: {xs: '50%', sm: '50%', md: 'auto'}
                 }}
                 size="small"
               >
@@ -1583,8 +1573,27 @@ function Services() {
               </Button>
             </Box>
           </Grid>
-        {/* </Grid> */}
+        </Grid>
       </Box>
+
+      {/* Service Process Section */}
+      <Typography 
+        variant="h5" 
+        component="h2" 
+        gutterBottom
+        sx={{ 
+          fontWeight: 600,
+          display: 'flex',
+          alignItems: 'center',
+          pb: 1,
+          mb: 3,
+          borderBottom: '2px solid',
+          borderColor: alpha(theme.palette.primary.main, 0.2)
+        }}
+      >
+        <InfoIcon sx={{ mr: 1, color: 'primary.main' }} />
+        How to Access Services
+      </Typography>
 
       {/* Service Process Section */}
             <Typography 
@@ -1605,13 +1614,13 @@ function Services() {
               How to Access Services
             </Typography>
       
-            <Paper sx={{ p: 3, mb: 4, borderRadius: 1, boxShadow: 1, minWidth: '100%' }}>
+            <Paper sx={{ p: 3, mb: 4, borderRadius: 1, boxShadow: 1 }}>
               <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                 Service Request Process
               </Typography>
               
-              <Grid container spacing={2} sx={{ mt: 1}}>
-                <Grid item xs={12} md={3} sx={{minWidth: {xs: '100%', sm: '100%', md: 'auto'}}}>
+              <Grid container spacing={2} sx={{ mt: 1 }}>
+                <Grid item xs={12} md={3}>
                   <Box sx={{ 
                     p: 2, 
                     textAlign: 'center',
@@ -1637,12 +1646,12 @@ function Services() {
                       Step 1: Register
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Create an account in the B-HUB portal
+                      Create an account as a verified resident
                     </Typography>
                   </Box>
                 </Grid>
                 
-                <Grid item xs={12} md={3} sx={{minWidth: {xs: '100%', sm: '100%', md: 'auto'}}}>
+                <Grid item xs={12} md={3}>
                   <Box sx={{ 
                     p: 2, 
                     textAlign: 'center',
@@ -1673,7 +1682,7 @@ function Services() {
                   </Box>
                 </Grid>
                 
-                <Grid item xs={12} md={3} sx={{minWidth: {xs: '100%', sm: '100%', md: 'auto'}}}>
+                <Grid item xs={12} md={3}>
                   <Box sx={{ 
                     p: 2, 
                     textAlign: 'center',
@@ -1704,7 +1713,7 @@ function Services() {
                   </Box>
                 </Grid>
                 
-                <Grid item xs={12} md={3} sx={{minWidth: {xs: '100%', sm: '100%', md: 'auto'}}}>
+                <Grid item xs={12} md={3}>
                   <Box sx={{ 
                     p: 2, 
                     textAlign: 'center',
@@ -1730,7 +1739,7 @@ function Services() {
                       Step 4: Service Delivery
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Receive an update when ready
+                      Receive notification when ready
                     </Typography>
                   </Box>
                 </Grid>
